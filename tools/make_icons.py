@@ -68,6 +68,7 @@ TILES = {
     "img-openspa": ("drive", "#7F1D1D", "#EF4444"),
     "img": ("drive", "#334155", "#64748B"),
     "communaute": ("badge", "#0891B2", "#22C55E"),
+    "ext": ("puzzle", "#4C1D95", "#DB2777"),
     "atv-ext": ("puzzle", "#334155", "#0F766E"),
     "atv-sys": ("cpu", "#334155", "#1D4ED8"),
     "atv-skins": ("palette", "#334155", "#B45309"),

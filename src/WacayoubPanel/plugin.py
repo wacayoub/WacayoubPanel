@@ -30,11 +30,12 @@ except ImportError:
     PIX_FLAGS = 0
 
 from . import feed as F
+from . import extfeeds as X
 from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -51,7 +52,7 @@ C_TEXT = 0xF1F5F9
 C_DIM = 0x8C9AB0
 C_STATE = {F.ST_NONE: 0x8C9AB0, F.ST_OK: 0x4ADE80, F.ST_UPDATE: 0xFBBF24, F.ST_PARTIAL: 0xFBBF24, F.ST_NA: 0x64748B}
 STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTIAL: "partial", F.ST_NA: "na"}
-TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV"}
+TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV", "ext": "Autre image"}
 SEARCH = "search"
 LAUNCH = "launch"
 # my plugin folders -> icon id (Mes outils)
@@ -79,6 +80,8 @@ def item_tile(it):
         return pix("t-i-%s.png" % it.get("tile")) or pix("t-launch.png")
     if it.get("type") == "image":
         return pix("t-%s.png" % it.get("category")) or pix("t-img.png")
+    if it.get("type") == "ext":
+        return pix("t-ext.png")
     if it.get("type") == "opkg":
         return pix("t-%s.png" % it.get("category", "atv-ext")) or pix("t-atv-ext.png")
     return pix("t-i-%s.png" % it.get("id")) or pix("t-%s.png" % it.get("category", "all"))
@@ -163,6 +166,9 @@ class WacayoubPanel(Screen):
         self.launch_items = []
         self.image_groups = []
         self.images_busy = False
+        self.ext = None
+        self.ext_busy = False
+        self.ext_console = AsyncConsole()
         self.model, self.model_name = IM.box_model()
         self.img_console = AsyncConsole()
         self.async_console = AsyncConsole()
@@ -233,8 +239,44 @@ class WacayoubPanel(Screen):
         except Exception as e:
             self.atv = None
             print("[WacayoubPanel] OpenATV lists: %s" % e)
+        self._load_ext()
+
+    def _load_ext(self):
+        """Other images' feeds (already downloaded in /tmp): offered only when their deps exist here."""
+        try:
+            installed = F.installed_packages()
+            own = set(installed)
+            avail = set(installed)
+            if self.atv:
+                own |= set(self.atv.packages)
+                avail |= self.atv.all_names
+            if self.feed:
+                own |= set(self.feed.data.get("packages", {}))
+            self.ext = X.load(own, avail, F.compare_versions) if self.atv else None
+        except Exception as e:
+            self.ext = None
+            print("[WacayoubPanel] other feeds: %s" % e)
         if self.feed:
-            self.feed = F.Feed(self.feed.data)  # fresh copy, OpenATV part attached in _refresh_all
+            self.feed = F.Feed(self.feed.data)  # fresh copy, OpenATV + other feeds attached in _refresh_all
+
+    def _fetch_ext(self):
+        if self.ext_busy or not self.model:
+            return
+        self.ext_busy = True
+        try:
+            cmd = F.write_run_script(X.fetch_script(self.model), "ext.sh")[0]
+        except Exception as e:
+            self.ext_busy = False
+            print("[WacayoubPanel] other feeds: %s" % e)
+            return
+        self.ext_console.ePopen(cmd, self._ext_done)
+
+    def _ext_done(self, data, retval, extra=None):
+        self.ext_busy = False
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
+            return
+        self._load_ext()
+        self._refresh_all()
 
     def refreshFeed(self, auto=False):
         """JAUNE: my feed + 'opkg update'. On open: opkg update only if the lists are over a day old."""
@@ -243,6 +285,8 @@ class WacayoubPanel(Screen):
         if (not auto or stale) and not self.opkg_busy:
             self.opkg_busy = True
             self.atv_console.ePopen("opkg update", self._opkg_done)
+        if not auto or X.age_hours() > 24:
+            self._fetch_ext()
         tmp = "/tmp/wacayoubpanel-index.json"
         self.async_console.ePopen(F.index_fetch_command(tmp), self._feed_done, tmp)
 
@@ -330,9 +374,11 @@ class WacayoubPanel(Screen):
         self.installed = F.installed_packages()
         if self.feed and self.atv and not self.feed.atv_count:
             self.feed.attach_atv(self.atv)
+        if self.feed and self.ext and not self.feed.ext_count:
+            self.feed.attach_ext(self.ext)
         if self.feed:
             self.feed.env = {"python": tuple(sys.version_info[:3]), "model": self.model,
-                             "model_name": self.model_name, "width": _W}
+                             "model_name": self.model_name, "width": _W, "installed": self.installed}
         sub = "%s  ·  v%s" % (self.model_name or "?", VERSION)
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
@@ -407,7 +453,8 @@ class WacayoubPanel(Screen):
             right = (u"%d ↑" % n_upd) if n_upd else (u"…" if c["id"] == "img-wait" else str(len(items)))
             self.cat_ids.append(c["id"])
             row = [c["id"]]
-            icon = pix("c-%s.png" % c["id"]) or (pix("c-img.png") if c["id"].startswith("img-") else None)
+            icon = pix("c-%s.png" % c["id"]) or (pix("c-img.png") if c["id"].startswith("img-") else
+                                                 pix("c-ext.png") if c["id"].startswith("ext-") else None)
             if icon:
                 row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(18), s(11)), size=(s(30), s(30)), png=icon, flags=PIX_FLAGS))
             row.append(MultiContentEntryText(pos=(s(62), 0), size=(s(260), s(52)), font=0,
@@ -631,13 +678,16 @@ class WacayoubPanel(Screen):
             len(names), u"\n".join(u"•  " + n for n in names), len(own) + len(opkg), S.human(need))
         if skipped:
             q += u"\nIgnorés : " + ", ".join(skipped)
+        exts = sorted(set(i.get("ext") for i in self._marked_items() if i.get("type") == "ext"))
+        if exts:
+            q += u"\nAttention : paquets d'autres images (%s), non testés sur OpenATV." % ", ".join(exts)
         self._batch = True
         self._confirm_run(q, body, u"Installer la sélection (%d)" % len(names))
 
     def _big_icon(self, it):
         t = it.get("type")
         for name in (("B-i-%s.png" % it.get("tile", it.get("id"))) if t == LAUNCH else "B-i-%s.png" % it.get("id"),
-                     "B-%s.png" % it.get("category", ""), "B-img.png" if t == "image" else "B-all.png"):
+                     "B-%s.png" % it.get("category", ""), "B-ext.png" if t == "ext" else "B-img.png" if t == "image" else "B-all.png"):
             path = os.path.join(IMG, name)
             if os.path.exists(path):
                 return path
@@ -650,6 +700,8 @@ class WacayoubPanel(Screen):
         kind = {"image": "Image firmware", "script": "Script"}.get(t, TYPE_LABEL.get(t, "Paquet"))
         if t == "opkg":
             kind = "Paquet du feed OpenATV" + ("  ·  sélection vérifiée" if it.get("reviewed") else "")
+        elif t == "ext":
+            kind = u"Paquet de l'image %s  ·  non testé sur OpenATV" % it.get("ext", "?")
         green, red = "", ""
         if t == "image":
             compat = [(True, "Image prévue pour %s" % (self.model_name or self.model))]
@@ -813,7 +865,8 @@ class WacayoubPanel(Screen):
         else:
             cmds = F.install_commands(self.feed, names, reinstall=reinstall)
         verb = "Réinstaller" if reinstall else ("Mettre à jour" if st == F.ST_UPDATE else "Installer")
-        self._confirm_run("%s %s ?\n%s\nPlace utilisée : %s" % (verb, it["name"], "\n".join(names), S.human(need)),
+        warn = (u"\nAttention : paquet de l'image %s, non testé sur OpenATV." % it.get("ext")) if it.get("type") == "ext" else ""
+        self._confirm_run("%s %s ?\n%s\nPlace utilisée : %s%s" % (verb, it["name"], "\n".join(names), S.human(need), warn),
                           cmds, "%s %s" % (verb, it["name"]))
 
     def _ask_remove(self, it):

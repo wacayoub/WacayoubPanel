@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.6.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.7.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -48,6 +48,18 @@ Les images sont générées par `tools/make_icons.py` (glyphes [Lucide](https://
 
 Première catégorie : tous mes plugins installés (IPToSat Pro, EPG Manager, BOP 2, IPAudio, Salaat NEO…)
 réunis au même endroit. **OK** les ouvre directement ; on revient au panel en les fermant.
+
+## Autres images (OpenPLi, OpenViX, OpenBH, EGAMI)
+
+Catégories **Autres · OpenPLi / OpenViX / OpenBH** : plugins et skins des feeds d'autres images, lus en direct
+(`extfeeds.py`, rafraîchis une fois par jour ou avec Jaune). EGAMI est lu aussi, mais presque tout y est déjà dans le feed OpenATV.
+Règles de sécurité :
+
+- seulement les paquets « all » (Python, skins) : jamais de binaire compilé pour une autre image ;
+- ces feeds ne sont **jamais ajoutés à opkg** : le panel télécharge le fichier, vérifie son empreinte (SHA256, ou MD5 pour OpenPLi)
+  puis fait `opkg install <fichier>` ; les dépendances viennent uniquement du feed de l'image ;
+- un paquet est bloqué si une dépendance manque dans l'image, s'il est en Python 2, ou s'il existe déjà dans le feed OpenATV ;
+- la fiche et la confirmation affichent « non testé sur OpenATV ».
 
 ## Images
 

@@ -39,7 +39,7 @@ def _skin(img):
       <widget name="preview" position="%(px)d,%(py)d" size="%(pw)d,%(ph)d" alphatest="on" scale="1" zPosition="1" />
       <widget name="bigicon" position="%(ix)d,%(iy)d" size="%(is)d,%(is)d" alphatest="blend" scale="1" zPosition="2" />
       <widget name="noprev" position="%(px)d,%(vy)d" size="%(pw)d,%(kh)d" font="Regular;%(kf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="center" zPosition="2" />
-      <widget name="name" position="%(tx)d,%(ty)d" size="%(tw)d,%(th)d" font="Regular;%(tf)d" foregroundColor="#00F1F5F9" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="name" position="%(tx)d,%(ty)d" size="%(tw)d,%(th)d" noWrap="1" font="Regular;%(tf)d" foregroundColor="#00F1F5F9" backgroundColor="#00070B14" transparent="1" valign="center" />
       <widget name="kind" position="%(tx)d,%(ky)d" size="%(tw)d,%(kh)d" font="Regular;%(kf)d" foregroundColor="#007DD3FC" backgroundColor="#00070B14" transparent="1" />
       <widget name="state" position="%(tx)d,%(sy)d" size="%(tw)d,%(sh)d" font="Regular;%(sf)d" foregroundColor="#004ADE80" backgroundColor="#00070B14" transparent="1" />
       <widget name="compat" position="%(tx)d,%(cy)d" size="%(tw)d,%(ch)d" font="Regular;%(cf)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" />

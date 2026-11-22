@@ -164,7 +164,8 @@ class Feed(object):
         self.packages = dict(self.data.get("packages", {}))
         self.items = list(self.data.get("items", []))
         self.atv_count = 0
-        self.env = {}  # set by the panel: python, model, model_name, width
+        self.ext_count = 0
+        self.env = {}  # set by the panel: python, model, model_name, width, installed
 
     def attach_atv(self, atv):
         """Add the image's own feed (OpenATV opkg lists) as extra categories."""
@@ -187,6 +188,20 @@ class Feed(object):
                 self.items.append(it)
                 self.atv_count += 1
 
+    def attach_ext(self, ext):
+        """Add other images' feeds (extfeeds.load result), after my items and the image feed."""
+        if not ext or self.ext_count:
+            return
+        cats, packages, items = ext
+        for c in cats:
+            self.categories.append(dict(c))
+        for name, meta in packages.items():
+            self.packages.setdefault(name, meta)
+        for it in items:
+            if self.packages.get(it["packages"][0], {}).get("ext") == it.get("ext"):
+                self.items.append(it)
+                self.ext_count += 1
+
     @classmethod
     def load(cls, path=CACHE_FILE):
         with open(path, "r", encoding="utf-8") as fh:
@@ -197,7 +212,7 @@ class Feed(object):
 
     def items_in(self, cat_id):
         if cat_id in (None, "all"):
-            return [i for i in self.items if i.get("type") != "opkg"]
+            return [i for i in self.items if i.get("type") not in ("opkg", "ext")]
         return [i for i in self.items if i.get("category") == cat_id]
 
     def search(self, query):
@@ -212,7 +227,7 @@ class Feed(object):
                                  it.get("summary", ""), it.get("description", "")]))
             if all(w in hay for w in words):
                 score = 0 if fold(it.get("name", "")).startswith(words[0]) else 1
-                hits.append((it.get("type") == "opkg", score, it.get("name", "").lower(), it))
+                hits.append(({"opkg": 1, "ext": 2}.get(it.get("type"), 0), score, it.get("name", "").lower(), it))
         hits.sort(key=lambda h: h[:3])
         return [h[3] for h in hits]
 
@@ -242,6 +257,15 @@ class Feed(object):
         width = env.get("width")
         if req.get("min_width") and width:
             out.append((width >= req["min_width"], "Écran %d px (skin Full HD, %d px requis)" % (width, req["min_width"])))
+        if item.get("type") == "ext":
+            meta = self.packages.get(item["packages"][0], {})
+            installed = env.get("installed") or {}
+            missing = [d for d in meta.get("missing", []) if d not in installed]
+            if missing:
+                out.append((False, u"Dépendances absentes de cette image : %s" % ", ".join(missing[:4])))
+            else:
+                out.append((True, u"Dépendances disponibles dans cette image"))
+            out.append((True, u"Vient du feed %s (autre image, non testé ici)" % item.get("ext", "?")))
         if archs:
             for p in item.get("packages", []):
                 meta = self.packages.get(p)
@@ -261,6 +285,7 @@ class Feed(object):
         if bad:
             first = bad[0]
             short = ("Python 2" if first.startswith("Python 2") else "Python" if first.startswith("Python")
+                     else u"dépendances" if first.startswith(u"Dépendances")
                      else "autre appareil" if first.startswith("Appareil") else "écran HD" if first.startswith("Écran")
                      else "architecture")
             return ST_NA, "Incompatible : " + short
@@ -305,7 +330,7 @@ class Feed(object):
         while queue:
             for dep in parse_depends(self.packages.get(queue.pop(), {}).get("depends", "")):
                 meta = self.packages.get(dep)
-                if meta and meta.get("url") and dep not in installed and dep not in res:
+                if meta and meta.get("url") and not meta.get("ext") and dep not in installed and dep not in res:
                     res.append(dep)
                     queue.append(dep)
         return res
@@ -342,6 +367,7 @@ class AtvCatalog(object):
 
     def __init__(self, lists_dir=OPKG_LISTS, archs=None):
         self.packages, self.items, self.lists_time = {}, [], 0
+        self.all_names = set()  # every package (and Provides) this image's feed can install
         try:
             names = sorted(os.listdir(lists_dir))
         except OSError:
@@ -354,6 +380,9 @@ class AtvCatalog(object):
                     text = fh.read()
             except (IOError, OSError):
                 continue
+            for m in re.finditer(r"^(Package|Provides): (.+)$", text, re.M):
+                for n in m.group(2).split(","):
+                    self.all_names.add(n.strip().split(" ")[0])
             for block in text.split("\n\n"):
                 if "Package: enigma2-plugin-" not in block:
                     continue
@@ -441,8 +470,9 @@ def install_commands(feed, names, reinstall=False):
         cmds.append("echo '>>> Téléchargement %s %s'" % (n, meta["version"]))
         cmds.append("wget -q -T 30 -O %s %s || { echo 'ERREUR: téléchargement'; exit 1; }"
                     % (sh_quote(dest), sh_quote(meta["url"])))
-        cmds.append("echo %s | sha256sum -c - >/dev/null || { echo 'ERREUR: fichier corrompu (sha256)'; rm -f %s; exit 1; }"
-                    % (sh_quote("%s  %s" % (meta["sha256"], dest)), sh_quote(dest)))
+        algo, digest = ("sha256", meta.get("sha256")) if meta.get("sha256") else ("md5", meta.get("md5"))
+        cmds.append("echo %s | %ssum -c - >/dev/null || { echo 'ERREUR: fichier corrompu (%s)'; rm -f %s; exit 1; }"
+                    % (sh_quote("%s  %s" % (digest, dest)), algo, algo, sh_quote(dest)))
     flags = "--force-reinstall " if reinstall else ""
     cmds.append("echo '>>> Installation'")
     cmds.append("opkg install %s%s || { echo 'ERREUR: opkg'; exit 1; }" % (flags, " ".join(sh_quote(f) for f in files)))
