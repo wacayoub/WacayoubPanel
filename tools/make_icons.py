@@ -164,6 +164,22 @@ def bar(w, h, c1, c2, radius, alpha=255, accent=None):
     return im
 
 
+def background_detail(w, h):
+    im = gradient(w, h, "#070B14", "#0B1424")
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(glow)
+    d.ellipse([-300, -420, 900, 420], fill=(47, 140, 255, 55))
+    d.ellipse([1300, 650, 2300, 1450], fill=(124, 92, 255, 40))
+    im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(160)))
+    card = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(card)
+    d.rounded_rectangle([48, 138, 1152, 770], 22, fill=(0, 0, 0, 90), outline=(255, 255, 255, 26), width=1)
+    d.rounded_rectangle([1164, 138, 1872, 770], 22, fill=(255, 255, 255, 12), outline=(255, 255, 255, 22), width=1)
+    d.rounded_rectangle([48, 776, 1872, 976], 22, fill=(255, 255, 255, 10), outline=(255, 255, 255, 18), width=1)
+    im = Image.alpha_composite(im, card)
+    return im.convert("RGB")
+
+
 def background(w, h):
     im = gradient(w, h, "#070B14", "#0B1424")
     glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
@@ -234,6 +250,7 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     for k in TILES:
         tile(k, 60).save(os.path.join(OUT, "t-%s.png" % k), optimize=True)
+        tile(k, 160).save(os.path.join(OUT, "B-%s.png" % k), optimize=True)
         if not k.startswith("i-"):
             # small category glyph, white and dim versions
             glyph(TILES[k][0], 30, "#FFFFFF", 2.0).save(os.path.join(OUT, "c-%s.png" % k), optimize=True)
@@ -242,6 +259,7 @@ def main():
     bar(1340, 80, "#1E3A8A", "#1D4ED8", 16, 235, accent="#7DD3FC").save(os.path.join(OUT, "sel-item.png"), optimize=True)
     bar(412, 52, "#2563EB", "#7C3AED", 14, 255).save(os.path.join(OUT, "sel-cat.png"), optimize=True)
     background(1920, 1080).save(os.path.join(OUT, "bg.jpg"), quality=88, optimize=True)
+    background_detail(1920, 1080).save(os.path.join(OUT, "bg-detail.jpg"), quality=88, optimize=True)
     for name, col in (("red", "#EF4444"), ("green", "#22C55E"), ("yellow", "#F59E0B"), ("blue", "#3B82F6"), ("menu", "#94A3B8")):
         key_dot(col).save(os.path.join(OUT, "k-%s.png" % name), optimize=True)
     glyph("search", 30, "#CBD5E1", 2.2).save(os.path.join(OUT, "k-search.png"), optimize=True)

@@ -21,11 +21,14 @@ from Screens.Standby import TryQuitMainloop
 from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Tools.LoadPixmap import LoadPixmap
 
+import sys
+
 from . import feed as F
 from . import images as IM
+from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -317,6 +320,9 @@ class WacayoubPanel(Screen):
         self.installed = F.installed_packages()
         if self.feed and self.atv and not self.feed.atv_count:
             self.feed.attach_atv(self.atv)
+        if self.feed:
+            self.feed.env = {"python": tuple(sys.version_info[:3]), "model": self.model,
+                             "model_name": self.model_name, "width": _W}
         sub = "%s  ·  v%s" % (self.model_name or "?", VERSION)
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
@@ -542,15 +548,74 @@ class WacayoubPanel(Screen):
             return
         if it.get("type") == LAUNCH:
             return self._launch(it)
-        if it.get("type") == "image":
-            return self._image_action(it)
-        st, _txt = self._state(it)
-        if st == F.ST_OK:
-            choices = [("Réinstaller", "reinstall"), ("Supprimer", "remove"), ("Annuler", None)]
-            self.session.openWithCallback(lambda c: self._choice(it, c), ChoiceBox,
-                                          text="%s est déjà à jour." % it["name"], list=choices)
+        # OK only selects: open the detail card (preview, compatibility, description)
+        self._open_details(it)
+
+    def _big_icon(self, it):
+        t = it.get("type")
+        for name in (("B-i-%s.png" % it.get("tile", it.get("id"))) if t == LAUNCH else "B-i-%s.png" % it.get("id"),
+                     "B-%s.png" % it.get("category", ""), "B-img.png" if t == "image" else "B-all.png"):
+            path = os.path.join(IMG, name)
+            if os.path.exists(path):
+                return path
+        return None
+
+    def _open_details(self, it):
+        st, txt = self._state(it)
+        t = it.get("type")
+        cat_title = dict((c["id"], c.get("title", "")) for c in self._cat_list()).get(it.get("category"), "")
+        kind = {"image": "Image firmware", "script": "Script"}.get(t, TYPE_LABEL.get(t, "Paquet"))
+        if t == "opkg":
+            kind = "Paquet du feed OpenATV" + ("  ·  sélection vérifiée" if it.get("reviewed") else "")
+        green, red = "", ""
+        if t == "image":
+            compat = [(True, "Image prévue pour %s" % (self.model_name or self.model))]
+            d = IM.image_dir()
+            compat.append((bool(d), "Dossier %s" % (d or "aucun disque/USB monté")))
+            versions = u"%s\nTaille %s" % (it["file"], S.human(it.get("size")))
+            if st == F.ST_OK:
+                red = "Supprimer le fichier"
+            else:
+                green = "Télécharger"
         else:
-            self.keyInstall()
+            compat = self.feed.compat(it, self.archs) if self.feed else []
+            names = [p for p in it.get("packages", []) if self.feed and p in self.feed.packages]
+            vl = []
+            for p in names:
+                meta = self.feed.packages[p]
+                cur = self.installed.get(p)
+                vl.append(u"%s : %s%s" % (p.replace("enigma2-plugin-", ""), F.short_version(meta.get("version"), 26),
+                                          (u"  (installé %s)" % F.short_version(cur, 20)) if cur else ""))
+            size = sum(int(self.feed.packages[p].get("size", 0) or 0) for p in names)
+            vl.append(u"Téléchargement %s" % S.human(size))
+            versions = "\n".join(vl)
+            if t == "script":
+                green = "Lancer le script"
+            elif st != F.ST_NA:
+                green = {F.ST_NONE: "Installer", F.ST_UPDATE: "Mettre à jour", F.ST_PARTIAL: "Compléter",
+                         F.ST_OK: "Réinstaller"}.get(st, "Installer")
+            main = it.get("main") or (it["packages"][0] if it.get("packages") else "")
+            if t != "script" and main in self.installed and main != PANEL_PKG:
+                red = "Supprimer"
+        info = {
+            "img": IMG, "name": it.get("name", ""), "crumb": u"Wacayoub Panel  ›  %s" % cat_title,
+            "kind": kind, "state_text": txt, "state_color": C_STATE.get(st), "compat": compat,
+            "versions": versions, "description": it.get("description", it.get("summary", "")),
+            "preview": it.get("preview", ""), "icon": self._big_icon(it), "green": green, "red": red,
+        }
+        self.session.openWithCallback(lambda act: self._details_done(it, act), WacayoubDetails, info)
+
+    def _details_done(self, it, act):
+        if not act:
+            return
+        t = it.get("type")
+        if t == "image":
+            return self._image_action(it) if act == "green" else self._image_delete(it)
+        if act == "green":
+            st = self._state(it)[0]
+            return self._install(it, reinstall=(st == F.ST_OK))
+        if act == "red":
+            return self._ask_remove(it)
 
     def _choice(self, it, choice):
         if not choice or not choice[1]:

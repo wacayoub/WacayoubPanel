@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "1.4.0",
+    "Version": "1.5.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -205,7 +205,21 @@ def main():
             if p not in packages:
                 raise SystemExit("missing package for %s: %s" % (it["id"], p))
     # curated community picks reviewed by tools/verify_community.py (installed from the OpenATV feed)
-    categories, items = list(CATEGORIES), list(ITEMS)
+    categories, items = list(CATEGORIES), [dict(i) for i in ITEMS]
+    for it in items:
+        # what the receiver must have; the panel refuses to install otherwise
+        if it["type"] in ("plugin", "skin", "panel"):
+            it["requires"] = {"python": "3.9"}
+        if it["type"] == "skin":
+            it["requires"]["min_width"] = 1920
+        arches = {packages[p]["arch"] for p in it["packages"] if p in packages} - {"all"}
+        if arches:
+            it["requires"]["machines"] = sorted(a for a in arches if not a.startswith("cortex"))
+            if not it["requires"]["machines"]:
+                del it["requires"]["machines"]
+        prev = os.path.join(ROOT, "feed", "previews", it["id"] + ".jpg")
+        if os.path.exists(prev):
+            it["preview"] = RAW_URL + "feed/previews/%s.jpg?v=%s" % (it["id"], sha256(prev)[:8])
     cpath = os.path.join(ROOT, "feed", "community.json")
     if os.path.exists(cpath):
         with open(cpath, encoding="utf-8") as fh:

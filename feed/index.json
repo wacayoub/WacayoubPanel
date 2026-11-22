@@ -159,13 +159,13 @@
    "depends": "python3-core, enigma2"
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "1.4.0",
+   "version": "1.5.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_1.4.0_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.4.0_all.ipk",
-   "sha256": "7abf535fe0cf25924123fc7eebe65460c5f94c28a1bad145a7c041f9e5d12750",
-   "size": 295688,
-   "installed_size": 346,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_1.5.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.5.0_all.ipk",
+   "sha256": "64039c454bbbbe8ec356d0b2c8ab3dcfb0b04e2a7324070518786b54067d574a",
+   "size": 683604,
+   "installed_size": 748,
    "depends": "enigma2, python3-core, python3-json"
   },
   "enigma2-plugin-skincomponents-metrixneo-runtime": {
@@ -239,7 +239,10 @@
    "description": "IPToSat Pro (SatIPTVBridge) : associe chaque chaîne satellite à ses flux IPTV, classe les sources et verrouille la meilleure.",
    "packages": [
     "enigma2-plugin-extensions-satiptvbridge"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "iptvbouquetai",
@@ -250,7 +253,11 @@
    "description": "IPTV Bouquet AI : construit des bouquets IPTV classés à partir de votre liste, sans doublons.",
    "packages": [
     "enigma2-plugin-extensions-iptvbouquetai"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/iptvbouquetai.jpg?v=02131320"
   },
   {
    "id": "epgmanager",
@@ -261,7 +268,10 @@
    "description": "EPG Manager : télécharge et associe l'EPG à vos chaînes satellite et IPTV, avec mise à jour programmée.",
    "packages": [
     "enigma2-plugin-extensions-epgmanager"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "bop2",
@@ -272,7 +282,10 @@
    "description": "BOP 2 « Bouquets par pays » : range vos chaînes par pays et par langue, satellite en premier, avec logos.",
    "packages": [
     "enigma2-plugin-extensions-bop2"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "ipaudio",
@@ -289,7 +302,10 @@
    "remove": [
     "enigma2-plugin-extensions-ipaudiosmartai",
     "enigma2-plugin-extensions-ipaudiopro"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "salaatneo",
@@ -308,7 +324,11 @@
     "enigma2-plugin-extensions-salaatneo-sounds-salaatfirst",
     "enigma2-plugin-extensions-salaatneo-sounds",
     "enigma2-plugin-extensions-salaatneo"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/salaatneo.jpg?v=0ae4a0ae"
   },
   {
    "id": "neoweather",
@@ -319,7 +339,11 @@
    "description": "Neo Weather : météo actuelle et prévisions affichées par les skins MetrixNEO / Orbit.",
    "packages": [
     "enigma2-plugin-extensions-neoweather"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/neoweather.jpg?v=ae45c640"
   },
   {
    "id": "neoconnect",
@@ -330,7 +354,13 @@
    "description": "Neo Connect : service récepteur pour piloter le Vu+ depuis l'application Neo sur Google TV.",
    "packages": [
     "enigma2-plugin-extensions-neoconnect"
-   ]
+   ],
+   "requires": {
+    "python": "3.9",
+    "machines": [
+     "vuzero4k"
+    ]
+   }
   },
   {
    "id": "metrixneohelper",
@@ -341,7 +371,10 @@
    "description": "MetrixNEO Helper : réglages, thèmes et outils du skin MetrixNEO.",
    "packages": [
     "enigma2-plugin-extensions-metrixneohelper"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "metrixneo",
@@ -358,7 +391,12 @@
    "main": "enigma2-plugin-skins-metrixneo",
    "remove": [
     "enigma2-plugin-skins-metrixneo"
-   ]
+   ],
+   "requires": {
+    "python": "3.9",
+    "min_width": 1920
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/metrixneo.jpg?v=8e897c84"
   },
   {
    "id": "orbitai",
@@ -374,7 +412,12 @@
    "main": "enigma2-plugin-skins-orbitai",
    "remove": [
     "enigma2-plugin-skins-orbitai"
-   ]
+   ],
+   "requires": {
+    "python": "3.9",
+    "min_width": 1920
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/orbitai.jpg?v=d604841b"
   },
   {
    "id": "novaorbit",
@@ -390,7 +433,11 @@
    "main": "enigma2-plugin-skins-novaorbit",
    "remove": [
     "enigma2-plugin-skins-novaorbit"
-   ]
+   ],
+   "requires": {
+    "python": "3.9",
+    "min_width": 1920
+   }
   },
   {
    "id": "osappletv",
@@ -401,7 +448,12 @@
    "description": "Skin OS APPLE TV en Full HD : écran d'accueil, météo et préférences du skin.",
    "packages": [
     "enigma2-plugin-skins-osappletv"
-   ]
+   ],
+   "requires": {
+    "python": "3.9",
+    "min_width": 1920
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/osappletv.jpg?v=dbcba7f9"
   },
   {
    "id": "infosysteme",
@@ -423,7 +475,11 @@
    "description": "Wacayoub Panel : installe, met à jour et supprime mes plugins, skins et scripts.",
    "packages": [
     "enigma2-plugin-extensions-wacayoubpanel"
-   ]
+   ],
+   "requires": {
+    "python": "3.9"
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/panel.jpg?v=d63420e4"
   },
   {
    "id": "c-xstreamity",

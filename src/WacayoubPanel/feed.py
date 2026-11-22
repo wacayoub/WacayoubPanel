@@ -4,6 +4,7 @@ so this file can be tested on a PC)."""
 import json
 import os
 import re
+import sys
 
 INDEX_URL = "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/index.json"
 # GitHub API answers with the latest commit (raw.githubusercontent.com is cached ~5 min).
@@ -139,6 +140,7 @@ class Feed(object):
         self.packages = dict(self.data.get("packages", {}))
         self.items = list(self.data.get("items", []))
         self.atv_count = 0
+        self.env = {}  # set by the panel: python, model, model_name, width
 
     def attach_atv(self, atv):
         """Add the image's own feed (OpenATV opkg lists) as extra categories."""
@@ -190,6 +192,39 @@ class Feed(object):
         hits.sort(key=lambda h: h[:3])
         return [h[3] for h in hits]
 
+    # -- compatibility ---------------------------------------------------
+    def compat(self, item, archs=None):
+        """[(ok, label)] checks for this receiver: Python, model, screen, package architecture."""
+        env = self.env or {}
+        req = item.get("requires") or {}
+        out = []
+        py = env.get("python")
+        need_py = req.get("python")
+        if py and need_py:
+            want = tuple(int(x) for x in str(need_py).split(".")[:2])
+            out.append((tuple(py[:len(want)]) >= want, "Python %s (requis %s+)" % (".".join(str(x) for x in py[:2]), need_py)))
+        elif py:
+            dep = " ".join(self.packages.get(p, {}).get("depends", "") for p in item.get("packages", []))
+            if re.search(r"(^|[\s,])python-(?!3)", dep):
+                out.append((False, "Python 2 seulement (récepteur en Python %d)" % py[0]))
+            elif item.get("type") not in ("image", "launch"):
+                out.append((True, "Python %s" % ".".join(str(x) for x in py[:2])))
+        model = env.get("model")
+        machines = req.get("machines")
+        if machines and model:
+            out.append((model in machines, "Appareil %s (prévu pour %s)" % (env.get("model_name") or model, ", ".join(machines))))
+        elif model and item.get("type") != "launch":
+            out.append((True, "Appareil %s" % (env.get("model_name") or model)))
+        width = env.get("width")
+        if req.get("min_width") and width:
+            out.append((width >= req["min_width"], "Écran %d px (skin Full HD, %d px requis)" % (width, req["min_width"])))
+        if archs:
+            for p in item.get("packages", []):
+                meta = self.packages.get(p)
+                if meta and meta.get("arch", "all") not in archs:
+                    out.append((False, "Architecture %s non supportée" % meta.get("arch")))
+        return out
+
     # -- per item state ------------------------------------------------
     def item_state(self, item, installed, archs):
         """Return (state, text) for an item."""
@@ -198,8 +233,9 @@ class Feed(object):
             meta = self.packages.get(p)
             if not meta:
                 return ST_NA, "absent du feed"
-            if meta.get("arch", "all") not in archs:
-                return ST_NA, "non compatible"
+        bad = [label for ok, label in self.compat(item, archs) if not ok]
+        if bad:
+            return ST_NA, "Incompatible : " + bad[0].split(" (")[0]
         main = item.get("main") or (pkgs[0] if pkgs else "")
         if item.get("type") == "script":
             return ST_NONE, "script"
@@ -304,7 +340,9 @@ class AtvCatalog(object):
             return
         arch = f.get("Architecture", "all")
         if archs and arch not in archs:
-            return
+            return  # other receiver / CPU: never offered
+        if sys.version_info[0] >= 3 and re.search(r"(^|[\s,])python-(?!3)", f.get("Depends", "")):
+            return  # Python 2 plugin on a Python 3 image: never offered
         version = f.get("Version", "")
         old = self.packages.get(name)
         if old and compare_versions(old["version"], version) >= 0:
