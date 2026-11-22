@@ -34,7 +34,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.5.3"
+VERSION = "1.5.4"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")

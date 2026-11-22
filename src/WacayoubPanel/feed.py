@@ -90,9 +90,23 @@ def fold(text):
     return "".join(c for c in t if not unicodedata.combining(c)).lower()
 
 
+STATE_CHARS = 36  # what fits in the list's state column
+
+
+def update_label(old, new, limit=STATE_CHARS):
+    """'Mise à jour 1.0 → 1.1', shortened so it fits the list column (full versions are in the detail card)."""
+    text = u"Mise à jour %s → %s" % (old, new)
+    if len(text) <= limit:
+        return text
+    text = u"Mise à jour → %s" % new
+    if len(text) <= limit:
+        return text
+    return text[:limit - 1] + u"…"
+
+
 def short_version(v, limit=22):
     """'V1.07-git10+0141d090+0141d0911b-r0' -> 'V1.07-git10' (display only)."""
-    v = (v or "").split("+")[0]
+    v = (v or "").split("+")[0].rstrip(".-_~") or (v or "")
     return v if len(v) <= limit else v[:limit - 1] + "…"
 
 
@@ -263,11 +277,11 @@ class Feed(object):
                 if old == new:  # same base, different git build: show one more '+' part
                     old = "+".join(installed[main].split("+")[:2])[:24]
                     new = "+".join(self.packages[main]["version"].split("+")[:2])[:24]
-                return ST_UPDATE, "Mise à jour %s → %s" % (old, new)
+                return ST_UPDATE, update_label(old, new)
             return ST_UPDATE, "Mise à jour disponible"
         if missing:
             return ST_PARTIAL, "Incomplet (%d manquant)" % len(missing)
-        return ST_OK, "Installé %s" % short_version(installed[main], 34)
+        return ST_OK, "Installé %s" % short_version(installed[main], STATE_CHARS - 9)
 
     def outdated(self, item, installed):
         out = []
