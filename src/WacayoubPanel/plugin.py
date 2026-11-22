@@ -18,7 +18,7 @@ from Screens.Standby import TryQuitMainloop
 
 from . import feed as F
 
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -146,7 +146,7 @@ class WacayoubPanel(Screen):
     def refreshFeed(self):
         self["status"].setText("Lecture du feed en ligne…")
         tmp = "/tmp/wacayoubpanel-index.json"
-        cmd = "wget -q -T 20 -O %s %s" % (tmp, F.sh_quote(F.INDEX_URL + "?t=%d" % int(__import__("time").time())))
+        cmd = F.index_fetch_command(tmp)
         self.async_console.ePopen(cmd, self._feed_done, tmp)
 
     def _feed_done(self, data, retval, tmp):

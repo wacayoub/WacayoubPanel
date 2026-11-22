@@ -6,6 +6,8 @@ import os
 import re
 
 INDEX_URL = "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/index.json"
+# GitHub API answers with the latest commit (raw.githubusercontent.com is cached ~5 min).
+INDEX_API = "https://api.github.com/repos/wacayoub/WacayoubPanel/contents/feed/index.json"
 CACHE_DIR = "/etc/enigma2/wacayoubpanel"
 CACHE_FILE = CACHE_DIR + "/index.json"
 DL_DIR = "/tmp/wacayoubpanel"
@@ -182,6 +184,13 @@ class Feed(object):
 
     def install_size(self, names):
         return sum(int(self.packages[n].get("installed_size", 0) or 0) * 1024 for n in names)
+
+
+def index_fetch_command(dest):
+    """API first (fresh), raw URL as fallback (rate limit or API down)."""
+    return ("wget -q -T 20 --header=%s -O %s %s || wget -q -T 20 -O %s %s"
+            % (sh_quote("Accept: application/vnd.github.raw"), sh_quote(dest), sh_quote(INDEX_API),
+               sh_quote(dest), sh_quote(INDEX_URL)))
 
 
 def sh_quote(s):
