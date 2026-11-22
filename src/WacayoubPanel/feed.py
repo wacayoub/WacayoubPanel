@@ -206,8 +206,8 @@ def install_commands(feed, names, reinstall=False):
     cmds.append("echo '>>> Installation'")
     cmds.append("opkg install %s%s || { echo 'ERREUR: opkg'; exit 1; }" % (flags, " ".join(sh_quote(f) for f in files)))
     cmds.append("rm -f %s/*.ipk; echo '>>> Terminé avec succès'" % DL_DIR)
-    # one shell so 'exit 1' stops the whole sequence
-    return ["sh -c %s" % sh_quote("\n".join(cmds))]
+    # one script so 'exit 1' stops the whole sequence
+    return "\n".join(cmds) + "\n"
 
 
 def script_commands(feed, item):
@@ -220,8 +220,20 @@ def script_commands(feed, item):
         % sh_quote("%s  %s" % (meta["sha256"], dest)),
         "sh %s; rc=$?; rm -f %s; exit $rc" % (sh_quote(dest), sh_quote(dest)),
     ]
-    return ["sh -c %s" % sh_quote("\n".join(lines))]
+    return "\n".join(lines) + "\n"
 
 
 def remove_commands(names):
-    return ["sh -c %s" % sh_quote("opkg remove %s && echo '>>> Supprimé'" % " ".join(sh_quote(n) for n in names))]
+    return "opkg remove %s && echo '>>> Supprimé'\n" % " ".join(sh_quote(n) for n in names)
+
+
+RUN_SCRIPT = DL_DIR + "/run.sh"
+
+
+def write_run_script(body):
+    """Write the job to a file; the Console then shows only 'sh run.sh' and its output."""
+    if not os.path.isdir(DL_DIR):
+        os.makedirs(DL_DIR)
+    with open(RUN_SCRIPT, "w", encoding="utf-8") as fh:
+        fh.write("#!/bin/sh\n" + body)
+    return ["sh " + RUN_SCRIPT]

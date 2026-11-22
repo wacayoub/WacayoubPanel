@@ -18,7 +18,7 @@ from Screens.Standby import TryQuitMainloop
 
 from . import feed as F
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -378,8 +378,13 @@ class WacayoubPanel(Screen):
     def _confirm_run(self, question, cmds, title, restart=True):
         def go(yes):
             if yes:
+                try:
+                    cmdlist = F.write_run_script(cmds)
+                except Exception as e:
+                    self.session.open(MessageBox, "Erreur : %s" % e, MessageBox.TYPE_ERROR)
+                    return
                 self.session.openWithCallback(lambda *a: self._after_run(restart), Console,
-                                              title=title, cmdlist=cmds, closeOnSuccess=False)
+                                              title=title, cmdlist=cmdlist, closeOnSuccess=False)
         self.session.openWithCallback(go, MessageBox, question, MessageBox.TYPE_YESNO)
 
     def _after_run(self, restart):
