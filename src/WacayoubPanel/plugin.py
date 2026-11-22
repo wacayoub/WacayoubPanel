@@ -23,6 +23,12 @@ from Tools.LoadPixmap import LoadPixmap
 
 import sys
 
+try:
+    from enigma import BT_SCALE, BT_KEEP_ASPECT_RATIO
+    PIX_FLAGS = BT_SCALE | BT_KEEP_ASPECT_RATIO  # icons are drawn for 1920 px: scale them on HD skins
+except ImportError:
+    PIX_FLAGS = 0
+
 from . import feed as F
 from . import images as IM
 from .details import WacayoubDetails
@@ -399,7 +405,7 @@ class WacayoubPanel(Screen):
             row = [c["id"]]
             icon = pix("c-%s.png" % c["id"]) or (pix("c-img.png") if c["id"].startswith("img-") else None)
             if icon:
-                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(18), s(11)), size=(s(30), s(30)), png=icon))
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(18), s(11)), size=(s(30), s(30)), png=icon, flags=PIX_FLAGS))
             row.append(MultiContentEntryText(pos=(s(62), 0), size=(s(260), s(52)), font=0,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=c.get("title", c["id"]),
                                              color=C_TEXT, color_sel=0xFFFFFF))
@@ -435,7 +441,7 @@ class WacayoubPanel(Screen):
             row = [it]
             tile = item_tile(it)
             if tile:
-                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile))
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile, flags=PIX_FLAGS))
             row.append(MultiContentEntryText(pos=(s(94), s(8)), size=(s(820), s(38)), font=0,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"]),
                                              color=C_TEXT, color_sel=0xFFFFFF))
@@ -447,7 +453,7 @@ class WacayoubPanel(Screen):
                                              flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt,
                                              color=C_STATE[st], color_sel=C_STATE[st]))
             if badge:
-                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(1286), s(14)), size=(s(26), s(26)), png=badge))
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(1286), s(14)), size=(s(26), s(26)), png=badge, flags=PIX_FLAGS))
             rows.append(row)
         self["items"].setList(rows)
         if rows:

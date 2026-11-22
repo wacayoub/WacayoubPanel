@@ -163,8 +163,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_1.5.0_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.5.0_all.ipk",
-   "sha256": "64039c454bbbbe8ec356d0b2c8ab3dcfb0b04e2a7324070518786b54067d574a",
-   "size": 683604,
+   "sha256": "2d957479a18d4f14d718176fb5e2f7c0faa76ccb017b4fdb45561741ec488bf6",
+   "size": 683730,
    "installed_size": 748,
    "depends": "enigma2, python3-core, python3-json"
   },

@@ -45,8 +45,8 @@ def _skin(img):
       <widget name="compat" position="%(tx)d,%(cy)d" size="%(tw)d,%(ch)d" font="Regular;%(cf)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" />
       <widget name="versions" position="%(tx)d,%(vy)d" size="%(tw)d,%(vh)d" font="Regular;%(vf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" />
       <widget name="desc" position="%(dx)d,%(dy)d" size="%(dw)d,%(dh)d" font="Regular;%(df)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" />
-      <ePixmap position="%(k1)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-green.png" alphatest="blend" scale="1" />
-      <ePixmap position="%(k2)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-red.png" alphatest="blend" scale="1" />
+      <widget name="dot_red" position="%(k2)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-red.png" alphatest="blend" scale="1" />
+      <widget name="dot_green" position="%(k1)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-green.png" alphatest="blend" scale="1" />
       <ePixmap position="%(k3)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-menu.png" alphatest="blend" scale="1" />
       <widget name="key_green" position="%(l1)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
       <widget name="key_red" position="%(l2)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
@@ -79,6 +79,8 @@ class WacayoubDetails(Screen):
         self["key_green"] = Label(info.get("green", ""))
         self["key_red"] = Label(info.get("red", ""))
         self["key_exit"] = Label("EXIT  Retour")
+        self["dot_red"] = Pixmap()
+        self["dot_green"] = Pixmap()
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
             "ok": self.keyGreen, "green": self.keyGreen, "red": self.keyRed, "cancel": self.keyExit,
         }, -1)
@@ -89,6 +91,10 @@ class WacayoubDetails(Screen):
         self.closed = True
 
     def _start(self):
+        if not self.info.get("red"):
+            self["dot_red"].hide()
+        if not self.info.get("green"):
+            self["dot_green"].hide()
         col = self.info.get("state_color")
         if col is not None:
             try:

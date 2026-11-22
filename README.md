@@ -17,13 +17,25 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Touche | Action |
 |---|---|
 | Haut / Bas | catégorie ou élément |
-| Droite / OK | entrer dans la liste ; OK = installer / mettre à jour (déjà à jour : réinstaller ou supprimer) |
+| Droite / OK | entrer dans la liste ; OK = ouvrir la fiche (aperçu, compatibilité) ; dans Mes outils, OK ouvre le plugin |
 | Gauche / Exit | revenir aux catégories |
 | Rouge | supprimer |
 | Vert | installer / mettre à jour |
 | Jaune | relire le feed + mettre à jour les listes OpenATV (`opkg update`) |
 | Bleu | tout mettre à jour |
 | MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
+
+## Fiche détail et compatibilité
+
+**OK ne lance plus d'installation** : il ouvre la fiche du plugin, avec un aperçu en image (`feed/previews/`),
+la description, les versions (feed et installée) et les vérifications de compatibilité :
+
+- **Python** : version du récepteur comparée au minimum du plugin ; les paquets Python 2 du feed ne sont jamais proposés.
+- **Appareil** : modèle détecté (ex. Vu+ Zero 4K) ; un paquet construit pour un autre modèle est bloqué.
+- **Écran** : les skins Full HD sont bloqués sur une interface HD.
+
+Dans la fiche : **Vert** installe / met à jour, **Rouge** supprime, **EXIT** revient à la liste.
+Un élément incompatible affiche « Incompatible : … » et ne peut pas être installé.
 
 ## Interface
 
