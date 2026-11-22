@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.8.0"
+VERSION = "1.8.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -55,12 +55,14 @@ STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTI
 TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "", "ext": "", "image": "Image"}
 SEARCH = "search"
 # where an item comes from, shown on every row (lists are merged across sources)
-SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
+SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
                 "EGAMI": 0xFACC15, "OpenBH": 0xA78BFA, "OpenHDF": 0xF472B6, "OpenSPA": 0xF87171}
 
 
-def source_of(it):
+def source_of(it, common=None):
     t = it.get("type")
+    if t in ("opkg", "ext") and common and it.get("packages") and it["packages"][0] in common:
+        return "Universel"  # same tool in several images: no image name
     if t == "opkg":
         return "OpenATV"
     if t == "ext":
@@ -266,7 +268,7 @@ class WacayoubPanel(Screen):
                 avail |= self.atv.all_names
             if self.feed:
                 own |= set(self.feed.data.get("packages", {}))
-            self.ext = X.load(own, avail, F.compare_versions) if self.atv else None
+            self.ext = X.load(own, avail, F.compare_versions, set(self.atv.packages)) if self.atv else None
         except Exception as e:
             self.ext = None
             print("[WacayoubPanel] other feeds: %s" % e)
@@ -513,7 +515,7 @@ class WacayoubPanel(Screen):
             row.append(MultiContentEntryText(pos=(s(94), s(8)), size=(s(820), s(38)), font=0,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"]),
                                              color=C_TEXT, color_sel=0xFFFFFF))
-            src = source_of(it)
+            src = source_of(it, self.feed.common if self.feed else None)
             row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(132), s(28)), font=1,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=src,
                                              color=SOURCE_COLOR.get(src, C_DIM), color_sel=0xFFFFFF))
@@ -720,6 +722,8 @@ class WacayoubPanel(Screen):
             kind = "Paquet du feed OpenATV" + ("  ·  sélection vérifiée" if it.get("reviewed") else "")
         elif t == "ext":
             kind = u"Paquet de l'image %s  ·  non testé sur OpenATV" % it.get("ext", "?")
+        if t in ("opkg", "ext") and self.feed and it.get("packages") and it["packages"][0] in self.feed.common:
+            kind = u"Universel  ·  présent dans %s" % ", ".join(self.feed.common[it["packages"][0]])
         green, red = "", ""
         if t == "image":
             compat = [(True, "Image prévue pour %s" % (self.model_name or self.model))]

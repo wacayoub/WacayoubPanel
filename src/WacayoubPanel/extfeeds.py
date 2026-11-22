@@ -52,11 +52,15 @@ def _pretty(name):
     return name
 
 
-def load(own_names, available, compare_versions):
+def load(own_names, available, compare_versions, image_names=()):
     """Return (categories, packages, items) for the feeds downloaded in WORK.
     own_names: packages already offered by this image's feed or mine (skipped);
     available: every package name this image can install or has installed (dependency check)."""
     cats, packages, items, seen = [], {}, [], set(own_names)
+    # where each package exists: a tool found in 2+ images is shown as "Universel"
+    where = {}
+    for n in image_names:
+        where.setdefault(n, set()).add("OpenATV")
     for name, cat, _urls in FEEDS:
         gz = os.path.join(WORK, name + ".gz")
         base_file = os.path.join(WORK, name + ".base")
@@ -81,6 +85,7 @@ def load(own_names, available, compare_versions):
             pkg = f.get("Package", "")
             if not pkg.startswith(PREFIXES) or pkg.endswith(SKIP_SUFFIX) or f.get("Architecture") != "all":
                 continue
+            where.setdefault(pkg, set()).add(name)
             if pkg in seen or not f.get("Filename") or not (f.get("SHA256sum") or f.get("MD5Sum")):
                 continue
             if sys.version_info[0] >= 3 and re.search(r"(^|[\s,])python-(?!3)", f.get("Depends", "")):
@@ -116,7 +121,8 @@ def load(own_names, available, compare_versions):
         if n:
             cats.append({"id": cat, "title": name, "count": n, "time": mtime})  # info only: lists are merged
     items.sort(key=lambda i: (i["category"], i["name"].lower()))
-    return cats, packages, items
+    common = dict((p, sorted(s)) for p, s in where.items() if len(s) >= 2)
+    return cats, packages, items, common
 
 
 def age_hours():

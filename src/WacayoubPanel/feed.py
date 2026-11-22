@@ -166,6 +166,7 @@ class Feed(object):
         self.atv_count = 0
         self.ext_count = 0
         self.ext_sources = []
+        self.common = {}
         self.env = {}  # set by the panel: python, model, model_name, width, installed
 
     def attach_atv(self, atv):
@@ -193,8 +194,9 @@ class Feed(object):
         """Add other images' feeds (extfeeds.load result), after my items and the image feed."""
         if not ext or self.ext_count:
             return
-        cats, packages, items = ext
+        cats, packages, items, common = ext
         self.ext_sources = cats  # merged into the ATV categories, kept for the header
+        self.common = common  # package -> images that ship it (2 or more)
         for name, meta in packages.items():
             self.packages.setdefault(name, meta)
         for it in items:
