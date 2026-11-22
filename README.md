@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.8.1_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.10.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -24,6 +24,7 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Vert | installer / mettre à jour (ou installer toute la sélection, dépendances comprises) |
 | Jaune | relire le feed + mettre à jour les listes OpenATV (`opkg update`) |
 | Bleu | tout mettre à jour |
+| 0 | filtrer par source : Wacayoub, OpenATV, Universel, OpenPLi, OpenViX, OpenBH, EGAMI, OpenHDF (puis tout) |
 | MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
 
 ## Fiche détail et compatibilité
@@ -55,7 +56,7 @@ Les plugins et skins des feeds d'autres images sont **fusionnés** avec ceux d'O
 (`extfeeds.py`, rafraîchis une fois par jour ou avec Jaune). EGAMI est lu aussi, mais presque tout y est déjà dans le feed OpenATV. OpenHDF ne publie pas tous les modèles (rien pour le Vu+ Zero 4K) ; le feed OpenSPA refuse actuellement l'accès extérieur (il apparaîtra s'il s'ouvre).
 Règles de sécurité :
 
-- seulement les paquets « all » (Python, skins) : jamais de binaire compilé pour une autre image ;
+- paquets « all » (Python, skins) et paquets du même processeur ; ces derniers sont ouverts avant l'installation (`ipkcheck.py`) et **refusés s'ils contiennent du code binaire ou du Python compilé sans source** (ex. EGAMI Permanent Clock) ; les composants système (réseau, gestion logiciels, boot, CI) ne sont jamais proposés ;
 - ces feeds ne sont **jamais ajoutés à opkg** : le panel télécharge le fichier, vérifie son empreinte (SHA256, ou MD5 pour OpenPLi)
   puis fait `opkg install <fichier>` ; les dépendances viennent uniquement du feed de l'image ;
 - un paquet est bloqué si une dépendance manque dans l'image, s'il est en Python 2, ou s'il existe déjà dans le feed OpenATV ;

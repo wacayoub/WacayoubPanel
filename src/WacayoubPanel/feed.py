@@ -12,6 +12,7 @@ INDEX_API = "https://api.github.com/repos/wacayoub/WacayoubPanel/contents/feed/i
 CACHE_DIR = "/etc/enigma2/wacayoubpanel"
 CACHE_FILE = CACHE_DIR + "/index.json"
 DL_DIR = "/tmp/wacayoubpanel"
+IPKCHECK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ipkcheck.py")
 OPKG_STATUS = "/var/lib/opkg/status"
 ARCH_CONF = "/etc/opkg/arch.conf"
 
@@ -486,6 +487,9 @@ def install_commands(feed, names, reinstall=False):
         algo, digest = ("sha256", meta.get("sha256")) if meta.get("sha256") else ("md5", meta.get("md5"))
         cmds.append("echo %s | %ssum -c - >/dev/null || { echo 'ERREUR: fichier corrompu (%s)'; rm -f %s; exit 1; }"
                     % (sh_quote("%s  %s" % (digest, dest)), algo, algo, sh_quote(dest)))
+        if meta.get("native"):  # CPU-feed package from another image: open it and refuse compiled code
+            cmds.append("python3 %s %s || { rm -f %s; exit 1; }"
+                        % (sh_quote(IPKCHECK), sh_quote(dest), sh_quote(dest)))
     flags = "--force-reinstall " if reinstall else ""
     cmds.append("echo '>>> Installation'")
     cmds.append("opkg install %s%s || { echo 'ERREUR: opkg'; exit 1; }" % (flags, " ".join(sh_quote(f) for f in files)))

@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.8.1"
+VERSION = "1.10.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -57,6 +57,17 @@ SEARCH = "search"
 # where an item comes from, shown on every row (lists are merged across sources)
 SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
                 "EGAMI": 0xFACC15, "OpenBH": 0xA78BFA, "OpenHDF": 0xF472B6, "OpenSPA": 0xF87171}
+
+
+SOURCE_ORDER = ["Wacayoub", "OpenATV", "Universel", "OpenPLi", "OpenViX", "OpenBH", "EGAMI", "OpenHDF", "OpenSPA"]
+
+
+def sources_of(it, common=None):
+    """Every source an item belongs to (for the filter): its own feed plus the images that share it."""
+    s = set([source_of(it, None)])
+    if it.get("type") in ("opkg", "ext") and common and it.get("packages") and it["packages"][0] in common:
+        s |= set(common[it["packages"][0]]) | set(["Universel"])
+    return s
 
 
 def source_of(it, common=None):
@@ -176,6 +187,7 @@ class WacayoubPanel(Screen):
         self.cat_ids = []
         self.query = ""
         self.marked = []  # item ids ticked with OK for a grouped install
+        self.src_filter = None  # key 0: show one source only
         self._batch = False
         self.closed = False
         self.opkg_busy = False
@@ -208,7 +220,7 @@ class WacayoubPanel(Screen):
         self["key_blue"] = Label("Tout mettre à jour")
         self["key_menu"] = Label("MENU  Rechercher")
 
-        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions", "InfoActions"], {
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions", "InfoActions", "NumberActions"], {
             "ok": self.keyOk,
             "cancel": self.keyExit,
             "red": self.keyRemove,
@@ -217,6 +229,7 @@ class WacayoubPanel(Screen):
             "blue": self.keyUpdateAll,
             "menu": self.keySearch,
             "info": self.keyInfo,
+            "0": self.keyFilter,
             "left": self.keyLeft,
             "right": self.keyRight,
             "up": self.keyUp,
@@ -268,7 +281,7 @@ class WacayoubPanel(Screen):
                 avail |= self.atv.all_names
             if self.feed:
                 own |= set(self.feed.data.get("packages", {}))
-            self.ext = X.load(own, avail, F.compare_versions, set(self.atv.packages)) if self.atv else None
+            self.ext = X.load(own, avail, F.compare_versions, set(self.atv.packages), self.archs) if self.atv else None
         except Exception as e:
             self.ext = None
             print("[WacayoubPanel] other feeds: %s" % e)
@@ -280,7 +293,7 @@ class WacayoubPanel(Screen):
             return
         self.ext_busy = True
         try:
-            cmd = F.write_run_script(X.fetch_script(self.model), "ext.sh")[0]
+            cmd = F.write_run_script(X.fetch_script(self.model, self.archs), "ext.sh")[0]
         except Exception as e:
             self.ext_busy = False
             print("[WacayoubPanel] other feeds: %s" % e)
@@ -396,6 +409,11 @@ class WacayoubPanel(Screen):
             self.feed.env = {"python": tuple(sys.version_info[:3]), "model": self.model,
                              "model_name": self.model_name, "width": _W, "installed": self.installed}
         sub = "%s  ·  v%s" % (self.model_name or "?", VERSION)
+        if self.src_filter:  # short header: the feed dates do not fit next to the filter
+            self["sub"].setText(u"Filtre : %s  ·  %s  ·  v%s" % (self.src_filter, self.model_name or "?", VERSION))
+            self._build_cats()
+            self._build_items()
+            return
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
         if self.opkg_busy:
@@ -453,7 +471,22 @@ class WacayoubPanel(Screen):
             return mine + (self.feed.search(self.query) if self.feed else [])
         if not self.feed:
             return []
-        return self.feed.items_in(cat_id)
+        items = self.feed.items_in(cat_id)
+        if self.src_filter:
+            items = [i for i in items if self.src_filter in sources_of(i, self.feed.common)]
+        return items
+
+    def keyFilter(self):
+        """0: show only one source (Wacayoub, OpenATV, Universel, OpenPLi, OpenViX, ...), then all again."""
+        present = set()
+        if self.feed:
+            for i in self.feed.items:
+                present |= sources_of(i, self.feed.common)
+        order = [None] + [x for x in SOURCE_ORDER if x in present]
+        cur = order.index(self.src_filter) if self.src_filter in order else 0
+        self.src_filter = order[(cur + 1) % len(order)]
+        self._refresh_all()
+        self._update_keys()
 
     def _build_cats(self, select=None):
         old = self["cats"].getSelectionIndex() if self.cat_ids else 0
@@ -663,8 +696,12 @@ class WacayoubPanel(Screen):
         n = len(self.marked)
         self["key_green"].setText("Installer la sélection (%d)" % n if n else "Installer / MAJ")
         self["key_red"].setText("Vider la sélection" if n else "Supprimer")
-        self["status"].setText(u"%d sélectionné(s)  ·  VERT : installer  ·  ROUGE : vider" % n if n
-                               else u"OK : cocher  ·  INFO : fiche  ·  VERT : installer")
+        if n:
+            self["status"].setText(u"%d sélectionné(s)  ·  VERT : installer  ·  ROUGE : vider" % n)
+        elif self.src_filter:
+            self["status"].setText(u"Source : %s  ·  0 : source suivante" % self.src_filter)
+        else:
+            self["status"].setText(u"OK : cocher  ·  INFO : fiche  ·  0 : filtrer par source")
 
     def _marked_items(self):
         if not self.feed:
