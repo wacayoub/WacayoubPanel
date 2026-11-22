@@ -144,9 +144,12 @@ class Feed(object):
         """Add the image's own feed (OpenATV opkg lists) as extra categories."""
         if not atv or not atv.items:
             return
+        # my own packages win over the image feed; curated community picks ("opkg" items
+        # in my index) take their package data from the image feed and also stay in the ATV lists
         own = set()
         for it in self.items:
-            own.update(it.get("packages", []))
+            if it.get("type") != "opkg":
+                own.update(it.get("packages", []))
         for c in ATV_CATEGORIES:
             if any(i["category"] == c["id"] for i in atv.items):
                 self.categories.append(dict(c))

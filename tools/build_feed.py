@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "1.3.0",
+    "Version": "1.4.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -204,20 +204,36 @@ def main():
         for p in it["packages"]:
             if p not in packages:
                 raise SystemExit("missing package for %s: %s" % (it["id"], p))
+    # curated community picks reviewed by tools/verify_community.py (installed from the OpenATV feed)
+    categories, items = list(CATEGORIES), list(ITEMS)
+    cpath = os.path.join(ROOT, "feed", "community.json")
+    if os.path.exists(cpath):
+        with open(cpath, encoding="utf-8") as fh:
+            picks = json.load(fh)
+        if picks:
+            categories.insert(len(categories) - 2, {"id": "communaute", "title": "Communauté"})
+            for c in picks:
+                items.append({
+                    "id": "c-" + c["package"].split("-")[-1], "name": c["title"], "category": "communaute",
+                    "type": "opkg", "summary": c["summary"],
+                    "description": "%s  ·  %s\nVérifié par Wacayoub le %s : version %s (feed officiel OpenATV)."
+                                   % (c["summary"], c["page"], c["reviewed"], c["reviewed_version"].split("+")[0]),
+                    "packages": [c["package"]], "reviewed_version": c["reviewed_version"],
+                    "reviewed_sha256": c["reviewed_sha256"], "reviewed": c["reviewed"], "page": c["page"]})
     index = {
         "name": "Wacayoub Panel",
         "format": 1,
         "updated": datetime.date.today().isoformat(),
         "repo": "https://github.com/" + REPO,
-        "categories": CATEGORIES,
+        "categories": categories,
         "packages": packages,
-        "items": ITEMS,
+        "items": items,
     }
     out = os.path.join(ROOT, "feed", "index.json")
     with open(out, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(index, fh, ensure_ascii=False, indent=1)
         fh.write("\n")
-    print("wrote", out, len(packages), "packages,", len(ITEMS), "items")
+    print("wrote", out, len(packages), "packages,", len(items), "items")
 
 
 def ipk_newer(a, b):

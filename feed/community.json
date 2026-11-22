@@ -1,0 +1,119 @@
+[
+ {
+  "package": "enigma2-plugin-extensions-xstreamity",
+  "title": "XStreamity",
+  "summary": "Lecteur IPTV Xtream Codes (KiddaC)",
+  "page": "https://github.com/kiddac/XStreamity",
+  "reviewed_version": "5.75-20261108-git649+8353ba30+8353ba3c15-r1",
+  "reviewed_sha256": "f57ac741ee00a4a8101ce8871800725703dd0dc84f1e780d15bf84d2a26ad581",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-bouquetmakerxtream",
+  "title": "BouquetMakerXtream",
+  "summary": "Bouquets IPTV depuis Xtream / M3U (KiddaC)",
+  "page": "https://github.com/kiddac/Bouquet_Maker_Xtream",
+  "reviewed_version": "1.82-20261108-git234+cad9baa0+cad9baaaf6-r4",
+  "reviewed_sha256": "d68b1ae2ebd69a799fca36483306df6f2b61ad99350b267b57000ead5a8ee761",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-youtube",
+  "title": "YouTube",
+  "summary": "Regarder YouTube sur le récepteur (Taapat)",
+  "page": "https://github.com/Taapat/enigma2-plugin-youtube",
+  "reviewed_version": "git1296+15a7fba0+15a7fba89b-r0",
+  "reviewed_sha256": "362e5c0d5fb4c403ecd7aee59548815f7332ce8110faab6c852da844eb1c70b8",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-oaweather",
+  "title": "OAWeather",
+  "summary": "Météo (oe-alliance)",
+  "page": "https://github.com/oe-alliance/OAWeather",
+  "reviewed_version": "2.4-git165+273f3720+273f372e7f-r0",
+  "reviewed_sha256": "cd89b204edbeaab0086c16af09b4ca8140c0ef90567b0a7683cd7bcf50e3b740",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-subssupport",
+  "title": "SubsSupport",
+  "summary": "Sous-titres pour films et enregistrements",
+  "page": "https://github.com/oe-mirrors/subssupport",
+  "reviewed_version": "V2.0.0-git213+2ea6bd4-r0",
+  "reviewed_sha256": "7b484b03e8e56f47f7db4c7482f47279cda937316b663cc65a1cf4851c9aeaf3",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-imdb",
+  "title": "IMDb",
+  "summary": "Fiches films IMDb depuis l'EPG",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "V1.2-git367+aab57940+aab5794f1e-r0",
+  "reviewed_sha256": "3442ce80afe1c9c3a54b61b515b208c5f2b52cc9e5f323965bb433fdc34ee1b6",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-tmdb",
+  "title": "TMDB",
+  "summary": "Fiches films/séries The Movie Database",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "V1.0.5-git150+d8d47330+d8d47335f9-r0",
+  "reviewed_sha256": "2120ab9bff1570892023963518d5662365764aaeee0f5737f791379bf8151840",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-filecommander",
+  "title": "File Commander",
+  "summary": "Gestionnaire de fichiers",
+  "page": "https://github.com/openatv/enigma2",
+  "reviewed_version": "8.0.1+git36321+d31cb9a0+d31cb9aad3-r1",
+  "reviewed_sha256": "341fa35dbe2e3d396e846ba45aef2c179fd4bd0e27733934731f6794dfb66b62",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-autotimer",
+  "title": "AutoTimer",
+  "summary": "Enregistrements automatiques par mots-clés",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "V1.0-git1138+8b7e54f0+8b7e54fd69-r0",
+  "reviewed_sha256": "4acaf2529209fb5c89506e8951a08a5262c1d60f0eaba554a7166f9ad6f7844c",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-epgrefresh",
+  "title": "EPGRefresh",
+  "summary": "Rafraîchit l'EPG la nuit",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "V1.0-git416+71911ad0+71911ad38e-r0",
+  "reviewed_sha256": "0e6991079b9d079402794695a307fb5a43fc8b7eb768baf09538a9933cf5fa5c",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-seriesplugin",
+  "title": "SeriesPlugin",
+  "summary": "Saison/épisode dans les titres d'enregistrement",
+  "page": "https://github.com/betonme/e2openplugin-SeriesPlugin",
+  "reviewed_version": "V5.9.8-git79+38e43950+38e43953de-r0",
+  "reviewed_sha256": "c7423e21c509080cbc1beafddb424d195dafe6c8998246a0a0410a7cd33250d9",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-enhancedmoviecenter",
+  "title": "EnhancedMovieCenter",
+  "summary": "Liste d'enregistrements avancée",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "4.0.+git1804+a3769660+a376966b06-r0",
+  "reviewed_sha256": "4f75b9de81acbe88da1af056dfadeff0c01e6daa2d53e55de3a98967de1be712",
+  "reviewed": "2026-11-22"
+ },
+ {
+  "package": "enigma2-plugin-extensions-cooltvguide",
+  "title": "CoolTVGuide",
+  "summary": "Guide TV 3D en grille (Coolman)",
+  "page": "https://www.opena.tv",
+  "reviewed_version": "Coolman_V8.0_py3",
+  "reviewed_sha256": "ddd85ffeffdf74a2824d8395edd403aa2116747f4dff7db5a459f74990bb7379",
+  "reviewed": "2026-11-22"
+ }
+]

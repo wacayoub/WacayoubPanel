@@ -114,6 +114,9 @@ def read_ipk(path):
 
 
 def _open_inner(blob):
+    if blob[:4] == bytes([0x28, 0xB5, 0x2F, 0xFD]):  # zstd (OpenATV 8 feed packages)
+        import zstandard
+        blob = zstandard.ZstdDecompressor().stream_reader(io.BytesIO(blob)).read()
     return tarfile.open(fileobj=io.BytesIO(blob), mode="r:*")
 
 
