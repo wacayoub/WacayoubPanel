@@ -73,6 +73,16 @@ def compare_versions(a, b):
     return _cmp_part(ua, ub) or _cmp_part(ra, rb)
 
 
+def parse_depends(text):
+    """'a (>= 1), b | c, d' -> ['a', 'b', 'd'] (first choice of alternatives)."""
+    out = []
+    for part in (text or "").split(","):
+        name = part.split("|")[0].strip().split(" ")[0].split("(")[0].strip()
+        if name:
+            out.append(name)
+    return out
+
+
 def fold(text):
     """Lowercase without accents, for search."""
     import unicodedata
@@ -235,7 +245,11 @@ class Feed(object):
                 return ST_NA, "absent du feed"
         bad = [label for ok, label in self.compat(item, archs) if not ok]
         if bad:
-            return ST_NA, "Incompatible : " + bad[0].split(" (")[0]
+            first = bad[0]
+            short = ("Python 2" if first.startswith("Python 2") else "Python" if first.startswith("Python")
+                     else "autre appareil" if first.startswith("Appareil") else "écran HD" if first.startswith("Écran")
+                     else "architecture")
+            return ST_NA, "Incompatible : " + short
         main = item.get("main") or (pkgs[0] if pkgs else "")
         if item.get("type") == "script":
             return ST_NONE, "script"
@@ -272,6 +286,14 @@ class Feed(object):
                 continue
             if p not in installed or compare_versions(installed[p], meta.get("version", "")) < 0:
                 res.append(p)
+        # add my own feed packages they depend on (opkg cannot find those in the image feed)
+        queue = list(res)
+        while queue:
+            for dep in parse_depends(self.packages.get(queue.pop(), {}).get("depends", "")):
+                meta = self.packages.get(dep)
+                if meta and meta.get("url") and dep not in installed and dep not in res:
+                    res.append(dep)
+                    queue.append(dep)
         return res
 
     def install_size(self, names):
