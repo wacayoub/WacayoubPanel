@@ -37,6 +37,8 @@ G = {
     "sliders": '<path d="M10 5H3m9 14H3M14 3v4m2 10v4m5-9h-9m9 7h-5m5-14h-7m-6 5v4m0-2H3"/>',
     "info": '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/>',
     "sparkles": '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"/><circle cx="4" cy="20" r="2"/>',
+    "rocket": '<path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/>',
+    "drive": '<path d="M12 2v8m4-4l-4 4l-4-4"/><rect width="20" height="8" x="2" y="14" rx="2"/><path d="M6 18h.01M10 18h.01"/>',
     "check": '<path d="M20 6L9 17l-5-5"/>',
     "up": '<path d="M12 19V5m-7 7l7-7l7 7"/>',
     "down": '<path d="M12 5v14m7-7l-7 7l-7-7"/>',
@@ -57,6 +59,13 @@ TILES = {
     "panel": ("box", "#2563EB", "#7C3AED"),
     "all": ("grid", "#0EA5E9", "#6366F1"),
     "search": ("search", "#22C55E", "#0EA5E9"),
+    "launch": ("rocket", "#F43F5E", "#8B5CF6"),
+    "img-openatv": ("drive", "#1E40AF", "#0EA5E9"),
+    "img-openpli": ("drive", "#9A3412", "#F97316"),
+    "img-openvix": ("drive", "#065F46", "#10B981"),
+    "img-openbh": ("drive", "#111827", "#6B7280"),
+    "img-openspa": ("drive", "#7F1D1D", "#EF4444"),
+    "img": ("drive", "#334155", "#64748B"),
     "atv-ext": ("puzzle", "#334155", "#0F766E"),
     "atv-sys": ("cpu", "#334155", "#1D4ED8"),
     "atv-skins": ("palette", "#334155", "#B45309"),
@@ -80,7 +89,7 @@ TILES = {
     "i-panel": ("box", "#2563EB", "#7C3AED"),
 }
 
-STATES = {"ok": ("check", "#22C55E"), "update": ("up", "#F59E0B"), "none": ("down", "#64748B"),
+STATES = {"open": ("play", "#8B5CF6"), "ok": ("check", "#22C55E"), "update": ("up", "#F59E0B"), "none": ("down", "#64748B"),
           "partial": ("half", "#F59E0B"), "na": ("x", "#475569"), "script": ("play", "#38BDF8")}
 
 

@@ -22,9 +22,10 @@ from Screens.VirtualKeyBoard import VirtualKeyBoard
 from Tools.LoadPixmap import LoadPixmap
 
 from . import feed as F
+from . import images as IM
 from . import sysinfo as S
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -43,6 +44,14 @@ C_STATE = {F.ST_NONE: 0x8C9AB0, F.ST_OK: 0x4ADE80, F.ST_UPDATE: 0xFBBF24, F.ST_P
 STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTIAL: "partial", F.ST_NA: "na"}
 TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV"}
 SEARCH = "search"
+LAUNCH = "launch"
+# my plugin folders -> icon id (Mes outils)
+LAUNCH_MAP = {
+    "SatIPTVBridge": "iptosat", "IPTVBouquetAI": "iptvbouquetai", "EPGManager": "epgmanager", "BOP2": "bop2",
+    "IPAudioPro": "ipaudio", "IPAudioSmartAI": "ipaudio", "SalaatNEO": "salaatneo", "NeoWeather": "neoweather",
+    "NeoConnect": "neoconnect", "MetrixNEOHelper": "metrixneohelper", "MetrixNeoAI": "metrixneohelper",
+    "MetrixNEOBoot": "metrixneohelper", "OSAppleTV": "osappletv", "OrbitAIColours": "orbitai", "NovaOrbit": "novaorbit",
+}
 
 _PIX = {}
 
@@ -56,6 +65,10 @@ def pix(name):
 
 
 def item_tile(it):
+    if it.get("type") == "launch":
+        return pix("t-i-%s.png" % it.get("tile")) or pix("t-launch.png")
+    if it.get("type") == "image":
+        return pix("t-%s.png" % it.get("category")) or pix("t-img.png")
     if it.get("type") == "opkg":
         return pix("t-%s.png" % it.get("category", "atv-ext")) or pix("t-atv-ext.png")
     return pix("t-i-%s.png" % it.get("id")) or pix("t-%s.png" % it.get("category", "all"))
@@ -135,6 +148,11 @@ class WacayoubPanel(Screen):
         self.query = ""
         self.closed = False
         self.opkg_busy = False
+        self.launch_items = []
+        self.image_groups = []
+        self.images_busy = False
+        self.model, self.model_name = IM.box_model()
+        self.img_console = AsyncConsole()
         self.async_console = AsyncConsole()
         self.atv_console = AsyncConsole()
         self.stat_timer = eTimer()
@@ -181,8 +199,10 @@ class WacayoubPanel(Screen):
         self.stat_timer.start(2000, False)
         self._load_cache()
         self._load_atv()
+        self._build_launch()
         self._refresh_all()
         self.refreshFeed(auto=True)
+        self._fetch_images()
 
     def _on_close(self):
         self.closed = True
@@ -246,11 +266,58 @@ class WacayoubPanel(Screen):
             pass
         self._refresh_all()
 
+    # ------------------------------------------------------------ Mes outils / Images
+    def _build_launch(self):
+        items = []
+        try:
+            from Components.PluginComponent import plugins
+            for p in plugins.getPlugins(PluginDescriptor.WHERE_PLUGINMENU):
+                d = os.path.basename(os.path.normpath(p.path or ""))
+                if d in LAUNCH_MAP:
+                    items.append({"id": "run:%s:%s" % (d, p.name), "type": LAUNCH, "category": LAUNCH,
+                                  "name": p.name, "summary": p.description or d, "tile": LAUNCH_MAP[d],
+                                  "description": "%s\nOK : ouvrir  (dossier %s)" % (p.description or p.name, d),
+                                  "descriptor": p, "packages": []})
+        except Exception as e:
+            print("[WacayoubPanel] Mes outils: %s" % e)
+        items.sort(key=lambda i: i["name"].lower())
+        self.launch_items = items
+
+    def _fetch_images(self):
+        if self.images_busy or not self.model:
+            return
+        self.images_busy = True
+        try:
+            cmd = F.write_run_script(IM.fetch_script(self.model), "images.sh")[0]
+        except Exception as e:
+            self.images_busy = False
+            print("[WacayoubPanel] images: %s" % e)
+            return
+        self.img_console.ePopen(cmd, self._images_done)
+
+    def _images_done(self, data, retval, extra=None):
+        self.images_busy = False
+        if self.closed:
+            return
+        self.image_groups = IM.load_catalog()
+        self._refresh_all()
+
+    def _state(self, it):
+        t = it.get("type")
+        if t == LAUNCH:
+            return F.ST_OK, "Ouvrir"
+        if t == "image":
+            d = IM.image_dir()
+            if d and os.path.exists(os.path.join(d, it["file"])):
+                return F.ST_OK, "Téléchargée"
+            return F.ST_NONE, "Télécharger"
+        return self.feed.item_state(it, self.installed, self.archs)
+
     def _refresh_all(self):
         self.installed = F.installed_packages()
         if self.feed and self.atv and not self.feed.atv_count:
             self.feed.attach_atv(self.atv)
-        sub = "v%s" % VERSION
+        sub = "%s  ·  v%s" % (self.model_name or "?", VERSION)
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
         if self.opkg_busy:
@@ -283,16 +350,31 @@ class WacayoubPanel(Screen):
         cats = []
         if self.query:
             cats.append({"id": SEARCH, "title": u"« %s »" % self.query})
+        cats.append({"id": LAUNCH, "title": "Mes outils"})
         cats.append({"id": "all", "title": "Tout"})
         if self.feed:
             cats += self.feed.categories
+        if self.image_groups:
+            for distro, items in self.image_groups:
+                cats.append({"id": items[0]["category"], "title": "Images · %s" % distro})
+        else:
+            cats.append({"id": "img-wait", "title": "Images"})
         return cats
 
     def _items_for(self, cat_id):
-        if not self.feed:
+        if cat_id == LAUNCH:
+            return list(self.launch_items)
+        if cat_id.startswith("img-"):
+            for _d, items in self.image_groups:
+                if items[0]["category"] == cat_id:
+                    return list(items)
             return []
         if cat_id == SEARCH:
-            return self.feed.search(self.query)
+            q = [w for w in F.fold(self.query).split() if w]
+            mine = [i for i in self.launch_items if all(w in F.fold(i["name"] + " " + i["summary"]) for w in q)]
+            return mine + (self.feed.search(self.query) if self.feed else [])
+        if not self.feed:
+            return []
         return self.feed.items_in(cat_id)
 
     def _build_cats(self, select=None):
@@ -302,14 +384,14 @@ class WacayoubPanel(Screen):
         for c in self._cat_list():
             items = self._items_for(c["id"])
             n_upd = 0
-            if c["id"] != SEARCH:
+            if self.feed and c["id"] != SEARCH and c["id"] != LAUNCH and not c["id"].startswith("img-"):
                 for it in items:
                     if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
                         n_upd += 1
-            right = (u"%d ↑" % n_upd) if n_upd else str(len(items))
+            right = (u"%d ↑" % n_upd) if n_upd else (u"…" if c["id"] == "img-wait" else str(len(items)))
             self.cat_ids.append(c["id"])
             row = [c["id"]]
-            icon = pix("c-%s.png" % c["id"])
+            icon = pix("c-%s.png" % c["id"]) or (pix("c-img.png") if c["id"].startswith("img-") else None)
             if icon:
                 row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(18), s(11)), size=(s(30), s(30)), png=icon))
             row.append(MultiContentEntryText(pos=(s(62), 0), size=(s(260), s(52)), font=0,
@@ -335,10 +417,12 @@ class WacayoubPanel(Screen):
         old = self["items"].getSelectionIndex() if (keep and self["items"].list) else 0
         rows = []
         for it in self._items_for(self._current_cat()):
-            st, txt = self.feed.item_state(it, self.installed, self.archs)
+            st, txt = self._state(it)
             if it.get("type") == "script":
                 badge = pix("s-script.png")
                 txt = "Script"
+            elif it.get("type") == LAUNCH:
+                badge = pix("s-open.png")
             else:
                 badge = pix("s-%s.png" % STATE_IMG[st])
             kind = TYPE_LABEL.get(it.get("type"), "")
@@ -370,11 +454,22 @@ class WacayoubPanel(Screen):
 
     def _update_desc(self):
         it = self._current_item()
+        cat = self._current_cat()
+        if not it and cat == "img-wait":
+            self["desc"].setText("Recherche des images pour %s (OpenATV, OpenPLi, OpenViX, OpenBH, OpenSPA)…" % (self.model_name or self.model))
+            return
+        if it and it.get("type") in (LAUNCH, "image"):
+            extra = ""
+            if it.get("type") == "image":
+                d = IM.image_dir()
+                extra = "\nDossier : %s" % (d or "aucun disque ou clé USB monté")
+            self["desc"].setText(it.get("description", "") + extra)
+            return
         if not self.feed:
             self["desc"].setText("Aucune liste. Appuyez sur JAUNE pour lire le feed.")
             return
         if not it:
-            if self._current_cat() == SEARCH:
+            if cat == SEARCH:
                 self["desc"].setText(u"Aucun résultat pour « %s ».  MENU : nouvelle recherche  ·  EXIT : effacer" % self.query)
             else:
                 self["desc"].setText("")
@@ -442,7 +537,11 @@ class WacayoubPanel(Screen):
         it = self._current_item()
         if not it:
             return
-        st, _txt = self.feed.item_state(it, self.installed, self.archs)
+        if it.get("type") == LAUNCH:
+            return self._launch(it)
+        if it.get("type") == "image":
+            return self._image_action(it)
+        st, _txt = self._state(it)
         if st == F.ST_OK:
             choices = [("Réinstaller", "reinstall"), ("Supprimer", "remove"), ("Annuler", None)]
             self.session.openWithCallback(lambda c: self._choice(it, c), ChoiceBox,
@@ -461,12 +560,59 @@ class WacayoubPanel(Screen):
     def keyInstall(self):
         it = self._current_item()
         if it and self.focus_items:
+            if it.get("type") == LAUNCH:
+                return self._launch(it)
+            if it.get("type") == "image":
+                return self._image_action(it)
             self._install(it)
 
     def keyRemove(self):
         it = self._current_item()
         if it and self.focus_items:
+            if it.get("type") == "image":
+                return self._image_delete(it)
+            if it.get("type") == LAUNCH:
+                return
             self._ask_remove(it)
+
+    def _launch(self, it):
+        try:
+            it["descriptor"](session=self.session)
+        except Exception as e:
+            self.session.open(MessageBox, "Impossible d'ouvrir %s :\n%s" % (it["name"], e), MessageBox.TYPE_ERROR)
+
+    def _image_action(self, it):
+        d = IM.image_dir()
+        if not d:
+            self.session.open(MessageBox, "Aucun disque dur ou clé USB monté pour enregistrer l'image.", MessageBox.TYPE_ERROR)
+            return
+        if self._state(it)[0] == F.ST_OK:
+            self.session.open(MessageBox, "%s est déjà téléchargée.\nPour flasher : Menu > Flash Manager > Images téléchargées.\nROUGE : supprimer le fichier." % it["file"],
+                              MessageBox.TYPE_INFO)
+            return
+        free = F.free_bytes(os.path.dirname(d))
+        if free >= 0 and it["size"] and it["size"] + 50 * 1024 * 1024 > free:
+            self.session.open(MessageBox, "Pas assez de place sur %s : il faut %s, libre %s." % (os.path.dirname(d), S.human(it["size"]), S.human(free)),
+                              MessageBox.TYPE_ERROR)
+            return
+        self._confirm_run("Télécharger l'image %s ?\n%s  ·  %s\nDossier : %s\n\nRien n'est flashé : vous flasherez vous-même avec Menu > Flash Manager."
+                          % (it["name"], it["file"], S.human(it["size"]), d),
+                          IM.download_commands(it, d), "Image %s" % it["name"], restart=False)
+
+    def _image_delete(self, it):
+        d = IM.image_dir()
+        path = os.path.join(d, it["file"]) if d else None
+        if not path or not os.path.exists(path):
+            return
+
+        def go(yes):
+            if yes:
+                try:
+                    os.remove(path)
+                except OSError as e:
+                    self.session.open(MessageBox, "Erreur : %s" % e, MessageBox.TYPE_ERROR)
+                self._build_items()
+        self.session.openWithCallback(go, MessageBox, "Supprimer le fichier %s ?" % path, MessageBox.TYPE_YESNO)
 
     def keyUpdateAll(self):
         if not self.feed:
@@ -486,7 +632,7 @@ class WacayoubPanel(Screen):
 
     # ------------------------------------------------------------ actions
     def _install(self, it, reinstall=False):
-        st, txt = self.feed.item_state(it, self.installed, self.archs)
+        st, txt = self._state(it)
         if st == F.ST_NA:
             self.session.open(MessageBox, "%s : %s." % (it["name"], txt), MessageBox.TYPE_ERROR, timeout=6)
             return
@@ -541,6 +687,8 @@ class WacayoubPanel(Screen):
     def _after_run(self, restart):
         before = dict(self.installed)
         self._refresh_all()
+        self._build_launch()
+        self._build_items()
         if restart and before != self.installed:
             self.session.openWithCallback(self._restart_answer, MessageBox,
                                           "Changement effectué.\nRedémarrer l'interface maintenant pour l'appliquer ?",

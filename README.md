@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.2.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.3.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -30,6 +30,18 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 Icônes par catégorie et par plugin, badges d'état (installé, mise à jour, non installé) et trois jauges rondes
 en direct : **CPU** (avec la température), **RAM** et **stockage**, rafraîchies toutes les 2 secondes.
 Les images sont générées par `tools/make_icons.py` (glyphes [Lucide](https://lucide.dev), licence ISC, Lucide Contributors).
+
+## Mes outils
+
+Première catégorie : tous mes plugins installés (IPToSat Pro, EPG Manager, BOP 2, IPAudio, Salaat NEO…)
+réunis au même endroit. **OK** les ouvre directement ; on revient au panel en les fermant.
+
+## Images
+
+Le panel détecte le récepteur (ici Vu+ Zero 4K) et liste toutes les images disponibles pour lui :
+**OpenATV, OpenPLi, OpenViX, OpenBH, OpenSPA** (mêmes sources que le Flash Manager d'OpenATV).
+**OK** télécharge le `.zip` (vérifié) dans `/media/hdd/images` ; **Rouge** supprime le fichier.
+Le panel ne flashe jamais : le flash se fait ensuite avec **Menu > Flash Manager > Images téléchargées**.
 
 ## Paquets OpenATV
 

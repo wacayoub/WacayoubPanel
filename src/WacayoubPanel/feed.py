@@ -389,10 +389,11 @@ def remove_commands(names):
 RUN_SCRIPT = DL_DIR + "/run.sh"
 
 
-def write_run_script(body):
+def write_run_script(body, name="run.sh"):
     """Write the job to a file; the Console then shows only 'sh run.sh' and its output."""
     if not os.path.isdir(DL_DIR):
         os.makedirs(DL_DIR)
-    with open(RUN_SCRIPT, "w", encoding="utf-8") as fh:
+    path = os.path.join(DL_DIR, name)
+    with open(path, "w", encoding="utf-8") as fh:
         fh.write("#!/bin/sh\n" + body)
-    return ["sh " + RUN_SCRIPT]
+    return ["sh " + path]
