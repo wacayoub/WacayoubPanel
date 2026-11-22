@@ -34,7 +34,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.5.2"
+VERSION = "1.5.3"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -60,6 +60,7 @@ LAUNCH_MAP = {
     "IPAudioPro": "ipaudio", "IPAudioSmartAI": "ipaudio", "SalaatNEO": "salaatneo", "NeoWeather": "neoweather",
     "NeoConnect": "neoconnect", "MetrixNEOHelper": "metrixneohelper", "MetrixNeoAI": "metrixneohelper",
     "MetrixNEOBoot": "metrixneohelper", "OSAppleTV": "osappletv", "OrbitAIColours": "orbitai", "NovaOrbit": "novaorbit",
+    "WMultiBoot": "wmultiboot",
 }
 
 _PIX = {}

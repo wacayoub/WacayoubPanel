@@ -159,13 +159,13 @@
    "depends": "python3-core, enigma2"
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "1.5.2",
+   "version": "1.5.3",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_1.5.2_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.5.2_all.ipk",
-   "sha256": "3042e819ebd65b7eb5ce9abce93f12712900c9990f1d873209aabb9b9eaac468",
-   "size": 684200,
-   "installed_size": 750,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_1.5.3_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.5.3_all.ipk",
+   "sha256": "ad90d84b375a41dec3de8507d41d2d9a9e7d3d0d7f254436f0f4eb38fc71b7f6",
+   "size": 697620,
+   "installed_size": 763,
    "depends": "enigma2, python3-core, python3-json"
   },
   "enigma2-plugin-skincomponents-metrixneo-runtime": {
@@ -242,7 +242,8 @@
    ],
    "requires": {
     "python": "3.9"
-   }
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/iptosat.jpg?v=590fecf7"
   },
   {
    "id": "iptvbouquetai",
@@ -271,7 +272,8 @@
    ],
    "requires": {
     "python": "3.9"
-   }
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/epgmanager.jpg?v=54d026e9"
   },
   {
    "id": "bop2",
@@ -285,7 +287,8 @@
    ],
    "requires": {
     "python": "3.9"
-   }
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/bop2.jpg?v=b7da7e1a"
   },
   {
    "id": "ipaudio",
@@ -305,7 +308,8 @@
    ],
    "requires": {
     "python": "3.9"
-   }
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/ipaudio.jpg?v=60ead3c3"
   },
   {
    "id": "salaatneo",
@@ -374,7 +378,8 @@
    ],
    "requires": {
     "python": "3.9"
-   }
+   },
+   "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/metrixneohelper.jpg?v=d7601310"
   },
   {
    "id": "metrixneo",

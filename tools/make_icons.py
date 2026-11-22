@@ -89,6 +89,7 @@ TILES = {
     "i-osappletv": ("tv", "#374151", "#9CA3AF"),
     "i-infosysteme": ("info", "#475569", "#94A3B8"),
     "i-panel": ("box", "#2563EB", "#7C3AED"),
+    "i-wmultiboot": ("drive", "#0F172A", "#2563EB"),
 }
 
 STATES = {"open": ("play", "#8B5CF6"), "ok": ("check", "#22C55E"), "update": ("up", "#F59E0B"), "none": ("down", "#64748B"),
