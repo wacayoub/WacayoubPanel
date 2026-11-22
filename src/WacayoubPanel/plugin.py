@@ -18,7 +18,7 @@ from Screens.Standby import TryQuitMainloop
 
 from . import feed as F
 
-VERSION = "1.0.3"
+VERSION = "1.0.4"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 

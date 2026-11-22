@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "1.0.3",
+    "Version": "1.0.4",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -44,8 +44,16 @@ PANEL_POSTINST = """#!/bin/sh
 find /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel -name '*.pyc' -delete 2>/dev/null
 exit 0
 """
+# Only clean up on a real removal: during an upgrade opkg runs the OLD postrm with
+# "upgrade" after unpacking the new files (1.0.0-1.0.3 deleted them here).
 PANEL_POSTRM = """#!/bin/sh
-rm -rf /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel /tmp/wacayoubpanel 2>/dev/null
+case "$1" in
+  remove|purge)
+    find /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel -name '*.pyc' -delete 2>/dev/null
+    rmdir /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel/__pycache__ 2>/dev/null
+    rmdir /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel 2>/dev/null
+    ;;
+esac
 exit 0
 """
 

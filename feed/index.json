@@ -155,12 +155,12 @@
    "depends": "python3-core, enigma2"
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "1.0.3",
+   "version": "1.0.4",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_1.0.3_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.0.3_all.ipk",
-   "sha256": "bf9731044b2ed3f17be956f1e4be254155d47a832d28880551689bb97627c473",
-   "size": 14026,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_1.0.4_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.0.4_all.ipk",
+   "sha256": "1760b0038a4266b5bd8524857705c26247e90e7fde33a94e9a7ae7c853b5e918",
+   "size": 14076,
    "installed_size": 33,
    "depends": "enigma2, python3-core, python3-json"
   },
