@@ -72,6 +72,12 @@ def compare_versions(a, b):
     return _cmp_part(ua, ub) or _cmp_part(ra, rb)
 
 
+def short_version(v, limit=22):
+    """'V1.07-git10+0141d090+0141d0911b-r0' -> 'V1.07-git10' (display only)."""
+    v = (v or "").split("+")[0]
+    return v if len(v) <= limit else v[:limit - 1] + "…"
+
+
 # ---------------------------------------------------------------- receiver state
 def installed_packages(path=OPKG_STATUS):
     """{package: version} for packages whose status is 'install ... installed'."""
@@ -121,9 +127,29 @@ class Feed(object):
         self.data = data or {}
         self.name = self.data.get("name", "Wacayoub Panel")
         self.updated = self.data.get("updated", "")
-        self.categories = self.data.get("categories", [])
-        self.packages = self.data.get("packages", {})
-        self.items = self.data.get("items", [])
+        # copies: OpenATV entries are added on top without touching the cached index
+        self.categories = list(self.data.get("categories", []))
+        self.packages = dict(self.data.get("packages", {}))
+        self.items = list(self.data.get("items", []))
+        self.atv_count = 0
+
+    def attach_atv(self, atv):
+        """Add the image's own feed (OpenATV opkg lists) as extra categories."""
+        if not atv or not atv.items:
+            return
+        own = set()
+        for it in self.items:
+            own.update(it.get("packages", []))
+        for c in ATV_CATEGORIES:
+            if any(i["category"] == c["id"] for i in atv.items):
+                self.categories.append(dict(c))
+        for name, meta in atv.packages.items():
+            if name not in own:
+                self.packages[name] = meta
+        for it in atv.items:
+            if it["packages"][0] not in own:
+                self.items.append(it)
+                self.atv_count += 1
 
     @classmethod
     def load(cls, path=CACHE_FILE):
@@ -135,7 +161,7 @@ class Feed(object):
 
     def items_in(self, cat_id):
         if cat_id in (None, "all"):
-            return list(self.items)
+            return [i for i in self.items if i.get("type") != "opkg"]
         return [i for i in self.items if i.get("category") == cat_id]
 
     # -- per item state ------------------------------------------------
@@ -157,11 +183,11 @@ class Feed(object):
         missing = [p for p in pkgs if p not in installed and p not in item.get("optional", [])]
         if upd:
             if main in upd:
-                return ST_UPDATE, "Mise à jour %s → %s" % (installed[main], self.packages[main]["version"])
+                return ST_UPDATE, "Mise à jour %s → %s" % (short_version(installed[main]), short_version(self.packages[main]["version"]))
             return ST_UPDATE, "Mise à jour disponible"
         if missing:
             return ST_PARTIAL, "Incomplet (%d manquant)" % len(missing)
-        return ST_OK, "Installé %s" % installed[main]
+        return ST_OK, "Installé %s" % short_version(installed[main], 34)
 
     def outdated(self, item, installed):
         out = []
@@ -184,6 +210,103 @@ class Feed(object):
 
     def install_size(self, names):
         return sum(int(self.packages[n].get("installed_size", 0) or 0) * 1024 for n in names)
+
+
+# ---------------------------------------------------------------- OpenATV feed
+OPKG_LISTS = "/var/lib/opkg/lists"
+ATV_CATEGORIES = [
+    {"id": "atv-ext", "title": "ATV · Extensions", "prefixes": ("enigma2-plugin-extensions-",)},
+    {"id": "atv-sys", "title": "ATV · Système", "prefixes": ("enigma2-plugin-systemplugins-",)},
+    {"id": "atv-skins", "title": "ATV · Skins", "prefixes": ("enigma2-plugin-skins-", "enigma2-plugin-skinpacks-")},
+    {"id": "atv-settings", "title": "ATV · Listes chaînes", "prefixes": ("enigma2-plugin-settings-",)},
+    {"id": "atv-picons", "title": "ATV · Picons", "prefixes": ("enigma2-plugin-picons-",)},
+]
+ATV_SKIP_SUFFIX = ("-dev", "-dbg", "-src", "-staticdev", "-meta", "-doc", "-po", "-locale", "-common")
+ATV_SKIP_NAMES = ("piconmanager", "iptvquickzapguard", "vudoctorpro")
+
+
+def _pretty(name, prefix):
+    short = name[len(prefix):]
+    return short.replace("-", " ").strip().title() if short.islower() else short
+
+
+class AtvCatalog(object):
+    """Packages of the image feed read from opkg's downloaded lists (refreshed by 'opkg update')."""
+
+    def __init__(self, lists_dir=OPKG_LISTS, archs=None):
+        self.packages, self.items, self.lists_time = {}, [], 0
+        try:
+            names = sorted(os.listdir(lists_dir))
+        except OSError:
+            return
+        for fn in names:
+            path = os.path.join(lists_dir, fn)
+            try:
+                self.lists_time = max(self.lists_time, int(os.path.getmtime(path)))
+                with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                    text = fh.read()
+            except (IOError, OSError):
+                continue
+            for block in text.split("\n\n"):
+                if "Package: enigma2-plugin-" not in block:
+                    continue
+                self._add(block, fn, archs)
+        self.items.sort(key=lambda i: (i["category"], i["name"].lower()))
+
+    def _add(self, block, feed_name, archs):
+        f = {}
+        last = None
+        for line in block.split("\n"):
+            if line[:1] in (" ", "\t"):
+                continue
+            if ":" in line:
+                last, v = line.split(":", 1)
+                f[last.strip()] = v.strip()
+        name = f.get("Package", "")
+        if not name or name.endswith(ATV_SKIP_SUFFIX) or any(s in name for s in ATV_SKIP_NAMES):
+            return
+        cat = None
+        for c in ATV_CATEGORIES:
+            for pre in c["prefixes"]:
+                if name.startswith(pre):
+                    cat, prefix = c["id"], pre
+        if not cat:
+            return
+        arch = f.get("Architecture", "all")
+        if archs and arch not in archs:
+            return
+        version = f.get("Version", "")
+        old = self.packages.get(name)
+        if old and compare_versions(old["version"], version) >= 0:
+            return
+        try:
+            size = int(f.get("Size", "0") or 0)
+            isize = int(f.get("Installed-Size", "0") or 0)
+        except ValueError:
+            size, isize = 0, 0
+        if isize > 100000:  # some feeds give bytes instead of KiB
+            isize //= 1024
+        self.packages[name] = {"version": version, "arch": arch, "file": name, "url": "", "sha256": "",
+                               "size": size, "installed_size": isize, "depends": f.get("Depends", ""),
+                               "source": feed_name}
+        desc = f.get("Description", "").strip()
+        if not desc or desc.startswith(name) or desc.lower().startswith(name[len(prefix):].lower() + " version"):
+            desc = "Paquet du feed OpenATV"
+        if not old:
+            self.items.append({"id": "opkg:" + name, "name": _pretty(name, prefix), "category": cat,
+                               "type": "opkg", "summary": desc[:110],
+                               "description": "%s  (feed %s)" % (desc, feed_name), "packages": [name]})
+        else:
+            for it in self.items:
+                if it["packages"][0] == name:
+                    it["description"] = "%s  (feed %s)" % (desc, feed_name)
+
+
+def opkg_install_commands(names, reinstall=False):
+    flags = "--force-reinstall " if reinstall else ""
+    return ("echo '>>> Installation depuis le feed OpenATV'\n"
+            "opkg install %s%s || { echo 'ERREUR: opkg (essayez JAUNE pour mettre les listes à jour)'; exit 1; }\n"
+            "echo '>>> Terminé avec succès'\n" % (flags, " ".join(sh_quote(n) for n in names)))
 
 
 def index_fetch_command(dest):

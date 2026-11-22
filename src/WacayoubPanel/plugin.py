@@ -18,7 +18,7 @@ from Screens.Standby import TryQuitMainloop
 
 from . import feed as F
 
-VERSION = "1.0.4"
+VERSION = "1.1.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,7 +40,7 @@ C_STATE = {
     F.ST_NA: 0x6B7380,
 }
 ICON = {F.ST_NONE: u"○", F.ST_OK: u"●", F.ST_UPDATE: u"▲", F.ST_PARTIAL: u"◐", F.ST_NA: u"×"}
-TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel"}
+TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV"}
 
 
 class _List(MenuList):
@@ -100,10 +100,14 @@ class WacayoubPanel(Screen):
         self.focus_items = False
         self.cat_ids = []
         self.async_console = AsyncConsole()
+        self.atv = None
+        self.atv_console = AsyncConsole()
+        self.opkg_busy = False
+        self.closed = False
 
         self["title"] = Label("Wacayoub Panel")
         self["sub"] = Label("")
-        self["cats"] = _List(64, [("Regular", 30)])
+        self["cats"] = _List(52, [("Regular", 27)])
         self["items"] = _List(80, [("Regular", 31), ("Regular", 23)])
         self["desc"] = Label("")
         self["status"] = Label("")
@@ -131,7 +135,8 @@ class WacayoubPanel(Screen):
         self["cats"].selectionEnabled(True)
         self["items"].selectionEnabled(False)
         self._load_cache()
-        self.refreshFeed()
+        self._load_atv()
+        self.refreshFeed(auto=True)
 
     def _load_cache(self):
         try:
@@ -143,13 +148,40 @@ class WacayoubPanel(Screen):
                 self.feed = None
         self._refresh_all()
 
-    def refreshFeed(self):
+    def _load_atv(self):
+        try:
+            self.atv = F.AtvCatalog(archs=self.archs)
+        except Exception as e:
+            self.atv = None
+            print("[WacayoubPanel] OpenATV lists: %s" % e)
+        if self.feed:
+            self.feed = F.Feed(self.feed.data)  # fresh copy, OpenATV part attached in _refresh_all
+
+    def refreshFeed(self, auto=False):
+        """JAUNE: my feed + 'opkg update'. On open: opkg update only if the lists are over a day old."""
         self["status"].setText("Lecture du feed en ligne…")
+        import time
+        stale = not self.atv or not self.atv.lists_time or time.time() - self.atv.lists_time > 86400
+        if (not auto or stale) and not self.opkg_busy:
+            self.opkg_busy = True
+            self.atv_console.ePopen("opkg update", self._opkg_done)
         tmp = "/tmp/wacayoubpanel-index.json"
         cmd = F.index_fetch_command(tmp)
         self.async_console.ePopen(cmd, self._feed_done, tmp)
 
+    def _opkg_done(self, data, retval, extra=None):
+        self.opkg_busy = False
+        if self.closed:
+            return
+        self.closed = False
+        self._load_atv()
+        self._refresh_all()
+        if retval != 0:
+            self["status"].setText("Listes OpenATV : mise à jour impossible (opkg update), listes en cache.")
+
     def _feed_done(self, data, retval, tmp):
+        if self.closed:
+            return
         try:
             if retval != 0:
                 raise IOError("wget %s" % retval)
@@ -173,10 +205,17 @@ class WacayoubPanel(Screen):
 
     def _refresh_all(self):
         self.installed = F.installed_packages()
+        if self.feed and self.atv and not self.feed.atv_count:
+            self.feed.attach_atv(self.atv)
         free = F.free_bytes("/")
         sub = "v%s" % VERSION
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
+        if self.opkg_busy:
+            sub += "  ·  ATV : mise à jour…"
+        elif self.atv and self.atv.lists_time:
+            import time
+            sub += "  ·  ATV %s" % time.strftime("%d/%m %H:%M", time.localtime(self.atv.lists_time))
         if free >= 0:
             sub += "  ·  libre %s" % _human(free)
         self["sub"].setText(sub)
@@ -198,9 +237,9 @@ class WacayoubPanel(Screen):
             right = ("%d ▲" % n_upd) if n_upd else str(len(items))
             self.cat_ids.append(c["id"])
             rows.append([c["id"],
-                         MultiContentEntryText(pos=(s(20), 0), size=(s(300), s(64)), font=0,
+                         MultiContentEntryText(pos=(s(20), 0), size=(s(300), s(52)), font=0,
                                                flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=c.get("title", c["id"])),
-                         MultiContentEntryText(pos=(s(300), 0), size=(s(100), s(64)), font=0,
+                         MultiContentEntryText(pos=(s(300), 0), size=(s(100), s(52)), font=0,
                                                flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=right,
                                                color=0xFFB020 if n_upd else C_DIM, color_sel=0xFFFFFF)])
         self["cats"].setList(rows)
@@ -299,7 +338,7 @@ class WacayoubPanel(Screen):
         if st == F.ST_OK:
             choices = [("Réinstaller", "reinstall"), ("Supprimer", "remove"), ("Annuler", None)]
             self.session.openWithCallback(lambda c: self._choice(it, c), ChoiceBox,
-                                          title="%s est déjà à jour." % it["name"], list=choices)
+                                          text="%s est déjà à jour." % it["name"], list=choices)
         else:
             self.keyInstall()
 
@@ -326,7 +365,7 @@ class WacayoubPanel(Screen):
             return
         names = []
         for it in self.feed.items:
-            if it.get("type") == "script":
+            if it.get("type") in ("script", "opkg"):
                 continue
             for p in self.feed.outdated(it, self.installed):
                 if p not in names:
@@ -357,9 +396,13 @@ class WacayoubPanel(Screen):
             self.session.open(MessageBox, "Pas assez de place : il faut %s, libre %s." % (_human(need), _human(free)),
                               MessageBox.TYPE_ERROR)
             return
+        if it.get("type") == "opkg":
+            cmds = F.opkg_install_commands(names, reinstall=reinstall)
+        else:
+            cmds = F.install_commands(self.feed, names, reinstall=reinstall)
         verb = "Réinstaller" if reinstall else ("Mettre à jour" if st == F.ST_UPDATE else "Installer")
         self._confirm_run("%s %s ?\n%s\nPlace utilisée : %s" % (verb, it["name"], "\n".join(names), _human(need)),
-                          F.install_commands(self.feed, names, reinstall=reinstall), "%s %s" % (verb, it["name"]))
+                          cmds, "%s %s" % (verb, it["name"]))
 
     def _ask_remove(self, it):
         if it.get("type") == "script":
@@ -405,6 +448,8 @@ class WacayoubPanel(Screen):
             self._set_focus(False)
             return
         self.async_console.killAll()
+        # 'opkg update' keeps running if needed; never kill opkg half-way
+        self.closed = True
         self.close()
 
 

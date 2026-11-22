@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.0.4_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.1.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -21,8 +21,15 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Gauche / Exit | revenir aux catégories |
 | Rouge | supprimer |
 | Vert | installer / mettre à jour |
-| Jaune | relire le feed |
+| Jaune | relire le feed + mettre à jour les listes OpenATV (`opkg update`) |
 | Bleu | tout mettre à jour |
+
+## Paquets OpenATV
+
+En plus de mes plugins, le panel montre les paquets du feed de l'image (lus dans `/var/lib/opkg/lists`)
+dans 5 catégories : **ATV · Extensions**, **ATV · Système**, **ATV · Skins**, **ATV · Listes chaînes** (settings)
+et **ATV · Picons**. Ils s'installent avec `opkg install`. Les listes sont mises à jour à l'ouverture si elles
+ont plus d'un jour, ou avec la touche Jaune. « Tout mettre à jour » (Bleu) ne touche que mes paquets.
 
 ## Le feed
 
