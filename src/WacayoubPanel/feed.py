@@ -165,6 +165,7 @@ class Feed(object):
         self.items = list(self.data.get("items", []))
         self.atv_count = 0
         self.ext_count = 0
+        self.ext_sources = []
         self.env = {}  # set by the panel: python, model, model_name, width, installed
 
     def attach_atv(self, atv):
@@ -193,8 +194,7 @@ class Feed(object):
         if not ext or self.ext_count:
             return
         cats, packages, items = ext
-        for c in cats:
-            self.categories.append(dict(c))
+        self.ext_sources = cats  # merged into the ATV categories, kept for the header
         for name, meta in packages.items():
             self.packages.setdefault(name, meta)
         for it in items:
@@ -210,10 +210,21 @@ class Feed(object):
             raise ValueError("index.json invalide")
         return cls(data)
 
+    # merged lists also show my own plugins / skins (source "Wacayoub")
+    MERGE_OWN = {"atv-ext": ("plugin", "panel"), "atv-skins": ("skin",)}
+
     def items_in(self, cat_id):
         if cat_id in (None, "all"):
             return [i for i in self.items if i.get("type") not in ("opkg", "ext")]
-        return [i for i in self.items if i.get("category") == cat_id]
+        if cat_id in self.MERGE_OWN:
+            own_types = self.MERGE_OWN[cat_id]
+            out = [i for i in self.items if i.get("category") == cat_id or
+                   (i.get("type") in own_types and i.get("category") not in ("communaute",))]
+            return sorted(out, key=lambda i: fold(i.get("name", "")))
+        out = [i for i in self.items if i.get("category") == cat_id]
+        if cat_id in ("atv-sys",):  # merged across sources: one alphabetical list
+            out.sort(key=lambda i: fold(i.get("name", "")))
+        return out
 
     def search(self, query):
         """Items (mine first, then OpenATV) whose name, package or text contains every word of query.
@@ -347,11 +358,11 @@ class Feed(object):
 # ---------------------------------------------------------------- OpenATV feed
 OPKG_LISTS = "/var/lib/opkg/lists"
 ATV_CATEGORIES = [
-    {"id": "atv-ext", "title": "ATV · Extensions", "prefixes": ("enigma2-plugin-extensions-",)},
-    {"id": "atv-sys", "title": "ATV · Système", "prefixes": ("enigma2-plugin-systemplugins-",)},
-    {"id": "atv-skins", "title": "ATV · Skins", "prefixes": ("enigma2-plugin-skins-", "enigma2-plugin-skinpacks-")},
-    {"id": "atv-settings", "title": "ATV · Listes chaînes", "prefixes": ("enigma2-plugin-settings-",)},
-    {"id": "atv-picons", "title": "ATV · Picons", "prefixes": ("enigma2-plugin-picons-",)},
+    {"id": "atv-ext", "title": "Toutes · Extensions", "prefixes": ("enigma2-plugin-extensions-",)},
+    {"id": "atv-sys", "title": "Toutes · Système", "prefixes": ("enigma2-plugin-systemplugins-",)},
+    {"id": "atv-skins", "title": "Toutes · Skins", "prefixes": ("enigma2-plugin-skins-", "enigma2-plugin-skinpacks-")},
+    {"id": "atv-settings", "title": "Listes de chaînes", "prefixes": ("enigma2-plugin-settings-",)},
+    {"id": "atv-picons", "title": "Picons", "prefixes": ("enigma2-plugin-picons-",)},
 ]
 ATV_SKIP_SUFFIX = ("-dev", "-dbg", "-src", "-staticdev", "-meta", "-doc", "-po", "-locale", "-common")
 ATV_SKIP_NAMES = ("piconmanager", "iptvquickzapguard", "vudoctorpro")
@@ -429,7 +440,7 @@ class AtvCatalog(object):
                                "source": feed_name}
         desc = f.get("Description", "").strip()
         if not desc or desc.startswith(name) or desc.lower().startswith(name[len(prefix):].lower() + " version"):
-            desc = "Paquet du feed OpenATV"
+            desc = u"Pas de description"
         if not old:
             self.items.append({"id": "opkg:" + name, "name": _pretty(name, prefix), "category": cat,
                                "type": "opkg", "summary": desc[:110],

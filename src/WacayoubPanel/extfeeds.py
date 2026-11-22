@@ -21,10 +21,14 @@ FEEDS = [
     ("OpenPLi", "ext-openpli", ["http://downloads.openpli.org/feeds/openpli-9-release/all"]),
     ("EGAMI", "ext-egami", ["http://egami-feed.com/feeds/egami/11.0/{m}/all"]),
     ("OpenViX", "ext-openvix", ["https://www.openvix.co.uk/feeds/openvix/release/6.9/{m}/all"]),
+    ("OpenHDF", "ext-openhdf", ["https://feed.hdfreaks.cc/V8.0/{m}/all", "https://feed.hdfreaks.cc/V7.5/{m}/all"]),
+    ("OpenSPA", "ext-openspa", ["https://openspa.webhop.info/feeds/oea/8.7/{m}/all"]),
     ("OpenBH", "ext-openbh", ["http://feeds2.openbh.net/openbh/6.0/{m}/all", "http://feeds2.openbh.net/openbh/5.6/{m}/all",
                               "http://feeds.openbh.net/6.0/{m}/all", "http://feeds.openbh.net/5.6/{m}/all"]),
 ]
 PREFIXES = ("enigma2-plugin-extensions-", "enigma2-plugin-systemplugins-", "enigma2-plugin-skins-")
+# merged lists: other images' packages go into the same categories as the image's own feed
+MERGED_CAT = {"enigma2-plugin-extensions-": "atv-ext", "enigma2-plugin-systemplugins-": "atv-sys", "enigma2-plugin-skins-": "atv-skins"}
 SKIP_SUFFIX = ("-dev", "-dbg", "-src", "-staticdev", "-meta", "-doc", "-po", "-locale")
 
 
@@ -100,15 +104,17 @@ def load(own_names, available, compare_versions):
                              "ext": name, "missing": missing}
             desc = (f.get("Description", "") or "").strip()
             if not desc or desc.startswith(pkg):
-                desc = "Paquet du feed %s" % name
-            items.append({"id": "ext:%s:%s" % (name, pkg), "type": "ext", "category": cat, "name": _pretty(pkg),
+                desc = u"Pas de description"
+            merged = [c for pre, c in MERGED_CAT.items() if pkg.startswith(pre)]
+            items.append({"id": "ext:%s:%s" % (name, pkg), "type": "ext", "category": merged[0] if merged else cat,
+                          "name": _pretty(pkg),
                           "summary": desc[:110], "packages": [pkg], "ext": name,
                           "description": u"%s\nPaquet du feed %s (image différente) : installé tel quel, dépendances prises dans OpenATV uniquement. "
                                          u"Non testé sur OpenATV." % (desc, name)})
             seen.add(pkg)
             n += 1
         if n:
-            cats.append({"id": cat, "title": u"Autres · %s" % name, "time": mtime})
+            cats.append({"id": cat, "title": name, "count": n, "time": mtime})  # info only: lists are merged
     items.sort(key=lambda i: (i["category"], i["name"].lower()))
     return cats, packages, items
 

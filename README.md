@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.7.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.8.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -49,10 +49,10 @@ Les images sont générées par `tools/make_icons.py` (glyphes [Lucide](https://
 Première catégorie : tous mes plugins installés (IPToSat Pro, EPG Manager, BOP 2, IPAudio, Salaat NEO…)
 réunis au même endroit. **OK** les ouvre directement ; on revient au panel en les fermant.
 
-## Autres images (OpenPLi, OpenViX, OpenBH, EGAMI)
+## Autres images (OpenPLi, OpenViX, OpenBH, OpenHDF, OpenSPA, EGAMI)
 
-Catégories **Autres · OpenPLi / OpenViX / OpenBH** : plugins et skins des feeds d'autres images, lus en direct
-(`extfeeds.py`, rafraîchis une fois par jour ou avec Jaune). EGAMI est lu aussi, mais presque tout y est déjà dans le feed OpenATV.
+Les plugins et skins des feeds d'autres images sont **fusionnés** avec ceux d'OpenATV et les miens dans les listes **Toutes · Extensions / Système / Skins** ; chaque ligne affiche sa source en couleur (Wacayoub, OpenATV, OpenPLi, OpenViX, OpenBH, OpenHDF, EGAMI, OpenSPA). Feeds lus en direct
+(`extfeeds.py`, rafraîchis une fois par jour ou avec Jaune). EGAMI est lu aussi, mais presque tout y est déjà dans le feed OpenATV. OpenHDF ne publie pas tous les modèles (rien pour le Vu+ Zero 4K) ; le feed OpenSPA refuse actuellement l'accès extérieur (il apparaîtra s'il s'ouvre).
 Règles de sécurité :
 
 - seulement les paquets « all » (Python, skins) : jamais de binaire compilé pour une autre image ;

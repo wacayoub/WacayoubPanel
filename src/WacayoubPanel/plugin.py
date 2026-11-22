@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.7.0"
+VERSION = "1.8.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -52,8 +52,22 @@ C_TEXT = 0xF1F5F9
 C_DIM = 0x8C9AB0
 C_STATE = {F.ST_NONE: 0x8C9AB0, F.ST_OK: 0x4ADE80, F.ST_UPDATE: 0xFBBF24, F.ST_PARTIAL: 0xFBBF24, F.ST_NA: 0x64748B}
 STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTIAL: "partial", F.ST_NA: "na"}
-TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV", "ext": "Autre image"}
+TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "", "ext": "", "image": "Image"}
 SEARCH = "search"
+# where an item comes from, shown on every row (lists are merged across sources)
+SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
+                "EGAMI": 0xFACC15, "OpenBH": 0xA78BFA, "OpenHDF": 0xF472B6, "OpenSPA": 0xF87171}
+
+
+def source_of(it):
+    t = it.get("type")
+    if t == "opkg":
+        return "OpenATV"
+    if t == "ext":
+        return it.get("ext", "")
+    if t == "image":
+        return it.get("distro", "")
+    return "Wacayoub"
 LAUNCH = "launch"
 # my plugin folders -> icon id (Mes outils)
 LAUNCH_MAP = {
@@ -499,9 +513,13 @@ class WacayoubPanel(Screen):
             row.append(MultiContentEntryText(pos=(s(94), s(8)), size=(s(820), s(38)), font=0,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"]),
                                              color=C_TEXT, color_sel=0xFFFFFF))
-            row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(1180), s(28)), font=1,
+            src = source_of(it)
+            row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(132), s(28)), font=1,
+                                             flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=src,
+                                             color=SOURCE_COLOR.get(src, C_DIM), color_sel=0xFFFFFF))
+            row.append(MultiContentEntryText(pos=(s(232), s(44)), size=(s(1042), s(28)), font=1,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
-                                             text=(kind + "  ·  " if kind else "") + it.get("summary", ""),
+                                             text=(kind + "  ·  " if kind and kind != src else "") + it.get("summary", ""),
                                              color=C_DIM, color_sel=0xDBEAFE))
             row.append(MultiContentEntryText(pos=(s(900), s(8)), size=(s(370), s(38)), font=1,
                                              flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt,
