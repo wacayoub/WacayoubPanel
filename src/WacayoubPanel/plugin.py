@@ -34,7 +34,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.5.4"
+VERSION = "1.6.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -156,6 +156,8 @@ class WacayoubPanel(Screen):
         self.focus_items = False
         self.cat_ids = []
         self.query = ""
+        self.marked = []  # item ids ticked with OK for a grouped install
+        self._batch = False
         self.closed = False
         self.opkg_busy = False
         self.launch_items = []
@@ -184,7 +186,7 @@ class WacayoubPanel(Screen):
         self["key_blue"] = Label("Tout mettre à jour")
         self["key_menu"] = Label("MENU  Rechercher")
 
-        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions"], {
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions", "InfoActions"], {
             "ok": self.keyOk,
             "cancel": self.keyExit,
             "red": self.keyRemove,
@@ -192,6 +194,7 @@ class WacayoubPanel(Screen):
             "yellow": self.refreshFeed,
             "blue": self.keyUpdateAll,
             "menu": self.keySearch,
+            "info": self.keyInfo,
             "left": self.keyLeft,
             "right": self.keyRight,
             "up": self.keyUp,
@@ -264,7 +267,7 @@ class WacayoubPanel(Screen):
             with open(F.CACHE_FILE, "w", encoding="utf-8") as fh:
                 json.dump(fresh.data, fh, ensure_ascii=False)
             self.feed = fresh
-            self["status"].setText("Mes plugins, skins et scripts  ·  paquets OpenATV")
+            self._update_keys()
         except Exception as e:
             if self.feed:
                 self["status"].setText("Hors ligne : liste en cache (%s)" % (self.feed.updated or "?"))
@@ -443,6 +446,9 @@ class WacayoubPanel(Screen):
             tile = item_tile(it)
             if tile:
                 row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile, flags=PIX_FLAGS))
+            if it["id"] in self.marked and pix("sel.png"):
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(54), s(46)), size=(s(30), s(30)), png=pix("sel.png"), flags=PIX_FLAGS))
+                txt = u"Sélectionné pour installation"
             row.append(MultiContentEntryText(pos=(s(94), s(8)), size=(s(820), s(38)), font=0,
                                              flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"]),
                                              color=C_TEXT, color_sel=0xFFFFFF))
@@ -452,7 +458,8 @@ class WacayoubPanel(Screen):
                                              color=C_DIM, color_sel=0xDBEAFE))
             row.append(MultiContentEntryText(pos=(s(900), s(8)), size=(s(370), s(38)), font=1,
                                              flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt,
-                                             color=C_STATE[st], color_sel=C_STATE[st]))
+                                             color=0x60A5FA if it["id"] in self.marked else C_STATE[st],
+                                             color_sel=0xBFDBFE if it["id"] in self.marked else C_STATE[st]))
             if badge:
                 row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(1286), s(14)), size=(s(26), s(26)), png=badge, flags=PIX_FLAGS))
             rows.append(row)
@@ -555,8 +562,77 @@ class WacayoubPanel(Screen):
             return
         if it.get("type") == LAUNCH:
             return self._launch(it)
-        # OK only selects: open the detail card (preview, compatibility, description)
-        self._open_details(it)
+        if it.get("type") in ("image", "script"):
+            return self._open_details(it)  # not batch-installable: show the card
+        # OK ticks / unticks the item to prepare a grouped install (INFO opens the card)
+        self._toggle_mark(it)
+
+    def keyInfo(self):
+        it = self._current_item() if self.focus_items else None
+        if it and it.get("type") != LAUNCH:
+            self._open_details(it)
+
+    # ------------------------------------------------------------ selection (grouped install)
+    def _toggle_mark(self, it):
+        iid = it["id"]
+        if iid in self.marked:
+            self.marked.remove(iid)
+        else:
+            st, txt = self._state(it)
+            if st == F.ST_NA:
+                self.session.open(MessageBox, "%s : %s." % (it["name"], txt), MessageBox.TYPE_INFO, timeout=4)
+                return
+            if st == F.ST_OK:
+                self.session.open(MessageBox, "%s est déjà installé et à jour.\nINFO : fiche (réinstaller / supprimer)." % it["name"],
+                                  MessageBox.TYPE_INFO, timeout=4)
+                return
+            self.marked.append(iid)
+        self._build_items()
+        self["items"].down()  # next item, like ticking a list
+        self._update_desc()
+        self._update_keys()
+
+    def _update_keys(self):
+        n = len(self.marked)
+        self["key_green"].setText("Installer la sélection (%d)" % n if n else "Installer / MAJ")
+        self["key_red"].setText("Vider la sélection" if n else "Supprimer")
+        self["status"].setText(u"%d sélectionné(s)  ·  VERT : installer  ·  ROUGE : vider" % n if n
+                               else u"OK : cocher  ·  INFO : fiche  ·  VERT : installer")
+
+    def _marked_items(self):
+        if not self.feed:
+            return []
+        by_id = dict((i["id"], i) for i in self.feed.items)
+        return [by_id[i] for i in self.marked if i in by_id]
+
+    def _install_marked(self):
+        own, opkg, names, skipped = [], [], [], []
+        for it in self._marked_items():
+            st, txt = self._state(it)
+            if st in (F.ST_NA, F.ST_OK):
+                skipped.append("%s (%s)" % (it["name"], txt))
+                continue
+            names.append(it["name"])
+            target = opkg if it.get("type") == "opkg" else own
+            for p in self.feed.to_fetch(it, self.installed):
+                if p not in own and p not in opkg:
+                    target.append(p)
+        if not own and not opkg:
+            self.session.open(MessageBox, "Rien à installer dans la sélection.", MessageBox.TYPE_INFO, timeout=4)
+            return
+        need = self.feed.install_size(own + opkg)
+        free = F.free_bytes("/")
+        if free >= 0 and need and need + 8 * 1024 * 1024 > free:
+            self.session.open(MessageBox, "Pas assez de place : il faut %s, libre %s." % (S.human(need), S.human(free)),
+                              MessageBox.TYPE_ERROR)
+            return
+        body = (F.install_commands(self.feed, own) if own else "") + (F.opkg_install_commands(opkg) if opkg else "")
+        q = u"Installer %d élément(s) ?\n%s\n%d paquet(s)  ·  place utilisée : %s" % (
+            len(names), u"\n".join(u"•  " + n for n in names), len(own) + len(opkg), S.human(need))
+        if skipped:
+            q += u"\nIgnorés : " + ", ".join(skipped)
+        self._batch = True
+        self._confirm_run(q, body, u"Installer la sélection (%d)" % len(names))
 
     def _big_icon(self, it):
         t = it.get("type")
@@ -633,6 +709,8 @@ class WacayoubPanel(Screen):
             self._ask_remove(it)
 
     def keyInstall(self):
+        if self.marked:
+            return self._install_marked()
         it = self._current_item()
         if it and self.focus_items:
             if it.get("type") == LAUNCH:
@@ -642,6 +720,11 @@ class WacayoubPanel(Screen):
             self._install(it)
 
     def keyRemove(self):
+        if self.marked:
+            self.marked = []
+            self._build_items()
+            self._update_keys()
+            return
         it = self._current_item()
         if it and self.focus_items:
             if it.get("type") == "image":
@@ -760,6 +843,10 @@ class WacayoubPanel(Screen):
         self.session.openWithCallback(go, MessageBox, question, MessageBox.TYPE_YESNO)
 
     def _after_run(self, restart):
+        if getattr(self, "_batch", False):
+            self._batch = False
+            self.marked = []
+            self._update_keys()
         before = dict(self.installed)
         self._refresh_all()
         self._build_launch()

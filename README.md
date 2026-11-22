@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.5.4_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.6.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -17,17 +17,18 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Touche | Action |
 |---|---|
 | Haut / Bas | catégorie ou élément |
-| Droite / OK | entrer dans la liste ; OK = ouvrir la fiche (aperçu, compatibilité) ; dans Mes outils, OK ouvre le plugin |
+| Droite / OK | entrer dans la liste ; **OK = cocher / décocher** (sélection pour installer plusieurs éléments) ; dans Mes outils, OK ouvre le plugin |
+| INFO | fiche de l'élément (aperçu, compatibilité, versions, description) |
 | Gauche / Exit | revenir aux catégories |
-| Rouge | supprimer |
-| Vert | installer / mettre à jour |
+| Rouge | supprimer (ou vider la sélection s'il y en a une) |
+| Vert | installer / mettre à jour (ou installer toute la sélection, dépendances comprises) |
 | Jaune | relire le feed + mettre à jour les listes OpenATV (`opkg update`) |
 | Bleu | tout mettre à jour |
 | MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
 
 ## Fiche détail et compatibilité
 
-**OK ne lance plus d'installation** : il ouvre la fiche du plugin, avec un aperçu en image (`feed/previews/`),
+**INFO ouvre la fiche du plugin** (OK sert à cocher), avec un aperçu en image (`feed/previews/`),
 la description, les versions (feed et installée) et les vérifications de compatibilité :
 
 - **Python** : version du récepteur comparée au minimum du plugin ; les paquets Python 2 du feed ne sont jamais proposés.

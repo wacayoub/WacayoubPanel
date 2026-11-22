@@ -311,7 +311,12 @@ class Feed(object):
         return res
 
     def install_size(self, names):
-        return sum(int(self.packages[n].get("installed_size", 0) or 0) * 1024 for n in names)
+        total = 0
+        for n in names:
+            meta = self.packages.get(n, {})
+            isize = int(meta.get("installed_size", 0) or 0) * 1024
+            total += isize or int(meta.get("size", 0) or 0)  # feed lists without Installed-Size: use the download size
+        return total
 
 
 # ---------------------------------------------------------------- OpenATV feed

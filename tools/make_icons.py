@@ -257,6 +257,14 @@ def main():
             glyph(TILES[k][0], 30, "#FFFFFF", 2.0).save(os.path.join(OUT, "c-%s.png" % k), optimize=True)
     for k in STATES:
         state_badge(k, 26).save(os.path.join(OUT, "s-%s.png" % k), optimize=True)
+    # selection tick shown on the tile corner of ticked items
+    sel = Image.new("RGBA", (30, 30), (0, 0, 0, 0))
+    selbox = Image.new("RGBA", (120, 120), (0, 0, 0, 0))
+    ImageDraw.Draw(selbox).rounded_rectangle([0, 0, 119, 119], 30, fill=(37, 99, 235, 255), outline=(255, 255, 255, 255), width=10)
+    sel = selbox.resize((30, 30), Image.LANCZOS)
+    gl = glyph("check", 20, "#FFFFFF", 3.2)
+    sel.alpha_composite(gl, (5, 5))
+    sel.save(os.path.join(OUT, "sel.png"), optimize=True)
     bar(1340, 80, "#1E3A8A", "#1D4ED8", 16, 235, accent="#7DD3FC").save(os.path.join(OUT, "sel-item.png"), optimize=True)
     bar(412, 52, "#2563EB", "#7C3AED", 14, 255).save(os.path.join(OUT, "sel-cat.png"), optimize=True)
     background(1920, 1080).save(os.path.join(OUT, "bg.jpg"), quality=88, optimize=True)
