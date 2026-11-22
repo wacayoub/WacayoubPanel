@@ -1,26 +1,33 @@
 # -*- coding: utf-8 -*-
-# Wacayoub Panel - installe, met à jour et supprime les plugins, skins et scripts de wacayoub.
+# Wacayoub Panel - installe, met à jour et supprime mes plugins, skins et scripts
+# + les paquets du feed OpenATV. Icônes : Lucide (ISC License, lucide.dev).
 import json
 import os
+import time
 
-from enigma import eListboxPythonMultiContent, gFont, getDesktop, RT_HALIGN_LEFT, RT_HALIGN_RIGHT, RT_VALIGN_CENTER
+from enigma import eListboxPythonMultiContent, eTimer, gFont, getDesktop, RT_HALIGN_LEFT, RT_HALIGN_RIGHT, RT_VALIGN_CENTER
 from Components.ActionMap import ActionMap
 from Components.Console import Console as AsyncConsole
 from Components.Label import Label
 from Components.MenuList import MenuList
-from Components.MultiContent import MultiContentEntryText
+from Components.MultiContent import MultiContentEntryPixmapAlphaBlend, MultiContentEntryText
+from Components.Pixmap import Pixmap
 from Plugins.Plugin import PluginDescriptor
 from Screens.ChoiceBox import ChoiceBox
 from Screens.Console import Console
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
+from Screens.VirtualKeyBoard import VirtualKeyBoard
+from Tools.LoadPixmap import LoadPixmap
 
 from . import feed as F
+from . import sysinfo as S
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
+IMG = os.path.join(PLUGIN_DIR, "img")
 
 _W = getDesktop(0).size().width() or 1920
 SC = _W / 1920.0
@@ -30,17 +37,28 @@ def s(v):
     return int(round(v * SC))
 
 
-C_TEXT = 0xFFFFFF
-C_DIM = 0x9AA7B8
-C_STATE = {
-    F.ST_NONE: 0x9AA7B8,
-    F.ST_OK: 0x46D17D,
-    F.ST_UPDATE: 0xFFB020,
-    F.ST_PARTIAL: 0xFFB020,
-    F.ST_NA: 0x6B7380,
-}
-ICON = {F.ST_NONE: u"○", F.ST_OK: u"●", F.ST_UPDATE: u"▲", F.ST_PARTIAL: u"◐", F.ST_NA: u"×"}
+C_TEXT = 0xF1F5F9
+C_DIM = 0x8C9AB0
+C_STATE = {F.ST_NONE: 0x8C9AB0, F.ST_OK: 0x4ADE80, F.ST_UPDATE: 0xFBBF24, F.ST_PARTIAL: 0xFBBF24, F.ST_NA: 0x64748B}
+STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTIAL: "partial", F.ST_NA: "na"}
 TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "OpenATV"}
+SEARCH = "search"
+
+_PIX = {}
+
+
+def pix(name):
+    """Cached PNG from img/ (None if missing, the row is drawn without it)."""
+    if name not in _PIX:
+        path = os.path.join(IMG, name)
+        _PIX[name] = LoadPixmap(path, cached=True) if os.path.exists(path) else None
+    return _PIX[name]
+
+
+def item_tile(it):
+    if it.get("type") == "opkg":
+        return pix("t-%s.png" % it.get("category", "atv-ext")) or pix("t-atv-ext.png")
+    return pix("t-i-%s.png" % it.get("id")) or pix("t-%s.png" % it.get("category", "all"))
 
 
 class _List(MenuList):
@@ -51,102 +69,130 @@ class _List(MenuList):
         self.l.setItemHeight(s(item_h))
 
 
-def _human(n):
-    n = float(n or 0)
-    for unit in ("o", "Ko", "Mo", "Go"):
-        if n < 1024 or unit == "Go":
-            return ("%.0f %s" if unit in ("o", "Ko") else "%.1f %s") % (n, unit)
-        n /= 1024.0
+def _skin():
+    d = {"W": s(1920), "H": s(1080), "img": IMG}
+    for k, v in {
+        "lx": 48, "ly": 38, "lw": 64, "tx": 132, "ty": 30, "tw": 900, "th": 54, "tf": 44,
+        "stx": 132, "sty": 86, "stw": 1000, "sth": 34, "stf": 24,
+        "subx": 1020, "subw": 852, "subf": 23,
+        "cx": 62, "cy": 156, "cw": 412, "ch": 624,
+        "ix": 520, "iy": 150, "iw": 1340, "ih": 640,
+        "dx": 72, "dy": 832, "dw": 1240, "dh": 124, "df": 25,
+        "r1": 1342, "r2": 1520, "r3": 1698, "ry": 828, "rs": 104,
+        "pw": 104, "py": 864, "pf": 26, "ny": 936, "nw": 170, "nh": 28, "nf": 19,
+        "fy": 996, "fd": 26, "fty": 988, "fth": 42, "ff": 25,
+        "k1": 62, "k2": 392, "k3": 742, "k4": 1062, "k5": 1452,
+    }.items():
+        d[k] = s(v)
+    d["n1"], d["n2"], d["n3"] = d["r1"] - s(33), d["r2"] - s(33), d["r3"] - s(33)
+    for i in range(1, 6):
+        d["l%d" % i] = d["k%d" % i] + s(38)
+    d["kw"] = s(300)
+    return """
+    <screen name="WacayoubPanel" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14" title="Wacayoub Panel">
+      <ePixmap position="0,0" size="%(W)d,%(H)d" pixmap="%(img)s/bg.jpg" scale="1" zPosition="-2" />
+      <ePixmap position="%(lx)d,%(ly)d" size="%(lw)d,%(lw)d" pixmap="%(img)s/logo.png" alphatest="blend" scale="1" />
+      <widget name="title" position="%(tx)d,%(ty)d" size="%(tw)d,%(th)d" font="Regular;%(tf)d" foregroundColor="#00F1F5F9" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="status" position="%(stx)d,%(sty)d" size="%(stw)d,%(sth)d" font="Regular;%(stf)d" foregroundColor="#007DD3FC" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="sub" position="%(subx)d,%(ty)d" size="%(subw)d,%(th)d" font="Regular;%(subf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="right" valign="center" />
+      <widget name="cats" position="%(cx)d,%(cy)d" size="%(cw)d,%(ch)d" backgroundColor="#00070B14" transparent="1" foregroundColor="#00F1F5F9" foregroundColorSelected="#00FFFFFF" selectionPixmap="%(img)s/sel-cat.png" scrollbarMode="showNever" enableWrapAround="1" />
+      <widget name="items" position="%(ix)d,%(iy)d" size="%(iw)d,%(ih)d" backgroundColor="#00070B14" transparent="1" foregroundColor="#00F1F5F9" foregroundColorSelected="#00FFFFFF" selectionPixmap="%(img)s/sel-item.png" scrollbarMode="showOnDemand" scrollbarWidth="4" scrollbarForegroundColor="#003B82F6" enableWrapAround="1" />
+      <widget name="desc" position="%(dx)d,%(dy)d" size="%(dw)d,%(dh)d" font="Regular;%(df)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" />
+      <widget name="ring_cpu" position="%(r1)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
+      <widget name="ring_ram" position="%(r2)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
+      <widget name="ring_disk" position="%(r3)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
+      <widget name="pct_cpu" position="%(r1)d,%(py)d" size="%(pw)d,%(sth)d" font="Regular;%(pf)d" foregroundColor="#00FFFFFF" backgroundColor="#00070B14" transparent="1" halign="center" valign="center" zPosition="2" />
+      <widget name="pct_ram" position="%(r2)d,%(py)d" size="%(pw)d,%(sth)d" font="Regular;%(pf)d" foregroundColor="#00FFFFFF" backgroundColor="#00070B14" transparent="1" halign="center" valign="center" zPosition="2" />
+      <widget name="pct_disk" position="%(r3)d,%(py)d" size="%(pw)d,%(sth)d" font="Regular;%(pf)d" foregroundColor="#00FFFFFF" backgroundColor="#00070B14" transparent="1" halign="center" valign="center" zPosition="2" />
+      <widget name="lab_cpu" position="%(n1)d,%(ny)d" size="%(nw)d,%(nh)d" font="Regular;%(nf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="center" />
+      <widget name="lab_ram" position="%(n2)d,%(ny)d" size="%(nw)d,%(nh)d" font="Regular;%(nf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="center" />
+      <widget name="lab_disk" position="%(n3)d,%(ny)d" size="%(nw)d,%(nh)d" font="Regular;%(nf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="center" />
+      <ePixmap position="%(k1)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-red.png" alphatest="blend" scale="1" />
+      <ePixmap position="%(k2)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-green.png" alphatest="blend" scale="1" />
+      <ePixmap position="%(k3)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-yellow.png" alphatest="blend" scale="1" />
+      <ePixmap position="%(k4)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-blue.png" alphatest="blend" scale="1" />
+      <ePixmap position="%(k5)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-search.png" alphatest="blend" scale="1" />
+      <widget name="key_red" position="%(l1)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="key_green" position="%(l2)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="key_yellow" position="%(l3)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="key_blue" position="%(l4)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="key_menu" position="%(l5)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+    </screen>""" % d
 
 
 class WacayoubPanel(Screen):
-    skin = """
-    <screen name="WacayoubPanel" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00080C14" title="Wacayoub Panel">
-      <eLabel position="0,0" size="%(W)d,%(hh)d" backgroundColor="#000F1826" zPosition="-1" />
-      <eLabel position="%(x0)d,%(hl)d" size="%(wl)d,%(two)d" backgroundColor="#002F8CFF" />
-      <widget name="title" position="%(x0)d,%(ty)d" size="%(tw)d,%(th)d" font="Regular;%(tf)d" foregroundColor="#00FFFFFF" backgroundColor="#000F1826" transparent="1" valign="center" />
-      <widget name="sub" position="%(sx)d,%(ty)d" size="%(sw)d,%(th)d" font="Regular;%(sf)d" foregroundColor="#009AA7B8" backgroundColor="#000F1826" transparent="1" halign="right" valign="center" />
-      <eLabel position="%(x0)d,%(ly)d" size="%(cw)d,%(lh)d" backgroundColor="#00101A2A" zPosition="-1" />
-      <widget name="cats" position="%(x0)d,%(ly)d" size="%(cw)d,%(lh)d" backgroundColor="#00101A2A" foregroundColor="#00FFFFFF" backgroundColorSelected="#002F8CFF" foregroundColorSelected="#00FFFFFF" scrollbarMode="showNever" transparent="0" />
-      <widget name="items" position="%(ix)d,%(ly)d" size="%(iw)d,%(lh)d" backgroundColor="#00080C14" foregroundColor="#00FFFFFF" backgroundColorSelected="#00203A5C" foregroundColorSelected="#00FFFFFF" scrollbarMode="showOnDemand" transparent="0" />
-      <eLabel position="%(x0)d,%(dy0)d" size="%(wl)d,%(one)d" backgroundColor="#00203040" />
-      <widget name="desc" position="%(x0)d,%(dy)d" size="%(wl)d,%(dh)d" font="Regular;%(df)d" foregroundColor="#00C9D4E3" backgroundColor="#00080C14" transparent="1" />
-      <widget name="status" position="%(x0)d,%(sty)d" size="%(wl)d,%(sth)d" font="Regular;%(df)d" foregroundColor="#00FFB020" backgroundColor="#00080C14" transparent="1" />
-      <eLabel position="%(b0)d,%(by)d" size="%(bw)d,%(bh)d" backgroundColor="#00E5484D" />
-      <eLabel position="%(b1)d,%(by)d" size="%(bw)d,%(bh)d" backgroundColor="#0046D17D" />
-      <eLabel position="%(b2)d,%(by)d" size="%(bw)d,%(bh)d" backgroundColor="#00FFB020" />
-      <eLabel position="%(b3)d,%(by)d" size="%(bw)d,%(bh)d" backgroundColor="#002F8CFF" />
-      <widget name="key_red" position="%(t0)d,%(bty)d" size="%(btw)d,%(bth)d" font="Regular;%(bf)d" foregroundColor="#00FFFFFF" backgroundColor="#00080C14" transparent="1" valign="center" />
-      <widget name="key_green" position="%(t1)d,%(bty)d" size="%(btw)d,%(bth)d" font="Regular;%(bf)d" foregroundColor="#00FFFFFF" backgroundColor="#00080C14" transparent="1" valign="center" />
-      <widget name="key_yellow" position="%(t2)d,%(bty)d" size="%(btw)d,%(bth)d" font="Regular;%(bf)d" foregroundColor="#00FFFFFF" backgroundColor="#00080C14" transparent="1" valign="center" />
-      <widget name="key_blue" position="%(t3)d,%(bty)d" size="%(btw)d,%(bth)d" font="Regular;%(bf)d" foregroundColor="#00FFFFFF" backgroundColor="#00080C14" transparent="1" valign="center" />
-    </screen>""" % {
-        "W": s(1920), "H": s(1080), "hh": s(120), "x0": s(60), "wl": s(1800), "hl": s(118), "two": max(1, s(2)), "one": max(1, s(1)),
-        "ty": s(28), "tw": s(900), "th": s(64), "tf": s(46), "sx": s(960), "sw": s(900), "sf": s(26),
-        "ly": s(150), "cw": s(420), "lh": s(640), "ix": s(500), "iw": s(1360),
-        "dy0": s(808), "dy": s(822), "dh": s(130), "df": s(27), "sty": s(955), "sth": s(40),
-        "by": s(1012), "bw": s(12), "bh": s(40),
-        "b0": s(60), "b1": s(510), "b2": s(960), "b3": s(1410),
-        "t0": s(84), "t1": s(534), "t2": s(984), "t3": s(1434), "bty": s(1004), "btw": s(420), "bth": s(56), "bf": s(28),
-    }
+    skin = _skin()
 
     def __init__(self, session):
         Screen.__init__(self, session)
         self.setTitle("Wacayoub Panel")
         self.feed = None
+        self.atv = None
         self.installed = {}
         self.archs = F.supported_archs()
-        self.changed = False
         self.focus_items = False
         self.cat_ids = []
-        self.async_console = AsyncConsole()
-        self.atv = None
-        self.atv_console = AsyncConsole()
-        self.opkg_busy = False
+        self.query = ""
         self.closed = False
+        self.opkg_busy = False
+        self.async_console = AsyncConsole()
+        self.atv_console = AsyncConsole()
+        self.stat_timer = eTimer()
+        self.stat_timer.callback.append(self._tick)
 
         self["title"] = Label("Wacayoub Panel")
-        self["sub"] = Label("")
-        self["cats"] = _List(52, [("Regular", 27)])
-        self["items"] = _List(80, [("Regular", 31), ("Regular", 23)])
-        self["desc"] = Label("")
         self["status"] = Label("")
+        self["sub"] = Label("")
+        self["cats"] = _List(52, [("Regular", 26), ("Regular", 22)])
+        self["items"] = _List(80, [("Regular", 30), ("Regular", 22)])
+        self["desc"] = Label("")
+        for k in ("cpu", "ram", "disk"):
+            self["ring_" + k] = Pixmap()
+            self["pct_" + k] = Label("")
+            self["lab_" + k] = Label("")
         self["key_red"] = Label("Supprimer")
         self["key_green"] = Label("Installer / MAJ")
         self["key_yellow"] = Label("Actualiser")
         self["key_blue"] = Label("Tout mettre à jour")
+        self["key_menu"] = Label("MENU  Rechercher")
 
-        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions"], {
             "ok": self.keyOk,
             "cancel": self.keyExit,
             "red": self.keyRemove,
             "green": self.keyInstall,
             "yellow": self.refreshFeed,
             "blue": self.keyUpdateAll,
+            "menu": self.keySearch,
             "left": self.keyLeft,
             "right": self.keyRight,
             "up": self.keyUp,
             "down": self.keyDown,
         }, -1)
         self.onLayoutFinish.append(self._start)
+        self.onClose.append(self._on_close)
 
-    # ------------------------------------------------------------ data
+    # ------------------------------------------------------------ start / data
     def _start(self):
         self["cats"].selectionEnabled(True)
         self["items"].selectionEnabled(False)
+        S.cpu_percent()
+        self._tick()
+        self.stat_timer.start(2000, False)
         self._load_cache()
         self._load_atv()
+        self._refresh_all()
         self.refreshFeed(auto=True)
+
+    def _on_close(self):
+        self.closed = True
+        self.stat_timer.stop()
 
     def _load_cache(self):
         try:
             self.feed = F.Feed.load(F.CACHE_FILE)
         except Exception:
-            try:
-                self.feed = F.Feed.load(os.path.join(PLUGIN_DIR, "index.json"))
-            except Exception:
-                self.feed = None
-        self._refresh_all()
+            self.feed = None
 
     def _load_atv(self):
         try:
@@ -160,24 +206,21 @@ class WacayoubPanel(Screen):
     def refreshFeed(self, auto=False):
         """JAUNE: my feed + 'opkg update'. On open: opkg update only if the lists are over a day old."""
         self["status"].setText("Lecture du feed en ligne…")
-        import time
         stale = not self.atv or not self.atv.lists_time or time.time() - self.atv.lists_time > 86400
         if (not auto or stale) and not self.opkg_busy:
             self.opkg_busy = True
             self.atv_console.ePopen("opkg update", self._opkg_done)
         tmp = "/tmp/wacayoubpanel-index.json"
-        cmd = F.index_fetch_command(tmp)
-        self.async_console.ePopen(cmd, self._feed_done, tmp)
+        self.async_console.ePopen(F.index_fetch_command(tmp), self._feed_done, tmp)
 
     def _opkg_done(self, data, retval, extra=None):
         self.opkg_busy = False
         if self.closed:
             return
-        self.closed = False
         self._load_atv()
         self._refresh_all()
         if retval != 0:
-            self["status"].setText("Listes OpenATV : mise à jour impossible (opkg update), listes en cache.")
+            self["status"].setText("Listes OpenATV : mise à jour impossible, listes en cache.")
 
     def _feed_done(self, data, retval, tmp):
         if self.closed:
@@ -191,7 +234,7 @@ class WacayoubPanel(Screen):
             with open(F.CACHE_FILE, "w", encoding="utf-8") as fh:
                 json.dump(fresh.data, fh, ensure_ascii=False)
             self.feed = fresh
-            self["status"].setText("")
+            self["status"].setText("Mes plugins, skins et scripts  ·  paquets OpenATV")
         except Exception as e:
             if self.feed:
                 self["status"].setText("Hors ligne : liste en cache (%s)" % (self.feed.updated or "?"))
@@ -207,66 +250,115 @@ class WacayoubPanel(Screen):
         self.installed = F.installed_packages()
         if self.feed and self.atv and not self.feed.atv_count:
             self.feed.attach_atv(self.atv)
-        free = F.free_bytes("/")
         sub = "v%s" % VERSION
         if self.feed and self.feed.updated:
             sub += "  ·  feed %s" % self.feed.updated
         if self.opkg_busy:
-            sub += "  ·  ATV : mise à jour…"
+            sub += "  ·  OpenATV : mise à jour…"
         elif self.atv and self.atv.lists_time:
-            import time
-            sub += "  ·  ATV %s" % time.strftime("%d/%m %H:%M", time.localtime(self.atv.lists_time))
-        if free >= 0:
-            sub += "  ·  libre %s" % _human(free)
+            sub += "  ·  OpenATV %s" % time.strftime("%d/%m %H:%M", time.localtime(self.atv.lists_time))
         self["sub"].setText(sub)
         self._build_cats()
         self._build_items()
 
-    def _build_cats(self):
-        old = self["cats"].getSelectionIndex() if self.cat_ids else 0
-        rows, self.cat_ids = [], []
-        cats = [{"id": "all", "title": "Tout"}]
+    # ------------------------------------------------------------ gauges
+    def _tick(self):
+        if self.closed:
+            return
+        cpu = S.cpu_percent()
+        temp = S.cpu_temp()
+        rp, rused, rtotal = S.ram()
+        dp, dused, dtotal = S.storage("/")
+        for key, pct, label in (("cpu", cpu, "CPU" + ("  %d°C" % temp if temp else "")),
+                                ("ram", rp, "RAM  %d/%d Mo" % (rused, rtotal)),
+                                ("disk", dp, "Stockage  %s" % S.human(dtotal))):
+            png = pix(S.ring_step(pct))
+            if png and self["ring_" + key].instance:
+                self["ring_" + key].instance.setPixmap(png)
+            self["pct_" + key].setText("%d%%" % pct)
+            self["lab_" + key].setText(label)
+
+    # ------------------------------------------------------------ lists
+    def _cat_list(self):
+        cats = []
+        if self.query:
+            cats.append({"id": SEARCH, "title": u"« %s »" % self.query})
+        cats.append({"id": "all", "title": "Tout"})
         if self.feed:
             cats += self.feed.categories
-        for c in cats:
-            items = self.feed.items_in(c["id"]) if self.feed else []
+        return cats
+
+    def _items_for(self, cat_id):
+        if not self.feed:
+            return []
+        if cat_id == SEARCH:
+            return self.feed.search(self.query)
+        return self.feed.items_in(cat_id)
+
+    def _build_cats(self, select=None):
+        old = self["cats"].getSelectionIndex() if self.cat_ids else 0
+        old_id = self.cat_ids[old] if 0 <= old < len(self.cat_ids) else None
+        rows, self.cat_ids = [], []
+        for c in self._cat_list():
+            items = self._items_for(c["id"])
             n_upd = 0
-            for it in items:
-                if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
-                    n_upd += 1
-            right = ("%d ▲" % n_upd) if n_upd else str(len(items))
+            if c["id"] != SEARCH:
+                for it in items:
+                    if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
+                        n_upd += 1
+            right = (u"%d ↑" % n_upd) if n_upd else str(len(items))
             self.cat_ids.append(c["id"])
-            rows.append([c["id"],
-                         MultiContentEntryText(pos=(s(20), 0), size=(s(300), s(52)), font=0,
-                                               flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=c.get("title", c["id"])),
-                         MultiContentEntryText(pos=(s(300), 0), size=(s(100), s(52)), font=0,
-                                               flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=right,
-                                               color=0xFFB020 if n_upd else C_DIM, color_sel=0xFFFFFF)])
+            row = [c["id"]]
+            icon = pix("c-%s.png" % c["id"])
+            if icon:
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(18), s(11)), size=(s(30), s(30)), png=icon))
+            row.append(MultiContentEntryText(pos=(s(62), 0), size=(s(260), s(52)), font=0,
+                                             flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=c.get("title", c["id"]),
+                                             color=C_TEXT, color_sel=0xFFFFFF))
+            row.append(MultiContentEntryText(pos=(s(318), 0), size=(s(78), s(52)), font=1,
+                                             flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=right,
+                                             color=0xFBBF24 if n_upd else C_DIM, color_sel=0xFFFFFF))
+            rows.append(row)
         self["cats"].setList(rows)
-        if rows:
+        if select in self.cat_ids:
+            self["cats"].moveToIndex(self.cat_ids.index(select))
+        elif old_id in self.cat_ids:
+            self["cats"].moveToIndex(self.cat_ids.index(old_id))
+        elif rows:
             self["cats"].moveToIndex(min(old, len(rows) - 1))
 
     def _current_cat(self):
         i = self["cats"].getSelectionIndex()
         return self.cat_ids[i] if 0 <= i < len(self.cat_ids) else "all"
 
-    def _build_items(self):
-        old = self["items"].getSelectionIndex() if self["items"].list else 0
+    def _build_items(self, keep=True):
+        old = self["items"].getSelectionIndex() if (keep and self["items"].list) else 0
         rows = []
-        if self.feed:
-            for it in self.feed.items_in(self._current_cat()):
-                st, txt = self.feed.item_state(it, self.installed, self.archs)
-                kind = TYPE_LABEL.get(it.get("type"), "")
-                rows.append([it,
-                             MultiContentEntryText(pos=(s(20), s(4)), size=(s(50), s(44)), font=0,
-                                                   flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=ICON[st], color=C_STATE[st], color_sel=C_STATE[st]),
-                             MultiContentEntryText(pos=(s(70), s(4)), size=(s(820), s(44)), font=0,
-                                                   flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"])),
-                             MultiContentEntryText(pos=(s(900), s(4)), size=(s(440), s(44)), font=1,
-                                                   flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt, color=C_STATE[st], color_sel=C_STATE[st]),
-                             MultiContentEntryText(pos=(s(70), s(46)), size=(s(1270), s(30)), font=1,
-                                                   flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
-                                                   text=(kind + "  ·  " if kind else "") + it.get("summary", ""), color=C_DIM, color_sel=0xC9D4E3)])
+        for it in self._items_for(self._current_cat()):
+            st, txt = self.feed.item_state(it, self.installed, self.archs)
+            if it.get("type") == "script":
+                badge = pix("s-script.png")
+                txt = "Script"
+            else:
+                badge = pix("s-%s.png" % STATE_IMG[st])
+            kind = TYPE_LABEL.get(it.get("type"), "")
+            row = [it]
+            tile = item_tile(it)
+            if tile:
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile))
+            row.append(MultiContentEntryText(pos=(s(94), s(8)), size=(s(820), s(38)), font=0,
+                                             flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"]),
+                                             color=C_TEXT, color_sel=0xFFFFFF))
+            row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(1180), s(28)), font=1,
+                                             flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                             text=(kind + "  ·  " if kind else "") + it.get("summary", ""),
+                                             color=C_DIM, color_sel=0xDBEAFE))
+            row.append(MultiContentEntryText(pos=(s(900), s(8)), size=(s(370), s(38)), font=1,
+                                             flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt,
+                                             color=C_STATE[st], color_sel=C_STATE[st]))
+            if badge:
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(1286), s(14)), size=(s(26), s(26)), png=badge))
+            rows.append(row)
         self["items"].setList(rows)
         if rows:
             self["items"].moveToIndex(min(old, len(rows) - 1))
@@ -278,14 +370,20 @@ class WacayoubPanel(Screen):
 
     def _update_desc(self):
         it = self._current_item()
-        if not it or not self.feed:
-            self["desc"].setText("" if self.feed else "Aucune liste. Appuyez sur JAUNE pour lire le feed.")
+        if not self.feed:
+            self["desc"].setText("Aucune liste. Appuyez sur JAUNE pour lire le feed.")
+            return
+        if not it:
+            if self._current_cat() == SEARCH:
+                self["desc"].setText(u"Aucun résultat pour « %s ».  MENU : nouvelle recherche  ·  EXIT : effacer" % self.query)
+            else:
+                self["desc"].setText("")
             return
         parts = [it.get("description", it.get("summary", ""))]
         names = [p for p in it.get("packages", []) if p in self.feed.packages]
         size = sum(int(self.feed.packages[p].get("size", 0) or 0) for p in names)
-        vers = ", ".join("%s %s" % (p.replace("enigma2-plugin-", ""), self.feed.packages[p]["version"]) for p in names)
-        parts.append("Paquets : %s  ·  téléchargement %s" % (vers, _human(size)))
+        vers = ", ".join("%s %s" % (p.replace("enigma2-plugin-", ""), F.short_version(self.feed.packages[p]["version"], 30)) for p in names)
+        parts.append(u"Paquets : %s  ·  téléchargement %s" % (vers, S.human(size)))
         self["desc"].setText("\n".join(parts))
 
     # ------------------------------------------------------------ keys
@@ -299,7 +397,7 @@ class WacayoubPanel(Screen):
             self._set_focus(False)
         else:
             self["cats"].pageUp()
-            self._build_items()
+            self._build_items(keep=False)
 
     def keyRight(self):
         if not self.focus_items and self["items"].list:
@@ -314,8 +412,7 @@ class WacayoubPanel(Screen):
             self._update_desc()
         else:
             self["cats"].up()
-            self["items"].moveToIndex(0)
-            self._build_items()
+            self._build_items(keep=False)
 
     def keyDown(self):
         if self.focus_items:
@@ -323,8 +420,19 @@ class WacayoubPanel(Screen):
             self._update_desc()
         else:
             self["cats"].down()
-            self["items"].moveToIndex(0)
-            self._build_items()
+            self._build_items(keep=False)
+
+    def keySearch(self):
+        self.session.openWithCallback(self._search_done, VirtualKeyBoard,
+                                      title="Rechercher un plugin, un skin, une liste de chaînes…", text=self.query)
+
+    def _search_done(self, text):
+        if text is None:
+            return
+        self.query = text.strip()
+        self._build_cats(select=SEARCH if self.query else "all")
+        self._build_items(keep=False)
+        self._set_focus(bool(self.query and self["items"].list))
 
     def keyOk(self):
         if not self.focus_items:
@@ -371,7 +479,7 @@ class WacayoubPanel(Screen):
                 if p not in names:
                     names.append(p)
         if not names:
-            self.session.open(MessageBox, "Tout est à jour.", MessageBox.TYPE_INFO, timeout=4)
+            self.session.open(MessageBox, "Tous mes plugins sont à jour.", MessageBox.TYPE_INFO, timeout=4)
             return
         self._confirm_run("Mettre à jour %d paquet(s) ?\n%s" % (len(names), "\n".join(names)),
                           F.install_commands(self.feed, names), "Mise à jour")
@@ -383,7 +491,7 @@ class WacayoubPanel(Screen):
             self.session.open(MessageBox, "%s : %s." % (it["name"], txt), MessageBox.TYPE_ERROR, timeout=6)
             return
         if it.get("type") == "script":
-            self._confirm_run("Lancer le script « %s » ?\n%s" % (it["name"], it.get("summary", "")),
+            self._confirm_run(u"Lancer le script « %s » ?\n%s" % (it["name"], it.get("summary", "")),
                               F.script_commands(self.feed, it), it["name"], restart=False)
             return
         names = list(it["packages"]) if reinstall else self.feed.to_fetch(it, self.installed)
@@ -393,7 +501,7 @@ class WacayoubPanel(Screen):
         need = self.feed.install_size(names)
         free = F.free_bytes("/")
         if free >= 0 and need and need + 8 * 1024 * 1024 > free:
-            self.session.open(MessageBox, "Pas assez de place : il faut %s, libre %s." % (_human(need), _human(free)),
+            self.session.open(MessageBox, "Pas assez de place : il faut %s, libre %s." % (S.human(need), S.human(free)),
                               MessageBox.TYPE_ERROR)
             return
         if it.get("type") == "opkg":
@@ -401,7 +509,7 @@ class WacayoubPanel(Screen):
         else:
             cmds = F.install_commands(self.feed, names, reinstall=reinstall)
         verb = "Réinstaller" if reinstall else ("Mettre à jour" if st == F.ST_UPDATE else "Installer")
-        self._confirm_run("%s %s ?\n%s\nPlace utilisée : %s" % (verb, it["name"], "\n".join(names), _human(need)),
+        self._confirm_run("%s %s ?\n%s\nPlace utilisée : %s" % (verb, it["name"], "\n".join(names), S.human(need)),
                           cmds, "%s %s" % (verb, it["name"]))
 
     def _ask_remove(self, it):
@@ -434,7 +542,6 @@ class WacayoubPanel(Screen):
         before = dict(self.installed)
         self._refresh_all()
         if restart and before != self.installed:
-            self.changed = True
             self.session.openWithCallback(self._restart_answer, MessageBox,
                                           "Changement effectué.\nRedémarrer l'interface maintenant pour l'appliquer ?",
                                           MessageBox.TYPE_YESNO)
@@ -446,6 +553,11 @@ class WacayoubPanel(Screen):
     def keyExit(self):
         if self.focus_items:
             self._set_focus(False)
+            return
+        if self.query:
+            self.query = ""
+            self._build_cats(select="all")
+            self._build_items(keep=False)
             return
         self.async_console.killAll()
         # 'opkg update' keeps running if needed; never kill opkg half-way

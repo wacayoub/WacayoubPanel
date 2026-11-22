@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "1.1.0",
+    "Version": "1.2.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -164,8 +164,10 @@ def build_panel():
     for fn in sorted(os.listdir(src)):
         if fn.endswith((".py", ".png")):
             shutil.copy2(os.path.join(src, fn), dest)
+    if os.path.isdir(os.path.join(src, "img")):
+        shutil.copytree(os.path.join(src, "img"), os.path.join(dest, "img"))
     ctl = dict(PANEL)
-    ctl["Installed-Size"] = str(sum(os.path.getsize(os.path.join(dest, f)) for f in os.listdir(dest)) // 1024 + 1)
+    ctl["Installed-Size"] = str(sum(os.path.getsize(os.path.join(dp, f)) for dp, _d, fs in os.walk(dest) for f in fs) // 1024 + 1)
     out = os.path.join(ROOT, "packages", "%s_%s_all.ipk" % (ctl["Package"], ctl["Version"]))
     ipk.build_ipk(out, ctl, stage, {"postinst": PANEL_POSTINST, "postrm": PANEL_POSTRM})
     return out

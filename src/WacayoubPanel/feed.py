@@ -72,6 +72,13 @@ def compare_versions(a, b):
     return _cmp_part(ua, ub) or _cmp_part(ra, rb)
 
 
+def fold(text):
+    """Lowercase without accents, for search."""
+    import unicodedata
+    t = unicodedata.normalize("NFKD", text or "")
+    return "".join(c for c in t if not unicodedata.combining(c)).lower()
+
+
 def short_version(v, limit=22):
     """'V1.07-git10+0141d090+0141d0911b-r0' -> 'V1.07-git10' (display only)."""
     v = (v or "").split("+")[0]
@@ -164,6 +171,22 @@ class Feed(object):
             return [i for i in self.items if i.get("type") != "opkg"]
         return [i for i in self.items if i.get("category") == cat_id]
 
+    def search(self, query):
+        """Items (mine first, then OpenATV) whose name, package or text contains every word of query.
+        Case and accents are ignored."""
+        words = [w for w in fold(query).split() if w]
+        if not words:
+            return []
+        hits = []
+        for it in self.items:
+            hay = fold(" ".join([it.get("name", ""), " ".join(it.get("packages", [])),
+                                 it.get("summary", ""), it.get("description", "")]))
+            if all(w in hay for w in words):
+                score = 0 if fold(it.get("name", "")).startswith(words[0]) else 1
+                hits.append((it.get("type") == "opkg", score, it.get("name", "").lower(), it))
+        hits.sort(key=lambda h: h[:3])
+        return [h[3] for h in hits]
+
     # -- per item state ------------------------------------------------
     def item_state(self, item, installed, archs):
         """Return (state, text) for an item."""
@@ -183,7 +206,11 @@ class Feed(object):
         missing = [p for p in pkgs if p not in installed and p not in item.get("optional", [])]
         if upd:
             if main in upd:
-                return ST_UPDATE, "Mise à jour %s → %s" % (short_version(installed[main]), short_version(self.packages[main]["version"]))
+                old, new = short_version(installed[main]), short_version(self.packages[main]["version"])
+                if old == new:  # same base, different git build: show one more '+' part
+                    old = "+".join(installed[main].split("+")[:2])[:24]
+                    new = "+".join(self.packages[main]["version"].split("+")[:2])[:24]
+                return ST_UPDATE, "Mise à jour %s → %s" % (old, new)
             return ST_UPDATE, "Mise à jour disponible"
         if missing:
             return ST_PARTIAL, "Incomplet (%d manquant)" % len(missing)

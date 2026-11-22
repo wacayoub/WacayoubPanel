@@ -155,13 +155,13 @@
    "depends": "python3-core, enigma2"
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "1.1.0",
+   "version": "1.2.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_1.1.0_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.1.0_all.ipk",
-   "sha256": "799cb86a820c175d5239c0629fa70972f1278a6d80c6f9dce0c3c0308a498382",
-   "size": 16204,
-   "installed_size": 40,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_1.2.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.2.0_all.ipk",
+   "sha256": "9bb5f6175f3f7e2cdbcfcbbf222fba143196f8e1d11cf521658e0df5c2563012",
+   "size": 263084,
+   "installed_size": 306,
    "depends": "enigma2, python3-core, python3-json"
   },
   "enigma2-plugin-skincomponents-metrixneo-runtime": {

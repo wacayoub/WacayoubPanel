@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.1.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.2.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -23,6 +23,13 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Vert | installer / mettre à jour |
 | Jaune | relire le feed + mettre à jour les listes OpenATV (`opkg update`) |
 | Bleu | tout mettre à jour |
+| MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
+
+## Interface
+
+Icônes par catégorie et par plugin, badges d'état (installé, mise à jour, non installé) et trois jauges rondes
+en direct : **CPU** (avec la température), **RAM** et **stockage**, rafraîchies toutes les 2 secondes.
+Les images sont générées par `tools/make_icons.py` (glyphes [Lucide](https://lucide.dev), licence ISC, Lucide Contributors).
 
 ## Paquets OpenATV
 
