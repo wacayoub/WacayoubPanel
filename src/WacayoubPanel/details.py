@@ -69,7 +69,7 @@ class WacayoubDetails(Screen):
         self["state"] = Label(info.get("state_text", ""))
         lines = []
         for ok, label in info.get("compat", []):
-            lines.append((u"✓  " if ok else u"✗  ") + label)
+            lines.append((u"√  " if ok else u"×  ") + label)
         self["compat"] = Label("\n".join(lines) or "")
         self["versions"] = Label(info.get("versions", ""))
         self["desc"] = Label(info.get("description", ""))
@@ -89,6 +89,10 @@ class WacayoubDetails(Screen):
 
     def _on_close(self):
         self.closed = True
+        try:
+            self.console.killAll()  # stop a preview download that is still running
+        except Exception:
+            pass
 
     def _start(self):
         if not self.info.get("red"):
@@ -126,7 +130,7 @@ class WacayoubDetails(Screen):
             self["bigicon"].show()
 
     def _got(self, data, retval, path):
-        if self.closed:
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
             return
         if retval == 0 and os.path.exists(path):
             self._show(path)

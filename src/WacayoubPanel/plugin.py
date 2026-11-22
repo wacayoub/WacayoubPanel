@@ -34,7 +34,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.5.0"
+VERSION = "1.5.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -244,7 +244,7 @@ class WacayoubPanel(Screen):
 
     def _opkg_done(self, data, retval, extra=None):
         self.opkg_busy = False
-        if self.closed:
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
             return
         self._load_atv()
         self._refresh_all()
@@ -252,7 +252,7 @@ class WacayoubPanel(Screen):
             self["status"].setText("Listes OpenATV : mise à jour impossible, listes en cache.")
 
     def _feed_done(self, data, retval, tmp):
-        if self.closed:
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
             return
         try:
             if retval != 0:
@@ -306,7 +306,7 @@ class WacayoubPanel(Screen):
 
     def _images_done(self, data, retval, extra=None):
         self.images_busy = False
-        if self.closed:
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
             return
         self.image_groups = IM.load_catalog()
         self._refresh_all()
@@ -342,7 +342,7 @@ class WacayoubPanel(Screen):
 
     # ------------------------------------------------------------ gauges
     def _tick(self):
-        if self.closed:
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
             return
         cpu = S.cpu_percent()
         temp = S.cpu_temp()
