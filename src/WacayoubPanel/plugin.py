@@ -18,7 +18,7 @@ from Screens.Standby import TryQuitMainloop
 
 from . import feed as F
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -104,7 +104,7 @@ class WacayoubPanel(Screen):
         self["title"] = Label("Wacayoub Panel")
         self["sub"] = Label("")
         self["cats"] = _List(64, [("Regular", 30)])
-        self["items"] = _List(96, [("Regular", 32), ("Regular", 24)])
+        self["items"] = _List(80, [("Regular", 31), ("Regular", 23)])
         self["desc"] = Label("")
         self["status"] = Label("")
         self["key_red"] = Label("Supprimer")
@@ -219,13 +219,13 @@ class WacayoubPanel(Screen):
                 st, txt = self.feed.item_state(it, self.installed, self.archs)
                 kind = TYPE_LABEL.get(it.get("type"), "")
                 rows.append([it,
-                             MultiContentEntryText(pos=(s(20), s(6)), size=(s(50), s(50)), font=0,
+                             MultiContentEntryText(pos=(s(20), s(4)), size=(s(50), s(44)), font=0,
                                                    flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=ICON[st], color=C_STATE[st], color_sel=C_STATE[st]),
-                             MultiContentEntryText(pos=(s(70), s(6)), size=(s(820), s(50)), font=0,
+                             MultiContentEntryText(pos=(s(70), s(4)), size=(s(820), s(44)), font=0,
                                                    flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER, text=it.get("name", it["id"])),
-                             MultiContentEntryText(pos=(s(900), s(6)), size=(s(440), s(50)), font=1,
+                             MultiContentEntryText(pos=(s(900), s(4)), size=(s(440), s(44)), font=1,
                                                    flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER, text=txt, color=C_STATE[st], color_sel=C_STATE[st]),
-                             MultiContentEntryText(pos=(s(70), s(54)), size=(s(1270), s(36)), font=1,
+                             MultiContentEntryText(pos=(s(70), s(46)), size=(s(1270), s(30)), font=1,
                                                    flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
                                                    text=(kind + "  ·  " if kind else "") + it.get("summary", ""), color=C_DIM, color_sel=0xC9D4E3)])
         self["items"].setList(rows)
