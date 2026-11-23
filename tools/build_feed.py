@@ -362,7 +362,7 @@ def main():
             titles = dict((c["package"], c["title"]) for c in picks)
             at = len(items) - len(picks)
             for pid, title, what in PACKS:
-                pack = [E + x for x in what if E + x in have]
+                pack = [p for p in (("enigma2-plugin-skins-" + x[1:]) if x[0] == "@" else E + x for x in what) if p in have]
                 if len(pack) < 2:
                     continue
                 items.insert(at, {
@@ -393,9 +393,12 @@ def main():
 E = "enigma2-plugin-extensions-"
 PACKS = [
     ("iptv", "IPTV", ["xstreamity", "bouquetmakerxtream", "estalker", "jediepgxtream", "xcplugin-forever"]),
-    ("epg", "EPG & Picons", ["xtraevent", "setpicon", "epgrefresh", "autotimer"]),
+    ("epg", "EPG & Enregistrements", ["xtraevent", "cooltvguide", "epgrefresh", "autotimer", "seriesplugin", "enhancedmoviecenter"]),
     ("films", "Films & Séries", ["subssupport", "imdb", "tmdb", "youtube"]),
-    ("outils", "Outils", ["bootlogoswitcher", "internet-speedtest", "weatherplugin", "filecommander"]),
+    ("picons", "Picons & Chaînes", ["setpicon", "mmpicons", "apsattv"]),
+    ("meteo", "Météo & Loisirs", ["oaweather", "weatherplugin", "worldcam", "horoscope"]),
+    ("outils", "Outils", ["bootlogoswitcher", "internet-speedtest", "filecommander"]),
+    ("skins", "Skins", ["@aglare-fhd", "@maxy-fhd"]),
 ]
 
 

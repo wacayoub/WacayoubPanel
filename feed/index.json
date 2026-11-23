@@ -191,8 +191,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
-   "sha256": "4b9a0dc079a54b3e4d6f4c3f142dd52a2702015af40958ac28943a48203185a4",
-   "size": 1193562,
+   "sha256": "60a2f27e961f602e3af09f48ec587a945bd9f721ed9f1a612aff3ae1ddab74da",
+   "size": 1193560,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
@@ -1154,22 +1154,26 @@
   },
   {
    "id": "c-pack-epg",
-   "name": "Pack EPG & Picons (4)",
+   "name": "Pack EPG & Enregistrements (6)",
    "category": "communaute",
    "type": "opkg",
-   "summary": "xtraEvent, SetPicon, EPGRefresh, AutoTimer",
-   "description": "Pack EPG & Picons : xtraEvent, SetPicon, EPGRefresh, AutoTimer, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "summary": "xtraEvent, CoolTVGuide, EPGRefresh, AutoTimer, SeriesPlugin, EnhancedMovieCenter",
+   "description": "Pack EPG & Enregistrements : xtraEvent, CoolTVGuide, EPGRefresh, AutoTimer, SeriesPlugin, EnhancedMovieCenter, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
    "packages": [
     "enigma2-plugin-extensions-xtraevent",
-    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-cooltvguide",
     "enigma2-plugin-extensions-epgrefresh",
-    "enigma2-plugin-extensions-autotimer"
+    "enigma2-plugin-extensions-autotimer",
+    "enigma2-plugin-extensions-seriesplugin",
+    "enigma2-plugin-extensions-enhancedmoviecenter"
    ],
    "remove": [
     "enigma2-plugin-extensions-xtraevent",
-    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-cooltvguide",
     "enigma2-plugin-extensions-epgrefresh",
-    "enigma2-plugin-extensions-autotimer"
+    "enigma2-plugin-extensions-autotimer",
+    "enigma2-plugin-extensions-seriesplugin",
+    "enigma2-plugin-extensions-enhancedmoviecenter"
    ],
    "reviewed": "2026-11-23"
   },
@@ -1195,23 +1199,78 @@
    "reviewed": "2026-11-23"
   },
   {
-   "id": "c-pack-outils",
-   "name": "Pack Outils (4)",
+   "id": "c-pack-picons",
+   "name": "Pack Picons & Chaînes (3)",
    "category": "communaute",
    "type": "opkg",
-   "summary": "BootlogoSwitcher, Internet Speedtest, WeatherPlugin, File Commander",
-   "description": "Pack Outils : BootlogoSwitcher, Internet Speedtest, WeatherPlugin, File Commander, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "summary": "SetPicon, mmPicons, ApSatTV",
+   "description": "Pack Picons & Chaînes : SetPicon, mmPicons, ApSatTV, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
+    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-mmpicons",
+    "enigma2-plugin-extensions-apsattv"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-mmpicons",
+    "enigma2-plugin-extensions-apsattv"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-meteo",
+   "name": "Pack Météo & Loisirs (4)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "OAWeather, WeatherPlugin, WorldCam, Horoscope",
+   "description": "Pack Météo & Loisirs : OAWeather, WeatherPlugin, WorldCam, Horoscope, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
+    "enigma2-plugin-extensions-oaweather",
+    "enigma2-plugin-extensions-weatherplugin",
+    "enigma2-plugin-extensions-worldcam",
+    "enigma2-plugin-extensions-horoscope"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-oaweather",
+    "enigma2-plugin-extensions-weatherplugin",
+    "enigma2-plugin-extensions-worldcam",
+    "enigma2-plugin-extensions-horoscope"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-outils",
+   "name": "Pack Outils (3)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "BootlogoSwitcher, Internet Speedtest, File Commander",
+   "description": "Pack Outils : BootlogoSwitcher, Internet Speedtest, File Commander, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
    "packages": [
     "enigma2-plugin-extensions-bootlogoswitcher",
     "enigma2-plugin-extensions-internet-speedtest",
-    "enigma2-plugin-extensions-weatherplugin",
     "enigma2-plugin-extensions-filecommander"
    ],
    "remove": [
     "enigma2-plugin-extensions-bootlogoswitcher",
     "enigma2-plugin-extensions-internet-speedtest",
-    "enigma2-plugin-extensions-weatherplugin",
     "enigma2-plugin-extensions-filecommander"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-skins",
+   "name": "Pack Skins (2)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "AGlare FHD, Maxy FHD",
+   "description": "Pack Skins : AGlare FHD, Maxy FHD, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
+    "enigma2-plugin-skins-aglare-fhd",
+    "enigma2-plugin-skins-maxy-fhd"
+   ],
+   "remove": [
+    "enigma2-plugin-skins-aglare-fhd",
+    "enigma2-plugin-skins-maxy-fhd"
    ],
    "reviewed": "2026-11-23"
   },

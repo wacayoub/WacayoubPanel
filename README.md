@@ -145,9 +145,8 @@ Chaque paquet est revu par `tools/verify_community.py` : téléchargement, sha25
 Résultat détaillé : [feed/COMMUNITY-REVIEW.md](feed/COMMUNITY-REVIEW.md). Refusés : AJPanel (change le mot de passe root, code obfusqué)
 WireGuard VPN (code compilé, impossible à vérifier) et E2iPlayer (code compilé contenant des adresses avec mot de passe).
 
-**Packs** (un bouton = plusieurs plugins, tous du feed officiel OpenATV) : IPTV (XStreamity, BouquetMakerXtream, EStalker,
-JediEPGXtream, XCplugin Forever), EPG & Picons (xtraEvent, SetPicon, EPGRefresh, AutoTimer), Films & Séries (SubsSupport, IMDb,
-TMDB, YouTube), Outils (BootlogoSwitcher, Internet Speedtest, WeatherPlugin, File Commander).
+**Packs** (un bouton = plusieurs plugins, tous du feed officiel OpenATV) : IPTV, EPG & Enregistrements, Films & Séries,
+Picons & Chaînes, Météo & Loisirs, Outils et Skins. Chaque plugin de la sélection est dans un pack.
 Les installateurs « wget … | sh » de sites tiers ne sont jamais utilisés.
 
 ## Paquets OpenATV
