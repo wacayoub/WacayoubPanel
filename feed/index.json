@@ -25,12 +25,28 @@
    "title": "Skins"
   },
   {
+   "id": "scripts",
+   "title": "Scripts"
+  },
+  {
+   "id": "fix",
+   "title": "Réparer"
+  },
+  {
+   "id": "dns",
+   "title": "DNS"
+  },
+  {
+   "id": "deps",
+   "title": "Dépendances"
+  },
+  {
    "id": "communaute",
    "title": "Communauté"
   },
   {
-   "id": "scripts",
-   "title": "Scripts"
+   "id": "disk",
+   "title": "Disque"
   },
   {
    "id": "panel",
@@ -171,13 +187,13 @@
    "provides": []
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "2.1.1",
+   "version": "2.2.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_2.1.1_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.1.1_all.ipk",
-   "sha256": "dd047a9f501545b37cf22f6534c49b7d87d76034225418b9a0da6c56b99510af",
-   "size": 847824,
-   "installed_size": 939,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_2.2.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.2.0_all.ipk",
+   "sha256": "aa0de0ed0d3e924b2ba67b6fa88eb621abeb304b1f55c7a207461725c2a34936",
+   "size": 1061968,
+   "installed_size": 1162,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
   },
@@ -253,6 +269,286 @@
    "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/softcam-fix.sh",
    "sha256": "372d79e0f1bd9e9809a9a6fd554f246834c70e37c7e30f5f47b9edd3025ff4e9",
    "size": 1412,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-bilan-sante": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "bilan-sante.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/bilan-sante.sh",
+   "sha256": "119479dcfba1e5d49872aa26d5c25042a0da55c205ea7457494471a81dad8889",
+   "size": 3120,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-internet": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "internet.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/internet.sh",
+   "sha256": "81fd9b60f6422fdac37c9aabd1ccf742f829ea68c0664cd5e90293c344317ff5",
+   "size": 1253,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-pas-image": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "pas-image.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/pas-image.sh",
+   "sha256": "ef4ad91ba7ddab03dc56409b768a36ca3717b64b0f820cdabf96cd34a040d501",
+   "size": 1288,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-lent": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "lent.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/lent.sh",
+   "sha256": "de0b72e9cc76564ba8beb904f3e81ef24cab571fd6821d2916d2b097fdfd312e",
+   "size": 891,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-heure": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "heure.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/heure.sh",
+   "sha256": "6a10d12ca7094853134a67defdc5bccce68a6f746f4acc345f1f343ed8ebfc35",
+   "size": 686,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-epg-vide": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "epg-vide.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/epg-vide.sh",
+   "sha256": "7f6d8c9d10273d78671cc8a8afc9c08b25d36446c213e16b4cbce708d2d24484",
+   "size": 1060,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-flash-pleine": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "flash-pleine.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/flash-pleine.sh",
+   "sha256": "a6e92d51e3de8b2d9d426f358820a3268aa7b11a8a1485773d2c0b5913a56a26",
+   "size": 977,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-opkg-bloque": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "opkg-bloque.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/opkg-bloque.sh",
+   "sha256": "18eac4b2cd1fa51e39ab71ccd7c77277859c3cb0b7051143b8273a6de9379fb2",
+   "size": 758,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-skin-defaut": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "skin-defaut.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/skin-defaut.sh",
+   "sha256": "22652e54fb6352de54ca4926d11263ef87ddd40d3d4a32da2d58ea022e0f2f13",
+   "size": 577,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-plantages": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "plantages.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/plantages.sh",
+   "sha256": "ee0553e3aba1ca2a6bcb4fcaa0e1a0b72540a1c61864449056ecf5bcf3a51470",
+   "size": 715,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-test": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-test.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-test.sh",
+   "sha256": "22cee402ffaf176585589eaa450d671906d4dcea8baea8809a5ee0815bfb5764",
+   "size": 726,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-cloudflare": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-cloudflare.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-cloudflare.sh",
+   "sha256": "33b6b87bb3fa08d01554d9e574368f5823f9158030b5761d770f22e4dda0e060",
+   "size": 1011,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-google": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-google.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-google.sh",
+   "sha256": "adb035b8b619948a5c8e251436a3e3b95f7879a7bce6ab7837035dd9784e099f",
+   "size": 999,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-quad9": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-quad9.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-quad9.sh",
+   "sha256": "d04bf7ca477650e47c3031db22a88ba75af11fe68a91ef7a9c62b57692531e93",
+   "size": 1020,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-adguard": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-adguard.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-adguard.sh",
+   "sha256": "3760b5e17fa4cc3e5f9c6f541f181934b5122b15c663c4b5582c8990d959a9ab",
+   "size": 1086,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dns-auto": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dns-auto.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dns-auto.sh",
+   "sha256": "38f89fd90ba6815d3215c4ec0a759498f90645c5b7e3a9246daf16341da356b7",
+   "size": 855,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-tout": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-tout.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-tout.sh",
+   "sha256": "2e426ee639e80990208920cef07a51c05546684216cae19a11ece4fec1820e3b",
+   "size": 1901,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-gstreamer": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-gstreamer.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-gstreamer.sh",
+   "sha256": "1b13079a7e21cef182304befd349c7aaf252c4255f275a2ba0e4796d13fa43d4",
+   "size": 1366,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-lecteurs": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-lecteurs.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-lecteurs.sh",
+   "sha256": "2054fe83c4a1d5c8aa6ebd44c15151d438367b2e23176c0a28c3f27f82996671",
+   "size": 1382,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-python": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-python.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-python.sh",
+   "sha256": "854a7d67b1fd28a872f3164469980576bfcb3df1db9c35e303c518b7de4ee09a",
+   "size": 1560,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-audio": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-audio.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-audio.sh",
+   "sha256": "6fe761ac9210553ec38e349a8e534a48718bfee00740b13089bc73da250d006c",
+   "size": 1243,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-iptv": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-iptv.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-iptv.sh",
+   "sha256": "904d60ca3c951e2a8351abff3152352354e74ec8291e993b172428a6584641b4",
+   "size": 1286,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-dep-archives": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "dep-archives.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/dep-archives.sh",
+   "sha256": "89c4a0312ffa2d070571e7e3724f40633147edb014f39ac04f975d7004a98e67",
+   "size": 1233,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-disque-info": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "disque-info.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/disque-info.sh",
+   "sha256": "aa4604bf330c7f982796b5121f218a8e4a368fe6beea27e06f03210af4867e27",
+   "size": 1318,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-disque-vitesse": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "disque-vitesse.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/disque-vitesse.sh",
+   "sha256": "048d241283f55a3617453993fdc465aba22654a019a1b89cd075389e4c486127",
+   "size": 1062,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-disque-dossiers": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "disque-dossiers.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/disque-dossiers.sh",
+   "sha256": "d9fbbafc5a0646bd4fa852f2cb19b78dd1217f66ddfbc559eee0688f0977f1eb",
+   "size": 567,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-swap-creer": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "swap-creer.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/swap-creer.sh",
+   "sha256": "0f4e46ef78eff73421155f3fb05cfa7ba3d90ae897245e5f110d0b11d5a3b55f",
+   "size": 1156,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-swap-supprimer": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "swap-supprimer.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/swap-supprimer.sh",
+   "sha256": "b0ea28b9ebafb3ebdc1535e14b26775e1c6692d8109f650452f9becae956e41d",
+   "size": 354,
    "installed_size": 0,
    "depends": ""
   }
@@ -524,6 +820,314 @@
     "python": "3.9"
    },
    "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/panel.jpg?v=d63420e4"
+  },
+  {
+   "id": "t-bilan-sante",
+   "name": "Bilan santé",
+   "category": "fix",
+   "type": "script",
+   "summary": "Vérifie tout le récepteur en une fois (ne change rien)",
+   "description": "Température, RAM, place libre, disques, réseau, Internet, DNS, heure, opkg, plantages, softcam et EPG. Chaque problème trouvé indique l'outil à utiliser. Lecture seule.",
+   "packages": [
+    "script-bilan-sante"
+   ]
+  },
+  {
+   "id": "t-internet",
+   "name": "Pas d'Internet",
+   "category": "fix",
+   "type": "script",
+   "summary": "Teste box, Internet, DNS et HTTPS étape par étape",
+   "description": "Cherche où la connexion casse : câble/Wi-Fi, box Internet, accès Internet, DNS, sites HTTPS. Lecture seule.",
+   "packages": [
+    "script-internet"
+   ]
+  },
+  {
+   "id": "t-pas-image",
+   "name": "Pas d'image",
+   "category": "fix",
+   "type": "script",
+   "summary": "Vérifie tuners, pilotes DVB et softcam",
+   "description": "Liste les tuners, vérifie les pilotes DVB, le softcam et le dernier ECM, puis donne les vérifications à faire. Lecture seule.",
+   "packages": [
+    "script-pas-image"
+   ]
+  },
+  {
+   "id": "t-lent",
+   "name": "Récepteur lent",
+   "category": "fix",
+   "type": "script",
+   "summary": "Libère la RAM et montre ce qui consomme",
+   "description": "Vide le cache mémoire du noyau et les fichiers temporaires du panel, puis affiche les processus qui utilisent le plus de mémoire.",
+   "packages": [
+    "script-lent"
+   ]
+  },
+  {
+   "id": "t-heure",
+   "name": "Heure fausse",
+   "category": "fix",
+   "type": "script",
+   "summary": "Remet l'heure à jour depuis Internet (NTP)",
+   "description": "Synchronise l'horloge avec pool.ntp.org (ou Google / Cloudflare). Une heure fausse casse l'EPG, les timers et les sites HTTPS.",
+   "packages": [
+    "script-heure"
+   ]
+  },
+  {
+   "id": "t-epg-vide",
+   "name": "EPG vide",
+   "category": "fix",
+   "type": "script",
+   "summary": "Vérifie le fichier et le dossier de l'EPG",
+   "description": "Contrôle l'emplacement du fichier EPG, les droits d'écriture et l'heure. Supprime seulement un fichier EPG vide (moins de 1 Ko).",
+   "packages": [
+    "script-epg-vide"
+   ]
+  },
+  {
+   "id": "t-flash-pleine",
+   "name": "Flash pleine",
+   "category": "fix",
+   "type": "script",
+   "summary": "Vide caches et vieux journaux, montre ce qui prend de la place",
+   "description": "Supprime le cache opkg, les journaux archivés et les rapports de plantage anciens (garde les 3 derniers), puis liste les dossiers les plus gros. Vos plugins, skins et réglages ne sont pas touchés.",
+   "packages": [
+    "script-flash-pleine"
+   ]
+  },
+  {
+   "id": "t-opkg-bloque",
+   "name": "opkg bloqué",
+   "category": "fix",
+   "type": "script",
+   "summary": "Retire un verrou resté, finit les installations, met à jour les listes",
+   "description": "Si aucune installation ne tourne : retire le verrou opkg resté après une coupure, termine les paquets à moitié installés (opkg configure) puis relance opkg update.",
+   "packages": [
+    "script-opkg-bloque"
+   ]
+  },
+  {
+   "id": "t-skin-defaut",
+   "name": "Écran noir (skin)",
+   "category": "fix",
+   "type": "script",
+   "summary": "Revient au skin par défaut de l'image",
+   "description": "Remet le skin par défaut quand un skin affiche un écran noir ou plante. L'interface redémarre ; vos autres réglages restent.",
+   "packages": [
+    "script-skin-defaut"
+   ]
+  },
+  {
+   "id": "t-plantages",
+   "name": "Plantages",
+   "category": "fix",
+   "type": "script",
+   "summary": "Résume les derniers rapports de plantage",
+   "description": "Lit les 3 derniers rapports de plantage d'Enigma2 et indique le plugin en cause et l'erreur. Lecture seule.",
+   "packages": [
+    "script-plantages"
+   ]
+  },
+  {
+   "id": "t-dns-test",
+   "name": "DNS actuels et vitesse",
+   "category": "dns",
+   "type": "script",
+   "summary": "Affiche les DNS utilisés et compare leur vitesse (ne change rien)",
+   "description": "Montre les DNS actuels et le temps de réponse de Cloudflare, Google, Quad9 et AdGuard. Lecture seule.",
+   "packages": [
+    "script-dns-test"
+   ]
+  },
+  {
+   "id": "t-dns-cloudflare",
+   "name": "DNS Cloudflare",
+   "category": "dns",
+   "type": "script",
+   "summary": "1.1.1.1  ·  1.0.0.1  ·  rapide",
+   "description": "Utilise les DNS Cloudflare (méthode OpenATV : /etc/enigma2/nameserversdns.conf). Retour arrière : « DNS automatique ».",
+   "packages": [
+    "script-dns-cloudflare"
+   ]
+  },
+  {
+   "id": "t-dns-google",
+   "name": "DNS Google",
+   "category": "dns",
+   "type": "script",
+   "summary": "8.8.8.8  ·  8.8.4.4",
+   "description": "Utilise les DNS Google (méthode OpenATV : /etc/enigma2/nameserversdns.conf). Retour arrière : « DNS automatique ».",
+   "packages": [
+    "script-dns-google"
+   ]
+  },
+  {
+   "id": "t-dns-quad9",
+   "name": "DNS Quad9",
+   "category": "dns",
+   "type": "script",
+   "summary": "9.9.9.9  ·  bloque les sites malveillants",
+   "description": "Utilise les DNS Quad9, qui bloquent les domaines malveillants connus. Retour arrière : « DNS automatique ».",
+   "packages": [
+    "script-dns-quad9"
+   ]
+  },
+  {
+   "id": "t-dns-adguard",
+   "name": "DNS AdGuard",
+   "category": "dns",
+   "type": "script",
+   "summary": "94.140.14.14  ·  bloque pubs et pisteurs",
+   "description": "Utilise les DNS AdGuard, qui bloquent publicités et pisteurs. Retour arrière : « DNS automatique ».",
+   "packages": [
+    "script-dns-adguard"
+   ]
+  },
+  {
+   "id": "t-dns-auto",
+   "name": "DNS automatique",
+   "category": "dns",
+   "type": "script",
+   "summary": "Revient aux DNS de votre box Internet",
+   "description": "Annule un DNS choisi ici et revient aux DNS donnés par la box Internet (DHCP), ou à vos anciens DNS personnalisés.",
+   "packages": [
+    "script-dns-auto"
+   ]
+  },
+  {
+   "id": "t-dep-tout",
+   "name": "Tout installer",
+   "category": "deps",
+   "type": "script",
+   "summary": "Toutes les dépendances ci-dessous en une fois",
+   "description": "Installe depuis le feed officiel OpenATV ce qui manque parmi GStreamer, lecteurs, modules Python, audio, IPTV et archives. Les paquets déjà présents ou absents du feed sont sautés.",
+   "packages": [
+    "script-dep-tout"
+   ]
+  },
+  {
+   "id": "t-dep-gstreamer",
+   "name": "GStreamer",
+   "category": "deps",
+   "type": "script",
+   "summary": "Lecture vidéo et audio (plugins base, good, bad, ugly, libav)",
+   "description": "Plugins GStreamer du feed OpenATV, utiles pour lire IPTV, vidéos et radios.",
+   "packages": [
+    "script-dep-gstreamer"
+   ]
+  },
+  {
+   "id": "t-dep-lecteurs",
+   "name": "Lecteurs vidéo",
+   "category": "deps",
+   "type": "script",
+   "summary": "ServiceApp, exteplayer3, gstplayer, sous-titres, ffmpeg",
+   "description": "Lecteurs alternatifs utilisés par les plugins IPTV (ServiceApp, exteplayer3, gstplayer), SubsSupport et ffmpeg.",
+   "packages": [
+    "script-dep-lecteurs"
+   ]
+  },
+  {
+   "id": "t-dep-python",
+   "name": "Modules Python",
+   "category": "deps",
+   "type": "script",
+   "summary": "requests, lxml, pillow, beautifulsoup4, cryptodome…",
+   "description": "Modules Python 3 souvent demandés par les plugins (requests, six, pillow, lxml, beautifulsoup4, pycryptodome, js2py…).",
+   "packages": [
+    "script-dep-python"
+   ]
+  },
+  {
+   "id": "t-dep-audio",
+   "name": "Audio",
+   "category": "deps",
+   "type": "script",
+   "summary": "alsa-utils, mpg123, libmad",
+   "description": "Outils et bibliothèques audio du feed OpenATV.",
+   "packages": [
+    "script-dep-audio"
+   ]
+  },
+  {
+   "id": "t-dep-iptv",
+   "name": "IPTV",
+   "category": "deps",
+   "type": "script",
+   "summary": "streamlink, yt-dlp, rtmpdump, curl",
+   "description": "Outils de flux utilisés par les plugins IPTV et YouTube.",
+   "packages": [
+    "script-dep-iptv"
+   ]
+  },
+  {
+   "id": "t-dep-archives",
+   "name": "Archives",
+   "category": "deps",
+   "type": "script",
+   "summary": "unrar, 7zip, zip",
+   "description": "Pour ouvrir les fichiers rar, 7z et zip.",
+   "packages": [
+    "script-dep-archives"
+   ]
+  },
+  {
+   "id": "t-disque-info",
+   "name": "Info disques",
+   "category": "disk",
+   "type": "script",
+   "summary": "Place, format et santé SMART des disques (ne change rien)",
+   "description": "Pour chaque disque ou clé USB : taille, place libre, format, santé SMART, température et secteurs défectueux. Lecture seule.",
+   "packages": [
+    "script-disque-info"
+   ]
+  },
+  {
+   "id": "t-disque-vitesse",
+   "name": "Vitesse du disque",
+   "category": "disk",
+   "type": "script",
+   "summary": "Écrit puis relit 64 Mo pour mesurer la vitesse",
+   "description": "Mesure la vitesse d'écriture et de lecture du disque (fichier de test supprimé ensuite) et dit s'il suffit pour enregistrer en HD.",
+   "packages": [
+    "script-disque-vitesse"
+   ]
+  },
+  {
+   "id": "t-disque-dossiers",
+   "name": "Préparer le disque",
+   "category": "disk",
+   "type": "script",
+   "summary": "Crée movie, picon, epg, backup, images, timeshift",
+   "description": "Crée les dossiers habituels sur /media/hdd (ou la clé USB) s'ils n'existent pas. Rien n'est supprimé.",
+   "packages": [
+    "script-disque-dossiers"
+   ]
+  },
+  {
+   "id": "t-swap-creer",
+   "name": "Créer un swap",
+   "category": "disk",
+   "type": "script",
+   "summary": "Fichier d'échange de 256 Mo sur le disque (peu de RAM)",
+   "description": "Crée wacayoub.swap (256 Mo) sur un disque ext4 et l'active à chaque démarrage. Rien n'est fait si un swap existe déjà.",
+   "packages": [
+    "script-swap-creer"
+   ]
+  },
+  {
+   "id": "t-swap-supprimer",
+   "name": "Supprimer le swap",
+   "category": "disk",
+   "type": "script",
+   "summary": "Retire le swap créé par le panel",
+   "description": "Désactive et supprime seulement le fichier wacayoub.swap créé par le panel.",
+   "packages": [
+    "script-swap-supprimer"
+   ]
   },
   {
    "id": "c-xstreamity",

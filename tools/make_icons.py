@@ -45,6 +45,9 @@ G = {
     "layers": '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 .83.18a2 2 0 0 0 .83-.18l8.58-3.9a1 1 0 0 0 0-1.831zM16 17h6m-3-3v6M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 .825.178M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l2.116-.962"/>',
     "checkbig": '<path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11l3 3L22 4"/>',
     "check": '<path d="M20 6L9 17l-5-5"/>',
+    "thermo": '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
+    "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    "chip": '<rect width="20" height="12" x="2" y="6" rx="2"/><path d="M6 10v4m4-4v4m4-4v4m4-4v4"/>',
     "up": '<path d="M12 19V5m-7 7l7-7l7 7"/>',
     "down": '<path d="M12 5v14m7-7l-7 7l-7-7"/>',
     "half": '<path d="M12 3v18"/><circle cx="12" cy="12" r="9"/>',
@@ -82,6 +85,24 @@ TILES = {
     "panels": ("grid", "#0F766E", "#14B8A6"),
     "multiboot": ("layers", "#1E3A8A", "#6366F1"),
     "feeds": ("rss", "#C2410C", "#FBBF24"),
+    "recv": ("tv", "#0369A1", "#22D3EE"),
+    "fix": ("wrench", "#B45309", "#FBBF24"),
+    "dns": ("globe", "#1D4ED8", "#60A5FA"),
+    "deps": ("box", "#B45309", "#F59E0B"),
+    "disk": ("drive", "#6D28D9", "#A78BFA"),
+    # 'Mon récepteur' rows
+    "r-model": ("tv", "#0369A1", "#22D3EE"),
+    "r-temp": ("thermo", "#DC2626", "#F97316"),
+    "r-cpu": ("cpu", "#1D4ED8", "#06B6D4"),
+    "r-ram": ("chip", "#7C3AED", "#A78BFA"),
+    "r-flash": ("drive", "#0F766E", "#2DD4BF"),
+    "r-disk": ("drive", "#6D28D9", "#A78BFA"),
+    "r-net": ("globe", "#1D4ED8", "#60A5FA"),
+    "r-up": ("clock", "#059669", "#34D399"),
+    "r-tuner": ("satellite", "#2F8CFF", "#22D3EE"),
+    "r-cam": ("key", "#7C2D12", "#EA580C"),
+    "r-skin": ("palette", "#F59E0B", "#F97316"),
+    "r-soft": ("terminal", "#475569", "#64748B"),
     "ext": ("puzzle", "#4C1D95", "#DB2777"),
     "atv-ext": ("puzzle", "#334155", "#0F766E"),
     "atv-sys": ("cpu", "#334155", "#1D4ED8"),
@@ -267,7 +288,7 @@ def main():
     for k in TILES:
         tile(k, 60).save(os.path.join(OUT, "t-%s.png" % k), optimize=True)
         tile(k, 160).save(os.path.join(OUT, "B-%s.png" % k), optimize=True)
-        if not k.startswith("i-"):
+        if not k.startswith(("i-", "r-")):
             # small category glyph, white and dim versions
             glyph(TILES[k][0], 30, "#FFFFFF", 2.0).save(os.path.join(OUT, "c-%s.png" % k), optimize=True)
     for k in STATES:

@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.1.1",
+    "Version": "2.2.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -64,6 +64,10 @@ CATEGORIES = [
     {"id": "tools", "title": "Outils & Infos"},
     {"id": "skins", "title": "Skins"},
     {"id": "scripts", "title": "Scripts"},
+    {"id": "fix", "title": "Réparer"},
+    {"id": "dns", "title": "DNS"},
+    {"id": "deps", "title": "Dépendances"},
+    {"id": "disk", "title": "Disque"},
     {"id": "panel", "title": "Panel"},
 ]
 
@@ -148,6 +152,75 @@ ITEMS = [
 
 SCRIPTS = {"script-info-systeme": ("feed/scripts/info-systeme.sh", "1.0"),
            "script-softcam-fix": ("feed/scripts/softcam-fix.sh", "1.0")}
+
+# Repair / DNS / dependency / disk tools: (file, category, name, summary, description). All are my own shell
+# scripts in feed/scripts/, checked with sha256 before they run. "lecture seule" ones change nothing.
+TOOLS = [
+    ("bilan-sante", "fix", "Bilan santé", "Vérifie tout le récepteur en une fois (ne change rien)",
+     "Température, RAM, place libre, disques, réseau, Internet, DNS, heure, opkg, plantages, softcam et EPG. "
+     "Chaque problème trouvé indique l'outil à utiliser. Lecture seule."),
+    ("internet", "fix", "Pas d'Internet", "Teste box, Internet, DNS et HTTPS étape par étape",
+     "Cherche où la connexion casse : câble/Wi-Fi, box Internet, accès Internet, DNS, sites HTTPS. Lecture seule."),
+    ("pas-image", "fix", "Pas d'image", "Vérifie tuners, pilotes DVB et softcam",
+     "Liste les tuners, vérifie les pilotes DVB, le softcam et le dernier ECM, puis donne les vérifications à faire. Lecture seule."),
+    ("lent", "fix", "Récepteur lent", "Libère la RAM et montre ce qui consomme",
+     "Vide le cache mémoire du noyau et les fichiers temporaires du panel, puis affiche les processus qui utilisent le plus de mémoire."),
+    ("heure", "fix", "Heure fausse", "Remet l'heure à jour depuis Internet (NTP)",
+     "Synchronise l'horloge avec pool.ntp.org (ou Google / Cloudflare). Une heure fausse casse l'EPG, les timers et les sites HTTPS."),
+    ("epg-vide", "fix", "EPG vide", "Vérifie le fichier et le dossier de l'EPG",
+     "Contrôle l'emplacement du fichier EPG, les droits d'écriture et l'heure. Supprime seulement un fichier EPG vide (moins de 1 Ko)."),
+    ("flash-pleine", "fix", "Flash pleine", "Vide caches et vieux journaux, montre ce qui prend de la place",
+     "Supprime le cache opkg, les journaux archivés et les rapports de plantage anciens (garde les 3 derniers), puis liste les "
+     "dossiers les plus gros. Vos plugins, skins et réglages ne sont pas touchés."),
+    ("opkg-bloque", "fix", "opkg bloqué", "Retire un verrou resté, finit les installations, met à jour les listes",
+     "Si aucune installation ne tourne : retire le verrou opkg resté après une coupure, termine les paquets à moitié installés "
+     "(opkg configure) puis relance opkg update."),
+    ("skin-defaut", "fix", "Écran noir (skin)", "Revient au skin par défaut de l'image",
+     "Remet le skin par défaut quand un skin affiche un écran noir ou plante. L'interface redémarre ; vos autres réglages restent."),
+    ("plantages", "fix", "Plantages", "Résume les derniers rapports de plantage",
+     "Lit les 3 derniers rapports de plantage d'Enigma2 et indique le plugin en cause et l'erreur. Lecture seule."),
+    ("dns-test", "dns", "DNS actuels et vitesse", "Affiche les DNS utilisés et compare leur vitesse (ne change rien)",
+     "Montre les DNS actuels et le temps de réponse de Cloudflare, Google, Quad9 et AdGuard. Lecture seule."),
+    ("dns-cloudflare", "dns", "DNS Cloudflare", "1.1.1.1  ·  1.0.0.1  ·  rapide",
+     "Utilise les DNS Cloudflare (méthode OpenATV : /etc/enigma2/nameserversdns.conf). Retour arrière : « DNS automatique »."),
+    ("dns-google", "dns", "DNS Google", "8.8.8.8  ·  8.8.4.4",
+     "Utilise les DNS Google (méthode OpenATV : /etc/enigma2/nameserversdns.conf). Retour arrière : « DNS automatique »."),
+    ("dns-quad9", "dns", "DNS Quad9", "9.9.9.9  ·  bloque les sites malveillants",
+     "Utilise les DNS Quad9, qui bloquent les domaines malveillants connus. Retour arrière : « DNS automatique »."),
+    ("dns-adguard", "dns", "DNS AdGuard", "94.140.14.14  ·  bloque pubs et pisteurs",
+     "Utilise les DNS AdGuard, qui bloquent publicités et pisteurs. Retour arrière : « DNS automatique »."),
+    ("dns-auto", "dns", "DNS automatique", "Revient aux DNS de votre box Internet",
+     "Annule un DNS choisi ici et revient aux DNS donnés par la box Internet (DHCP), ou à vos anciens DNS personnalisés."),
+    ("dep-tout", "deps", "Tout installer", "Toutes les dépendances ci-dessous en une fois",
+     "Installe depuis le feed officiel OpenATV ce qui manque parmi GStreamer, lecteurs, modules Python, audio, IPTV et archives. "
+     "Les paquets déjà présents ou absents du feed sont sautés."),
+    ("dep-gstreamer", "deps", "GStreamer", "Lecture vidéo et audio (plugins base, good, bad, ugly, libav)",
+     "Plugins GStreamer du feed OpenATV, utiles pour lire IPTV, vidéos et radios."),
+    ("dep-lecteurs", "deps", "Lecteurs vidéo", "ServiceApp, exteplayer3, gstplayer, sous-titres, ffmpeg",
+     "Lecteurs alternatifs utilisés par les plugins IPTV (ServiceApp, exteplayer3, gstplayer), SubsSupport et ffmpeg."),
+    ("dep-python", "deps", "Modules Python", "requests, lxml, pillow, beautifulsoup4, cryptodome…",
+     "Modules Python 3 souvent demandés par les plugins (requests, six, pillow, lxml, beautifulsoup4, pycryptodome, js2py…)."),
+    ("dep-audio", "deps", "Audio", "alsa-utils, mpg123, libmad",
+     "Outils et bibliothèques audio du feed OpenATV."),
+    ("dep-iptv", "deps", "IPTV", "streamlink, yt-dlp, rtmpdump, curl",
+     "Outils de flux utilisés par les plugins IPTV et YouTube."),
+    ("dep-archives", "deps", "Archives", "unrar, 7zip, zip",
+     "Pour ouvrir les fichiers rar, 7z et zip."),
+    ("disque-info", "disk", "Info disques", "Place, format et santé SMART des disques (ne change rien)",
+     "Pour chaque disque ou clé USB : taille, place libre, format, santé SMART, température et secteurs défectueux. Lecture seule."),
+    ("disque-vitesse", "disk", "Vitesse du disque", "Écrit puis relit 64 Mo pour mesurer la vitesse",
+     "Mesure la vitesse d'écriture et de lecture du disque (fichier de test supprimé ensuite) et dit s'il suffit pour enregistrer en HD."),
+    ("disque-dossiers", "disk", "Préparer le disque", "Crée movie, picon, epg, backup, images, timeshift",
+     "Crée les dossiers habituels sur /media/hdd (ou la clé USB) s'ils n'existent pas. Rien n'est supprimé."),
+    ("swap-creer", "disk", "Créer un swap", "Fichier d'échange de 256 Mo sur le disque (peu de RAM)",
+     "Crée wacayoub.swap (256 Mo) sur un disque ext4 et l'active à chaque démarrage. Rien n'est fait si un swap existe déjà."),
+    ("swap-supprimer", "disk", "Supprimer le swap", "Retire le swap créé par le panel",
+     "Désactive et supprime seulement le fichier wacayoub.swap créé par le panel."),
+]
+for _f, _cat, _name, _sum, _desc in TOOLS:
+    SCRIPTS["script-" + _f] = ("feed/scripts/%s.sh" % _f, "1.0")
+    ITEMS.append({"id": "t-" + _f, "name": _name, "category": _cat, "type": "script",
+                  "summary": _sum, "description": _desc, "packages": ["script-" + _f]})
 
 # Compatibility shim for OSCam/NCam builds of other images (OpenViX, OpenPLi): they depend on
 # "softcam-support" (their softcam framework; OpenATV has its own /etc/init.d/softcam system) and

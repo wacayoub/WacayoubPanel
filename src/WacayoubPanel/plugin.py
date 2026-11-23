@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -55,6 +55,8 @@ STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTI
 TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "", "ext": "", "image": "Image"}
 SEARCH = "search"
 FEEDSRC = "feedsrc"
+RECV = "recv"  # 'Mon récepteur' info rows (nothing to install)
+TOOL_CATS = ('communaute', 'scripts', 'fix', 'dns', 'deps', 'disk')  # categories of the index shown as they are
 # where an item comes from, shown on every row (lists are merged across sources)
 SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, u"Installé": 0x4ADE80, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
                 "EGAMI": 0xFACC15, "OpenBH": 0xA78BFA, "OpenHDF": 0xF472B6, "OpenSPA": 0xF87171}
@@ -77,6 +79,8 @@ def source_of(it, common=None):
         return it.get("src", "Wacayoub")
     if t == FEEDSRC:
         return it.get("src", "")
+    if t == RECV:
+        return ""
     if t in ("opkg", "ext") and common and it.get("packages") and it["packages"][0] in common:
         return "Universel"  # same tool in several images: no image name
     if t == "opkg":
@@ -112,6 +116,8 @@ def item_tile(it):
         return pix("t-i-%s.png" % it.get("tile")) or pix("t-%s.png" % it.get("tile")) or pix("t-launch.png")
     if it.get("type") == FEEDSRC:
         return pix("t-feeds.png")
+    if it.get("type") == RECV:
+        return pix("t-r-%s.png" % it.get("tile")) or pix("t-recv.png")
     g = F.group_of(it)
     if g and it.get("type") in ("opkg", "ext") and pix("t-%s.png" % g):
         return pix("t-%s.png" % g)
@@ -140,14 +146,14 @@ def _skin():
         "subx": 1020, "subw": 852, "subf": 23,
         "cx": 62, "cy": 156, "cw": 412, "ch": 624,
         "ix": 520, "iy": 150, "iw": 1340, "ih": 640,
-        "dx": 72, "dy": 832, "dw": 1240, "dh": 124, "df": 25,
-        "r1": 1342, "r2": 1520, "r3": 1698, "ry": 828, "rs": 104,
+        "dx": 72, "dy": 832, "dw": 1068, "dh": 124, "df": 25,
+        "r0": 1164, "r1": 1342, "r2": 1520, "r3": 1698, "ry": 828, "rs": 104,
         "pw": 104, "py": 864, "pf": 26, "ny": 936, "nw": 170, "nh": 28, "nf": 19,
         "fy": 996, "fd": 26, "fty": 988, "fth": 42, "ff": 25,
         "k1": 62, "k2": 392, "k3": 742, "k4": 1062, "k5": 1452,
     }.items():
         d[k] = s(v)
-    d["n1"], d["n2"], d["n3"] = d["r1"] - s(33), d["r2"] - s(33), d["r3"] - s(33)
+    d["n0"], d["n1"], d["n2"], d["n3"] = d["r0"] - s(33), d["r1"] - s(33), d["r2"] - s(33), d["r3"] - s(33)
     for i in range(1, 6):
         d["l%d" % i] = d["k%d" % i] + s(38)
     d["kw"] = s(300)
@@ -161,6 +167,9 @@ def _skin():
       <widget name="cats" position="%(cx)d,%(cy)d" size="%(cw)d,%(ch)d" backgroundColor="#00070B14" transparent="1" foregroundColor="#00F1F5F9" foregroundColorSelected="#00FFFFFF" selectionPixmap="%(img)s/sel-cat.png" scrollbarMode="showNever" enableWrapAround="1" />
       <widget name="items" position="%(ix)d,%(iy)d" size="%(iw)d,%(ih)d" backgroundColor="#00070B14" transparent="1" foregroundColor="#00F1F5F9" foregroundColorSelected="#00FFFFFF" selectionPixmap="%(img)s/sel-item.png" scrollbarMode="showOnDemand" scrollbarWidth="4" scrollbarForegroundColor="#003B82F6" enableWrapAround="1" />
       <widget name="desc" position="%(dx)d,%(dy)d" size="%(dw)d,%(dh)d" font="Regular;%(df)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" />
+      <widget name="ring_temp" position="%(r0)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
+      <widget name="pct_temp" position="%(r0)d,%(py)d" size="%(pw)d,%(sth)d" font="Regular;%(pf)d" foregroundColor="#00FFFFFF" backgroundColor="#00070B14" transparent="1" halign="center" valign="center" zPosition="2" />
+      <widget name="lab_temp" position="%(n0)d,%(ny)d" size="%(nw)d,%(nh)d" font="Regular;%(nf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="center" />
       <widget name="ring_cpu" position="%(r1)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
       <widget name="ring_ram" position="%(r2)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
       <widget name="ring_disk" position="%(r3)d,%(ry)d" size="%(rs)d,%(rs)d" alphatest="blend" scale="1" />
@@ -220,7 +229,7 @@ class WacayoubPanel(Screen):
         self["cats"] = _List(52, [("Regular", 26), ("Regular", 22)])
         self["items"] = _List(80, [("Regular", 30), ("Regular", 22)])
         self["desc"] = Label("")
-        for k in ("cpu", "ram", "disk"):
+        for k in ("temp", "cpu", "ram", "disk"):
             self["ring_" + k] = Pixmap()
             self["pct_" + k] = Label("")
             self["lab_" + k] = Label("")
@@ -405,6 +414,8 @@ class WacayoubPanel(Screen):
         t = it.get("type")
         if t == LAUNCH:
             return F.ST_OK, "Ouvrir"
+        if t == RECV:
+            return F.ST_OK, ""
         if t == FEEDSRC:
             return F.ST_OK, (u"Filtre actif" if self.src_filter == it.get("src") else u"Afficher")
         if t == "image":
@@ -447,7 +458,13 @@ class WacayoubPanel(Screen):
         temp = S.cpu_temp()
         rp, rused, rtotal = S.ram()
         dp, dused, dtotal = S.storage("/")
-        for key, pct, label in (("cpu", cpu, "CPU" + ("  %d°C" % temp if temp else "")),
+        if temp:
+            png = pix(S.ring_step(S.temp_step(temp)))
+            if png and self["ring_temp"].instance:
+                self["ring_temp"].instance.setPixmap(png)
+            self["pct_temp"].setText(u"%d°" % temp)
+            self["lab_temp"].setText(u"Température")
+        for key, pct, label in (("cpu", cpu, "CPU"),
                                 ("ram", rp, "RAM  %d/%d Mo" % (rused, rtotal)),
                                 ("disk", dp, "Stockage  %s" % S.human(dtotal))):
             png = pix(S.ring_step(pct))
@@ -462,11 +479,13 @@ class WacayoubPanel(Screen):
         if self.query:
             cats.append({"id": SEARCH, "title": u"« %s »" % self.query})
         cats.append({"id": LAUNCH, "title": u"Installés"})
+        cats.append({"id": RECV, "title": u"Mon récepteur"})
         for gid, title in F.GROUPS:
             cats.append({"id": gid, "title": title})
         cats.append({"id": "feeds", "title": "Feeds"})
         if self.feed:
-            cats += [c for c in self.feed.data.get("categories", []) if c["id"] in ("communaute", "scripts")]
+            cats += sorted([c for c in self.feed.data.get("categories", []) if c["id"] in TOOL_CATS],
+                           key=lambda c: TOOL_CATS.index(c["id"]))
         if self.image_groups:
             for distro, items in self.image_groups:
                 cats.append({"id": items[0]["category"], "title": "Images · %s" % distro})
@@ -479,6 +498,8 @@ class WacayoubPanel(Screen):
             return list(self.launch_items)
         if cat_id == "feeds":
             return self._feed_sources()
+        if cat_id == RECV:
+            return self._recv_rows()
         if cat_id.startswith("img-"):
             for _d, items in self.image_groups:
                 if items[0]["category"] == cat_id:
@@ -494,6 +515,22 @@ class WacayoubPanel(Screen):
         if self.src_filter:
             items = [i for i in items if self.src_filter in sources_of(i, self.feed.common)]
         return items
+
+    def _recv_rows(self):
+        try:
+            rows = S.receiver_info(self.model_name)
+        except Exception as e:
+            print("[WacayoubPanel] receiver info: %s" % e)
+            return []
+        tiles = {"model": "model", "temp": "temp", "cpu": "cpu", "ram": "ram", "flash": "flash", "net": "net", "dns": "net",
+                 "up": "up", "cam": "cam", "skin": "skin", "soft": "soft"}
+        out = []
+        for rid, title, value, detail in rows:
+            key = "disk" if rid.startswith("disk") else "tuner" if rid.startswith("tuner") else rid
+            out.append({"id": "recv:" + rid, "type": RECV, "category": RECV, "name": title, "value": value,
+                        "summary": value + ((u"  ·  " + detail) if detail else ""), "tile": tiles.get(key, key),
+                        "description": u"%s : %s%s" % (title, value, ("\n" + detail) if detail else ""), "packages": []})
+        return out
 
     def _feed_sources(self):
         """One row per source; OK shows only that source in every list."""
@@ -534,7 +571,7 @@ class WacayoubPanel(Screen):
         for c in self._cat_list():
             items = self._items_for(c["id"])
             n_upd = 0
-            if self.feed and c["id"] not in (SEARCH, LAUNCH, "feeds") and not c["id"].startswith("img-"):
+            if self.feed and c["id"] not in (SEARCH, LAUNCH, RECV, "feeds") and not c["id"].startswith("img-"):
                 for it in items:
                     if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
                         n_upd += 1
@@ -574,6 +611,8 @@ class WacayoubPanel(Screen):
                 txt = "Script"
             elif it.get("type") == LAUNCH:
                 badge = pix("s-open.png")
+            elif it.get("type") == RECV:
+                badge, txt = None, ""
             else:
                 badge = pix("s-%s.png" % STATE_IMG[st])
             kind = TYPE_LABEL.get(it.get("type"), "")
@@ -617,7 +656,7 @@ class WacayoubPanel(Screen):
         if not it and cat == "img-wait":
             self["desc"].setText("Recherche des images pour %s (OpenATV, OpenPLi, OpenViX, OpenBH, OpenSPA)…" % (self.model_name or self.model))
             return
-        if it and it.get("type") in (LAUNCH, "image", FEEDSRC):
+        if it and it.get("type") in (LAUNCH, "image", FEEDSRC, RECV):
             extra = ""
             if it.get("type") == "image":
                 d = IM.image_dir()
@@ -705,6 +744,8 @@ class WacayoubPanel(Screen):
             return
         if it.get("type") == LAUNCH:
             return self._launch(it)
+        if it.get("type") == RECV:
+            return
         if it.get("type") == FEEDSRC:
             self.src_filter = it["src"]
             self._refresh_all()
@@ -719,7 +760,7 @@ class WacayoubPanel(Screen):
 
     def keyInfo(self):
         it = self._current_item() if self.focus_items else None
-        if it and it.get("type") not in (LAUNCH, FEEDSRC):
+        if it and it.get("type") not in (LAUNCH, FEEDSRC, RECV):
             self._open_details(it)
 
     # ------------------------------------------------------------ selection (grouped install)
@@ -875,6 +916,8 @@ class WacayoubPanel(Screen):
             return self._install_marked()
         it = self._current_item()
         if it and self.focus_items:
+            if it.get("type") in (RECV, FEEDSRC):
+                return
             if it.get("type") == LAUNCH:
                 return self._launch(it)
             if it.get("type") == "image":
@@ -891,7 +934,7 @@ class WacayoubPanel(Screen):
         if it and self.focus_items:
             if it.get("type") == "image":
                 return self._image_delete(it)
-            if it.get("type") == LAUNCH:
+            if it.get("type") in (LAUNCH, RECV, FEEDSRC):
                 return
             self._ask_remove(it)
 

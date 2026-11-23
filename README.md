@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.1.1_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.2.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -34,6 +34,7 @@ Tout est fusionné, mes plugins compris (source **Wacayoub**) :
 | Catégorie | Contenu |
 |---|---|
 | **Installés** | tous les plugins installés qui ont une entrée de menu ; OK les ouvre |
+| **Mon récepteur** | modèle, image, température, processeur, RAM, place, disques, réseau, DNS, durée allumé, tuners, softcam, skin |
 | **Addons** | extensions (OpenATV, autres images, Wacayoub) |
 | **Système** | plugins système |
 | **Skins** | skins et packs de skins |
@@ -43,7 +44,16 @@ Tout est fusionné, mes plugins compris (source **Wacayoub**) :
 | **Panels** | panels (AJPanel, Wacayoub Panel…) |
 | **Multiboot** | gestionnaires multiboot |
 | **Feeds** | une ligne par source (Wacayoub, OpenATV, Universel, OpenPLi, OpenViX…) ; OK n'affiche que cette source |
-| Communauté, Scripts, Images | sélection vérifiée, scripts, images firmware |
+| Communauté, Scripts | sélection vérifiée, scripts |
+| **Réparer** | Bilan santé, Pas d'Internet, Pas d'image, Récepteur lent, Heure fausse, EPG vide, Flash pleine, opkg bloqué, Écran noir (skin), Plantages |
+| **DNS** | DNS actuels et vitesse, Cloudflare, Google, Quad9, AdGuard, DNS automatique (retour arrière) |
+| **Dépendances** | Tout, GStreamer, lecteurs vidéo, modules Python, audio, IPTV, archives (feed officiel OpenATV) |
+| **Disque** | Info disques (SMART), vitesse, préparer les dossiers, créer / supprimer un swap |
+| Images | images firmware (téléchargement seulement) |
+
+Les outils Réparer / DNS / Dépendances / Disque sont mes scripts shell (`feed/scripts/`), vérifiés par sha256 avant de tourner.
+Ceux marqués « lecture seule » ne changent rien. Les DNS passent par le fichier prévu par OpenATV (`/etc/enigma2/nameserversdns.conf`) ;
+« DNS automatique » revient aux DNS de la box Internet. Le swap ne touche que son propre fichier `wacayoub.swap`.
 
 ## Softcams (OSCam, NCam)
 
@@ -75,8 +85,8 @@ Un élément incompatible affiche « Incompatible : … » et ne peut pas être 
 
 ## Interface
 
-Icônes par catégorie et par plugin, badges d'état (installé, mise à jour, non installé) et trois jauges rondes
-en direct : **CPU** (avec la température), **RAM** et **stockage**, rafraîchies toutes les 2 secondes.
+Icônes par catégorie et par plugin, badges d'état (installé, mise à jour, non installé) et quatre jauges rondes
+en direct : **température** (bleu < 70 °C, jaune 70-84 °C, rouge ≥ 85 °C), **CPU**, **RAM** et **stockage**, rafraîchies toutes les 2 secondes.
 Les images sont générées par `tools/make_icons.py` (glyphes [Lucide](https://lucide.dev), licence ISC, Lucide Contributors).
 
 ## Mes outils
