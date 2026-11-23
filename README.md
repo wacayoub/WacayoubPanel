@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_1.10.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.0.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -26,6 +26,24 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Bleu | tout mettre à jour |
 | 0 | filtrer par source : Wacayoub, OpenATV, Universel, OpenPLi, OpenViX, OpenBH, EGAMI, OpenHDF (puis tout) |
 | MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
+
+## Catégories (v2)
+
+Tout est fusionné, mes plugins compris (source **Wacayoub**) :
+
+| Catégorie | Contenu |
+|---|---|
+| **Installés** | tous les plugins installés qui ont une entrée de menu ; OK les ouvre |
+| **Addons** | extensions (OpenATV, autres images, Wacayoub) |
+| **Système** | plugins système |
+| **Skins** | skins et packs de skins |
+| **Softcam** | softcams du feed de l'image (vide si le feed n'en propose pas) |
+| **Picons** | paquets de picons |
+| **Settings** | listes de chaînes |
+| **Panels** | panels (AJPanel, Wacayoub Panel…) |
+| **Multiboot** | gestionnaires multiboot |
+| **Feeds** | une ligne par source (Wacayoub, OpenATV, Universel, OpenPLi, OpenViX…) ; OK n'affiche que cette source |
+| Communauté, Scripts, Images | sélection vérifiée, scripts, images firmware |
 
 ## Fiche détail et compatibilité
 

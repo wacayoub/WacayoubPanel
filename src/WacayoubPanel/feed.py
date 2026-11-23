@@ -217,6 +217,9 @@ class Feed(object):
     MERGE_OWN = {"atv-ext": ("plugin", "panel"), "atv-skins": ("skin",)}
 
     def items_in(self, cat_id):
+        if cat_id in GROUP_IDS:
+            out = [i for i in self.items if group_of(i) == cat_id]
+            return sorted(out, key=lambda i: fold(i.get("name", "")))
         if cat_id in (None, "all"):
             return [i for i in self.items if i.get("type") not in ("opkg", "ext")]
         if cat_id in self.MERGE_OWN:
@@ -366,7 +369,40 @@ ATV_CATEGORIES = [
     {"id": "atv-skins", "title": "Toutes · Skins", "prefixes": ("enigma2-plugin-skins-", "enigma2-plugin-skinpacks-")},
     {"id": "atv-settings", "title": "Listes de chaînes", "prefixes": ("enigma2-plugin-settings-",)},
     {"id": "atv-picons", "title": "Picons", "prefixes": ("enigma2-plugin-picons-",)},
+    {"id": "atv-softcam", "title": "Softcam", "prefixes": ("enigma2-plugin-softcams-",)},
 ]
+
+# v2 categories: every source merged (mine = "Wacayoub"), one list per kind of package
+GROUPS = [("addons", "Addons"), ("system", "Système"), ("skins", "Skins"), ("softcam", "Softcam"), ("picons", "Picons"),
+          ("settings", "Settings"), ("panels", "Panels"), ("multiboot", "Multiboot")]
+GROUP_IDS = set(g for g, _t in GROUPS)
+MULTIBOOT_WORDS = ("multiboot", "neoboot", "egamiboot", "openmultiboot", "multi-boot")
+
+
+def group_of(it):
+    """Category of an item in the merged lists (None = not listed there)."""
+    t = it.get("type")
+    if t in ("image", "launch", "script", "feedsrc"):
+        return None
+    if it.get("category") == "communaute":
+        return None  # curated picks: listed in their own category, the same package is in the merged list
+    name = (it.get("packages") or [""])[0].lower()
+    short = name[len("enigma2-plugin-"):] if name.startswith("enigma2-plugin-") else name
+    if any(w in short for w in MULTIBOOT_WORDS):
+        return "multiboot"
+    if name.startswith("enigma2-plugin-softcams-") or "softcam" in short:
+        return "softcam"
+    if name.startswith("enigma2-plugin-picons-"):
+        return "picons"
+    if name.startswith("enigma2-plugin-settings-"):
+        return "settings"
+    if t == "skin" or name.startswith(("enigma2-plugin-skins-", "enigma2-plugin-skinpacks-")):
+        return "skins"
+    if "panel" in short.split("-", 1)[-1]:
+        return "panels"
+    if name.startswith("enigma2-plugin-systemplugins-"):
+        return "system"
+    return "addons"
 ATV_SKIP_SUFFIX = ("-dev", "-dbg", "-src", "-staticdev", "-meta", "-doc", "-po", "-locale", "-common")
 ATV_SKIP_NAMES = ("piconmanager", "iptvquickzapguard", "vudoctorpro")
 

@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "1.10.0"
+VERSION = "2.0.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -54,8 +54,9 @@ C_STATE = {F.ST_NONE: 0x8C9AB0, F.ST_OK: 0x4ADE80, F.ST_UPDATE: 0xFBBF24, F.ST_P
 STATE_IMG = {F.ST_NONE: "none", F.ST_OK: "ok", F.ST_UPDATE: "update", F.ST_PARTIAL: "partial", F.ST_NA: "na"}
 TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "Panel", "opkg": "", "ext": "", "image": "Image"}
 SEARCH = "search"
+FEEDSRC = "feedsrc"
 # where an item comes from, shown on every row (lists are merged across sources)
-SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
+SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, u"Installé": 0x4ADE80, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
                 "EGAMI": 0xFACC15, "OpenBH": 0xA78BFA, "OpenHDF": 0xF472B6, "OpenSPA": 0xF87171}
 
 
@@ -72,6 +73,10 @@ def sources_of(it, common=None):
 
 def source_of(it, common=None):
     t = it.get("type")
+    if t == LAUNCH:
+        return it.get("src", "Wacayoub")
+    if t == FEEDSRC:
+        return it.get("src", "")
     if t in ("opkg", "ext") and common and it.get("packages") and it["packages"][0] in common:
         return "Universel"  # same tool in several images: no image name
     if t == "opkg":
@@ -104,7 +109,12 @@ def pix(name):
 
 def item_tile(it):
     if it.get("type") == "launch":
-        return pix("t-i-%s.png" % it.get("tile")) or pix("t-launch.png")
+        return pix("t-i-%s.png" % it.get("tile")) or pix("t-%s.png" % it.get("tile")) or pix("t-launch.png")
+    if it.get("type") == FEEDSRC:
+        return pix("t-feeds.png")
+    g = F.group_of(it)
+    if g and it.get("type") in ("opkg", "ext") and pix("t-%s.png" % g):
+        return pix("t-%s.png" % g)
     if it.get("type") == "image":
         return pix("t-%s.png" % it.get("category")) or pix("t-img.png")
     if it.get("type") == "ext":
@@ -359,11 +369,14 @@ class WacayoubPanel(Screen):
             from Components.PluginComponent import plugins
             for p in plugins.getPlugins(PluginDescriptor.WHERE_PLUGINMENU):
                 d = os.path.basename(os.path.normpath(p.path or ""))
-                if d in LAUNCH_MAP:
-                    items.append({"id": "run:%s:%s" % (d, p.name), "type": LAUNCH, "category": LAUNCH,
-                                  "name": p.name, "summary": p.description or d, "tile": LAUNCH_MAP[d],
-                                  "description": "%s\nOK : ouvrir  (dossier %s)" % (p.description or p.name, d),
-                                  "descriptor": p, "packages": []})
+                if d == "WacayoubPanel":
+                    continue
+                mine = d in LAUNCH_MAP
+                items.append({"id": "run:%s:%s" % (d, p.name), "type": LAUNCH, "category": LAUNCH,
+                              "name": p.name, "summary": p.description or d, "tile": LAUNCH_MAP.get(d, "installed"),
+                              "src": "Wacayoub" if mine else u"Installé",
+                              "description": "%s\nOK : ouvrir  (dossier %s)" % (p.description or p.name, d),
+                              "descriptor": p, "packages": []})
         except Exception as e:
             print("[WacayoubPanel] Mes outils: %s" % e)
         items.sort(key=lambda i: i["name"].lower())
@@ -392,6 +405,8 @@ class WacayoubPanel(Screen):
         t = it.get("type")
         if t == LAUNCH:
             return F.ST_OK, "Ouvrir"
+        if t == FEEDSRC:
+            return F.ST_OK, (u"Filtre actif" if self.src_filter == it.get("src") else u"Afficher")
         if t == "image":
             d = IM.image_dir()
             if d and os.path.exists(os.path.join(d, it["file"])):
@@ -446,10 +461,12 @@ class WacayoubPanel(Screen):
         cats = []
         if self.query:
             cats.append({"id": SEARCH, "title": u"« %s »" % self.query})
-        cats.append({"id": LAUNCH, "title": "Mes outils"})
-        cats.append({"id": "all", "title": "Tout"})
+        cats.append({"id": LAUNCH, "title": u"Installés"})
+        for gid, title in F.GROUPS:
+            cats.append({"id": gid, "title": title})
+        cats.append({"id": "feeds", "title": "Feeds"})
         if self.feed:
-            cats += self.feed.categories
+            cats += [c for c in self.feed.data.get("categories", []) if c["id"] in ("communaute", "scripts")]
         if self.image_groups:
             for distro, items in self.image_groups:
                 cats.append({"id": items[0]["category"], "title": "Images · %s" % distro})
@@ -460,6 +477,8 @@ class WacayoubPanel(Screen):
     def _items_for(self, cat_id):
         if cat_id == LAUNCH:
             return list(self.launch_items)
+        if cat_id == "feeds":
+            return self._feed_sources()
         if cat_id.startswith("img-"):
             for _d, items in self.image_groups:
                 if items[0]["category"] == cat_id:
@@ -475,6 +494,26 @@ class WacayoubPanel(Screen):
         if self.src_filter:
             items = [i for i in items if self.src_filter in sources_of(i, self.feed.common)]
         return items
+
+    def _feed_sources(self):
+        """One row per source; OK shows only that source in every list."""
+        if not self.feed:
+            return []
+        count = {}
+        for i in self.feed.items:
+            if F.group_of(i):
+                for s in sources_of(i, self.feed.common):
+                    count[s] = count.get(s, 0) + 1
+        about = {"Wacayoub": u"Mes plugins et skins", "OpenATV": u"Feed officiel de cette image",
+                 "Universel": u"Outils présents dans plusieurs images"}
+        rows = []
+        for s in SOURCE_ORDER:
+            if s in count:
+                rows.append({"id": "src:" + s, "type": FEEDSRC, "category": "feeds", "src": s, "name": s,
+                             "summary": u"%d paquets  ·  %s" % (count[s], about.get(s, u"Feed de l'image %s" % s)),
+                             "description": u"OK : n'afficher que %s dans Addons, Système, Skins…  (0 : changer de source)" % s,
+                             "packages": []})
+        return rows
 
     def keyFilter(self):
         """0: show only one source (Wacayoub, OpenATV, Universel, OpenPLi, OpenViX, ...), then all again."""
@@ -495,7 +534,7 @@ class WacayoubPanel(Screen):
         for c in self._cat_list():
             items = self._items_for(c["id"])
             n_upd = 0
-            if self.feed and c["id"] != SEARCH and c["id"] != LAUNCH and not c["id"].startswith("img-"):
+            if self.feed and c["id"] not in (SEARCH, LAUNCH, "feeds") and not c["id"].startswith("img-"):
                 for it in items:
                     if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
                         n_upd += 1
@@ -578,7 +617,7 @@ class WacayoubPanel(Screen):
         if not it and cat == "img-wait":
             self["desc"].setText("Recherche des images pour %s (OpenATV, OpenPLi, OpenViX, OpenBH, OpenSPA)…" % (self.model_name or self.model))
             return
-        if it and it.get("type") in (LAUNCH, "image"):
+        if it and it.get("type") in (LAUNCH, "image", FEEDSRC):
             extra = ""
             if it.get("type") == "image":
                 d = IM.image_dir()
@@ -589,6 +628,10 @@ class WacayoubPanel(Screen):
             self["desc"].setText("Aucune liste. Appuyez sur JAUNE pour lire le feed.")
             return
         if not it:
+            if cat in F.GROUP_IDS:
+                self["desc"].setText(u"Aucun paquet dans cette catégorie pour ce récepteur" +
+                                     (u" avec le filtre %s (0 : changer)." % self.src_filter if self.src_filter else u"."))
+                return
             if cat == SEARCH:
                 self["desc"].setText(u"Aucun résultat pour « %s ».  MENU : nouvelle recherche  ·  EXIT : effacer" % self.query)
             else:
@@ -662,6 +705,13 @@ class WacayoubPanel(Screen):
             return
         if it.get("type") == LAUNCH:
             return self._launch(it)
+        if it.get("type") == FEEDSRC:
+            self.src_filter = it["src"]
+            self._refresh_all()
+            self._update_keys()
+            self._set_focus(False)
+            self._build_cats(select="addons")
+            return self._build_items(keep=False)
         if it.get("type") in ("image", "script"):
             return self._open_details(it)  # not batch-installable: show the card
         # OK ticks / unticks the item to prepare a grouped install (INFO opens the card)
@@ -669,7 +719,7 @@ class WacayoubPanel(Screen):
 
     def keyInfo(self):
         it = self._current_item() if self.focus_items else None
-        if it and it.get("type") != LAUNCH:
+        if it and it.get("type") not in (LAUNCH, FEEDSRC):
             self._open_details(it)
 
     # ------------------------------------------------------------ selection (grouped install)
