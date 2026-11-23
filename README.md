@@ -33,8 +33,23 @@ Le panel s'ouvre sur un tableau de bord : bonjour, modèle, image, durée allum�
 (température, CPU, RAM, stockage) ; une bande d'**alertes** classées par importance (température, plantages récents, système plein,
 heure fausse, opkg bloqué, EPG vide, softcam arrêté, Internet / DNS, mises à jour) ; trois badges d'état ; huit tuiles
 (Réparer, Addons, Softcam, Skins, Mes outils, Mon récepteur, DNS, Images).
-OK sur une alerte ouvre le bon outil, OK sur une tuile ouvre la catégorie. ROUGE Réparer, VERT Bilan santé, JAUNE actualiser,
+OK sur une alerte ouvre le bon outil, OK sur une tuile ouvre la catégorie. ROUGE Docteur, VERT Bilan santé, JAUNE actualiser,
 BLEU tout mettre à jour (mes paquets, OpenATV et autres images), MENU rechercher, EXIT quitter.
+
+## Docteur Enigma2 (v2.4)
+
+ROUGE sur l'accueil, une alerte « plantage », ou la première ligne de **Réparer**. Le Docteur :
+
+1. met à jour les listes de paquets et relit le feed du panel **sur Internet** (avec les règles en ligne `feed/doctor-rules.json`) ;
+2. lit les rapports de plantage d'Enigma2 (`/home/root/logs`, disques), trouve l'erreur Python et le plugin en cause
+   (dans la trace, sinon les plugins installés ou modifiés juste avant le plantage) ;
+3. propose une réparation, confirmée avant de s'exécuter : installer le module Python manquant, mettre à jour le plugin si le feed
+   a une version plus récente, le réinstaller si ses fichiers sont abîmés, lancer l'outil adapté (Flash pleine, Heure fausse…),
+   ou le désactiver (mis de côté dans `/home/root/wacayoub-quarantine`, réactivable) s'il plante encore et encore ;
+4. archive ensuite les rapports réparés dans `/home/root/logs/wacayoub-archive` (rien n'est effacé).
+
+Un plantage plus ancien que la dernière mise à jour du plugin est marqué « sans doute corrigé ». Les règles en ligne ne peuvent
+choisir qu'entre ces réparations (liste fixe) et sont vérifiées par `tools/build_feed.py`.
 
 ## Catégories (v2)
 

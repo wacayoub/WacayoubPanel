@@ -76,8 +76,7 @@ BUILTIN_RULES = [
      "fix": "script:t-internet"},
     {"id": "badcallback", "match": r"'bool' object is not callable|'NoneType' object is not callable", "where": r"execBegin|onShown|onLayoutFinish|onExecBegin",
      "level": "amber", "title": u"Plugin incompatible avec les écrans OpenATV",
-     "explain": u"Un plugin a mis une valeur au lieu d'une fonction dans les événements d'un écran (onShown, onLayoutFinish). "
-                u"Le plugin cité est celui utilisé juste avant le plantage.", "fix": "update_or_disable"},
+     "explain": u"Un plugin a mis une valeur au lieu d'une fonction dans les événements d'un écran (onShown, onLayoutFinish).", "fix": "update_or_disable"},
     {"id": "importname", "match": r"cannot import name|module '[\w.]+' has no attribute|ModuleNotFoundError: No module named '(Components|Screens|Tools|enigma)",
      "level": "amber", "title": u"Plugin prévu pour une autre image",
      "explain": u"Le plugin appelle une fonction qui n'existe pas dans cette version d'OpenATV.", "fix": "update_or_disable"},
@@ -349,7 +348,7 @@ def _diagnose(g, rules, installed, available, own, times, plugins):
         f.update(level=rule.get("level", "amber"), title=rule["title"], explain=rule.get("explain", ""), rule=rule.get("id", ""))
     elif "title" not in f:
         f.update(title=u"Plantage dans %s" % who if name else u"Plantage d'Enigma2",
-                 explain=u"Erreur : %s" % (exc or u"inconnue"))
+                 explain=u"%s a planté (erreur dans son code)." % who if name else u"Enigma2 a planté.")
     when = max(os.path.getmtime(x) for x in g["logs"])
     if not (name and g["sure"]) and (not rule or rule.get("id") in ("badcallback", "importname")):
         sus = changed_before(when, plugins)
@@ -415,8 +414,7 @@ def _finish(f):
         if f.get("fixed"):
             f["fix_label"] = u"Archiver ce rapport"
         else:
-            f["fix_label"] = u"Pas de réparation automatique sûre"
-            f["explain"] += u"\nVERT archive ces rapports."
+            f["fix_label"] = u"Pas de réparation sûre : archiver"
     return f
 
 
