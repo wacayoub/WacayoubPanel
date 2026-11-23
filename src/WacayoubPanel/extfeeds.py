@@ -69,6 +69,9 @@ def fetch_script(model, archs=()):
 
 
 def _pretty(name):
+    if name.startswith("enigma2-plugin-softcams-"):
+        short = name[len("enigma2-plugin-softcams-"):].replace("-", " ").title()
+        return short.replace("Oscam", "OSCam").replace("Ncam", "NCam").replace("Emu", "EMU").replace("Pcscd", "PCSCD")
     for pre in PREFIXES:
         if name.startswith(pre):
             short = name[len(pre):]

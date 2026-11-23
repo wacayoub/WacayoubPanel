@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -794,7 +794,7 @@ class WacayoubPanel(Screen):
     def _big_icon(self, it):
         t = it.get("type")
         for name in (("B-i-%s.png" % it.get("tile", it.get("id"))) if t == LAUNCH else "B-i-%s.png" % it.get("id"),
-                     "B-%s.png" % it.get("category", ""), "B-ext.png" if t == "ext" else "B-img.png" if t == "image" else "B-all.png"):
+                     "B-%s.png" % (F.group_of(it) or ""), "B-%s.png" % it.get("category", ""), "B-ext.png" if t == "ext" else "B-img.png" if t == "image" else "B-all.png"):
             path = os.path.join(IMG, name)
             if os.path.exists(path):
                 return path
@@ -803,7 +803,8 @@ class WacayoubPanel(Screen):
     def _open_details(self, it):
         st, txt = self._state(it)
         t = it.get("type")
-        cat_title = dict((c["id"], c.get("title", "")) for c in self._cat_list()).get(it.get("category"), "")
+        titles = dict((c["id"], c.get("title", "")) for c in self._cat_list())
+        cat_title = titles.get(F.group_of(it) or it.get("category"), "") or titles.get(it.get("category"), "")
         kind = {"image": "Image firmware", "script": "Script"}.get(t, TYPE_LABEL.get(t, "Paquet"))
         if t == "opkg":
             kind = "Paquet du feed OpenATV" + ("  ·  sélection vérifiée" if it.get("reviewed") else "")
