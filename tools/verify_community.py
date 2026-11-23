@@ -47,6 +47,9 @@ PICKS = [
     ("enigma2-plugin-extensions-seriesplugin", "SeriesPlugin", "Saison/épisode dans les titres d'enregistrement", "https://github.com/betonme/e2openplugin-SeriesPlugin"),
     ("enigma2-plugin-extensions-enhancedmoviecenter", "EnhancedMovieCenter", "Liste d'enregistrements avancée", "https://github.com/oe-alliance/enigma2-plugins"),
     ("enigma2-plugin-extensions-cooltvguide", "CoolTVGuide", "Guide TV 3D en grille (Coolman)", "https://www.opena.tv"),
+    ("enigma2-plugin-extensions-xtraevent", "xtraEvent", "Affiches et infos des programmes (kitte888)", "https://www.opena.tv"),
+    ("enigma2-plugin-extensions-setpicon", "SetPicon", "Attribuer et gérer les picons", "https://github.com/oe-alliance/enigma2-plugins"),
+    ("enigma2-plugin-extensions-bootlogoswitcher", "BootlogoSwitcher", "Choisir le logo de démarrage", "https://github.com/stein17"),
 ]
 
 RISKY = [

@@ -357,6 +357,17 @@ def main():
                                    % (c["summary"], c["page"], c["reviewed"], c["reviewed_version"].split("+")[0]),
                     "packages": [c["package"]], "reviewed_version": c["reviewed_version"],
                     "reviewed_sha256": c["reviewed_sha256"], "reviewed": c["reviewed"], "page": c["page"]})
+            # one-key pack of the most used reviewed picks (all from the official OpenATV feed)
+            pack = [x for x in PACK if x in {c["package"] for c in picks}]
+            if pack:
+                titles = dict((c["package"], c["title"]) for c in picks)
+                items.insert(len(items) - len(picks), {
+                    "id": "c-pack-essentiel", "name": "Pack essentiel (%d plugins)" % len(pack), "category": "communaute",
+                    "type": "opkg", "summary": "Installe en une fois : " + ", ".join(titles[x] for x in pack),
+                    "description": "Installe en une fois les plugins les plus utilisés de la sélection vérifiée : %s.\n"
+                                   "Tout vient du feed officiel OpenATV, rien n'est téléchargé d'ailleurs. "
+                                   "Les plugins déjà installés sont gardés." % ", ".join(titles[x] for x in pack),
+                    "packages": pack, "remove": pack, "reviewed": today_pack(picks)})
     index = {
         "name": "Wacayoub Panel",
         "format": 1,
@@ -372,6 +383,15 @@ def main():
         json.dump(index, fh, ensure_ascii=False, indent=1)
         fh.write("\n")
     print("wrote", out, len(packages), "packages,", len(items), "items")
+
+
+PACK = ["enigma2-plugin-extensions-xstreamity", "enigma2-plugin-extensions-bouquetmakerxtream",
+        "enigma2-plugin-extensions-xtraevent", "enigma2-plugin-extensions-setpicon",
+        "enigma2-plugin-extensions-bootlogoswitcher", "enigma2-plugin-extensions-subssupport"]
+
+
+def today_pack(picks):
+    return max(c["reviewed"] for c in picks)
 
 
 def ipk_newer(a, b):

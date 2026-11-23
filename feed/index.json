@@ -191,7 +191,7 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk",
-   "sha256": "2561e0f1e0960b6423f81779d209a3833c28d2c11799bbb6734eb17def41e221",
+   "sha256": "3441f5288d4033d661473d0a29f2c34523f808187c61eacd5c6326c55f98e75f",
    "size": 1193516,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
@@ -1130,18 +1130,43 @@
    ]
   },
   {
+   "id": "c-pack-essentiel",
+   "name": "Pack essentiel (6 plugins)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "Installe en une fois : XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher, SubsSupport",
+   "description": "Installe en une fois les plugins les plus utilisés de la sélection vérifiée : XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher, SubsSupport.\nTout vient du feed officiel OpenATV, rien n'est téléchargé d'ailleurs. Les plugins déjà installés sont gardés.",
+   "packages": [
+    "enigma2-plugin-extensions-xstreamity",
+    "enigma2-plugin-extensions-bouquetmakerxtream",
+    "enigma2-plugin-extensions-xtraevent",
+    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-bootlogoswitcher",
+    "enigma2-plugin-extensions-subssupport"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-xstreamity",
+    "enigma2-plugin-extensions-bouquetmakerxtream",
+    "enigma2-plugin-extensions-xtraevent",
+    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-bootlogoswitcher",
+    "enigma2-plugin-extensions-subssupport"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
    "id": "c-xstreamity",
    "name": "XStreamity",
    "category": "communaute",
    "type": "opkg",
    "summary": "Lecteur IPTV Xtream Codes (KiddaC)",
-   "description": "Lecteur IPTV Xtream Codes (KiddaC)  ·  https://github.com/kiddac/XStreamity\nVérifié par Wacayoub le 2026-11-22 : version 5.75-20261108-git649 (feed officiel OpenATV).",
+   "description": "Lecteur IPTV Xtream Codes (KiddaC)  ·  https://github.com/kiddac/XStreamity\nVérifié par Wacayoub le 2026-11-23 : version 5.75-20261108-git649 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-xstreamity"
    ],
    "reviewed_version": "5.75-20261108-git649+8353ba30+8353ba3c15-r1",
    "reviewed_sha256": "f57ac741ee00a4a8101ce8871800725703dd0dc84f1e780d15bf84d2a26ad581",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/kiddac/XStreamity"
   },
   {
@@ -1150,13 +1175,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Bouquets IPTV depuis Xtream / M3U (KiddaC)",
-   "description": "Bouquets IPTV depuis Xtream / M3U (KiddaC)  ·  https://github.com/kiddac/Bouquet_Maker_Xtream\nVérifié par Wacayoub le 2026-11-22 : version 1.82-20261108-git234 (feed officiel OpenATV).",
+   "description": "Bouquets IPTV depuis Xtream / M3U (KiddaC)  ·  https://github.com/kiddac/Bouquet_Maker_Xtream\nVérifié par Wacayoub le 2026-11-23 : version 1.82-20261108-git234 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-bouquetmakerxtream"
    ],
    "reviewed_version": "1.82-20261108-git234+cad9baa0+cad9baaaf6-r4",
    "reviewed_sha256": "d68b1ae2ebd69a799fca36483306df6f2b61ad99350b267b57000ead5a8ee761",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/kiddac/Bouquet_Maker_Xtream"
   },
   {
@@ -1165,13 +1190,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Regarder YouTube sur le récepteur (Taapat)",
-   "description": "Regarder YouTube sur le récepteur (Taapat)  ·  https://github.com/Taapat/enigma2-plugin-youtube\nVérifié par Wacayoub le 2026-11-22 : version git1296 (feed officiel OpenATV).",
+   "description": "Regarder YouTube sur le récepteur (Taapat)  ·  https://github.com/Taapat/enigma2-plugin-youtube\nVérifié par Wacayoub le 2026-11-23 : version git1296 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-youtube"
    ],
    "reviewed_version": "git1296+15a7fba0+15a7fba89b-r0",
    "reviewed_sha256": "362e5c0d5fb4c403ecd7aee59548815f7332ce8110faab6c852da844eb1c70b8",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/Taapat/enigma2-plugin-youtube"
   },
   {
@@ -1180,13 +1205,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Météo (oe-alliance)",
-   "description": "Météo (oe-alliance)  ·  https://github.com/oe-alliance/OAWeather\nVérifié par Wacayoub le 2026-11-22 : version 2.4-git165 (feed officiel OpenATV).",
+   "description": "Météo (oe-alliance)  ·  https://github.com/oe-alliance/OAWeather\nVérifié par Wacayoub le 2026-11-23 : version 2.4-git165 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-oaweather"
    ],
    "reviewed_version": "2.4-git165+273f3720+273f372e7f-r0",
    "reviewed_sha256": "cd89b204edbeaab0086c16af09b4ca8140c0ef90567b0a7683cd7bcf50e3b740",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/OAWeather"
   },
   {
@@ -1195,13 +1220,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Sous-titres pour films et enregistrements",
-   "description": "Sous-titres pour films et enregistrements  ·  https://github.com/oe-mirrors/subssupport\nVérifié par Wacayoub le 2026-11-22 : version V2.0.0-git213 (feed officiel OpenATV).",
+   "description": "Sous-titres pour films et enregistrements  ·  https://github.com/oe-mirrors/subssupport\nVérifié par Wacayoub le 2026-11-23 : version V2.0.0-git213 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-subssupport"
    ],
    "reviewed_version": "V2.0.0-git213+2ea6bd4-r0",
    "reviewed_sha256": "7b484b03e8e56f47f7db4c7482f47279cda937316b663cc65a1cf4851c9aeaf3",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-mirrors/subssupport"
   },
   {
@@ -1210,13 +1235,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Fiches films IMDb depuis l'EPG",
-   "description": "Fiches films IMDb depuis l'EPG  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-22 : version V1.2-git367 (feed officiel OpenATV).",
+   "description": "Fiches films IMDb depuis l'EPG  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version V1.2-git367 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-imdb"
    ],
    "reviewed_version": "V1.2-git367+aab57940+aab5794f1e-r0",
    "reviewed_sha256": "3442ce80afe1c9c3a54b61b515b208c5f2b52cc9e5f323965bb433fdc34ee1b6",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/enigma2-plugins"
   },
   {
@@ -1225,13 +1250,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Fiches films/séries The Movie Database",
-   "description": "Fiches films/séries The Movie Database  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-22 : version V1.0.5-git150 (feed officiel OpenATV).",
+   "description": "Fiches films/séries The Movie Database  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version V1.0.5-git150 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-tmdb"
    ],
    "reviewed_version": "V1.0.5-git150+d8d47330+d8d47335f9-r0",
    "reviewed_sha256": "2120ab9bff1570892023963518d5662365764aaeee0f5737f791379bf8151840",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/enigma2-plugins"
   },
   {
@@ -1240,13 +1265,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Gestionnaire de fichiers",
-   "description": "Gestionnaire de fichiers  ·  https://github.com/openatv/enigma2\nVérifié par Wacayoub le 2026-11-22 : version 8.0.1 (feed officiel OpenATV).",
+   "description": "Gestionnaire de fichiers  ·  https://github.com/openatv/enigma2\nVérifié par Wacayoub le 2026-11-23 : version 8.0.1 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-filecommander"
    ],
    "reviewed_version": "8.0.1+git36321+d31cb9a0+d31cb9aad3-r1",
    "reviewed_sha256": "341fa35dbe2e3d396e846ba45aef2c179fd4bd0e27733934731f6794dfb66b62",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/openatv/enigma2"
   },
   {
@@ -1255,13 +1280,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Enregistrements automatiques par mots-clés",
-   "description": "Enregistrements automatiques par mots-clés  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-22 : version V1.0-git1138 (feed officiel OpenATV).",
+   "description": "Enregistrements automatiques par mots-clés  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version V1.0-git1138 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-autotimer"
    ],
    "reviewed_version": "V1.0-git1138+8b7e54f0+8b7e54fd69-r0",
    "reviewed_sha256": "4acaf2529209fb5c89506e8951a08a5262c1d60f0eaba554a7166f9ad6f7844c",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/enigma2-plugins"
   },
   {
@@ -1270,13 +1295,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Rafraîchit l'EPG la nuit",
-   "description": "Rafraîchit l'EPG la nuit  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-22 : version V1.0-git416 (feed officiel OpenATV).",
+   "description": "Rafraîchit l'EPG la nuit  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version V1.0-git416 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-epgrefresh"
    ],
    "reviewed_version": "V1.0-git416+71911ad0+71911ad38e-r0",
    "reviewed_sha256": "0e6991079b9d079402794695a307fb5a43fc8b7eb768baf09538a9933cf5fa5c",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/enigma2-plugins"
   },
   {
@@ -1285,13 +1310,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Saison/épisode dans les titres d'enregistrement",
-   "description": "Saison/épisode dans les titres d'enregistrement  ·  https://github.com/betonme/e2openplugin-SeriesPlugin\nVérifié par Wacayoub le 2026-11-22 : version V5.9.8-git79 (feed officiel OpenATV).",
+   "description": "Saison/épisode dans les titres d'enregistrement  ·  https://github.com/betonme/e2openplugin-SeriesPlugin\nVérifié par Wacayoub le 2026-11-23 : version V5.9.8-git79 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-seriesplugin"
    ],
    "reviewed_version": "V5.9.8-git79+38e43950+38e43953de-r0",
    "reviewed_sha256": "c7423e21c509080cbc1beafddb424d195dafe6c8998246a0a0410a7cd33250d9",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/betonme/e2openplugin-SeriesPlugin"
   },
   {
@@ -1300,13 +1325,13 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Liste d'enregistrements avancée",
-   "description": "Liste d'enregistrements avancée  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-22 : version 4.0. (feed officiel OpenATV).",
+   "description": "Liste d'enregistrements avancée  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version 4.0. (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-enhancedmoviecenter"
    ],
    "reviewed_version": "4.0.+git1804+a3769660+a376966b06-r0",
    "reviewed_sha256": "4f75b9de81acbe88da1af056dfadeff0c01e6daa2d53e55de3a98967de1be712",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://github.com/oe-alliance/enigma2-plugins"
   },
   {
@@ -1315,14 +1340,59 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Guide TV 3D en grille (Coolman)",
-   "description": "Guide TV 3D en grille (Coolman)  ·  https://www.opena.tv\nVérifié par Wacayoub le 2026-11-22 : version Coolman_V8.0_py3 (feed officiel OpenATV).",
+   "description": "Guide TV 3D en grille (Coolman)  ·  https://www.opena.tv\nVérifié par Wacayoub le 2026-11-23 : version Coolman_V8.0_py3 (feed officiel OpenATV).",
    "packages": [
     "enigma2-plugin-extensions-cooltvguide"
    ],
    "reviewed_version": "Coolman_V8.0_py3",
    "reviewed_sha256": "ddd85ffeffdf74a2824d8395edd403aa2116747f4dff7db5a459f74990bb7379",
-   "reviewed": "2026-11-22",
+   "reviewed": "2026-11-23",
    "page": "https://www.opena.tv"
+  },
+  {
+   "id": "c-xtraevent",
+   "name": "xtraEvent",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "Affiches et infos des programmes (kitte888)",
+   "description": "Affiches et infos des programmes (kitte888)  ·  https://www.opena.tv\nVérifié par Wacayoub le 2026-11-23 : version 6.806 (feed officiel OpenATV).",
+   "packages": [
+    "enigma2-plugin-extensions-xtraevent"
+   ],
+   "reviewed_version": "6.806",
+   "reviewed_sha256": "737204e5e37e5e2d746033466bd429c6bef990ea69f3878a2e37d443a31f62cb",
+   "reviewed": "2026-11-23",
+   "page": "https://www.opena.tv"
+  },
+  {
+   "id": "c-setpicon",
+   "name": "SetPicon",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "Attribuer et gérer les picons",
+   "description": "Attribuer et gérer les picons  ·  https://github.com/oe-alliance/enigma2-plugins\nVérifié par Wacayoub le 2026-11-23 : version V1.1-git139 (feed officiel OpenATV).",
+   "packages": [
+    "enigma2-plugin-extensions-setpicon"
+   ],
+   "reviewed_version": "V1.1-git139+0ce5e4f0+0ce5e4fa06-r0",
+   "reviewed_sha256": "2416ab1a6e2083a17bd0480d51758338c72fb77f4b53688d78884aad1ae75a0f",
+   "reviewed": "2026-11-23",
+   "page": "https://github.com/oe-alliance/enigma2-plugins"
+  },
+  {
+   "id": "c-bootlogoswitcher",
+   "name": "BootlogoSwitcher",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "Choisir le logo de démarrage",
+   "description": "Choisir le logo de démarrage  ·  https://github.com/stein17\nVérifié par Wacayoub le 2026-11-23 : version 1.0 (feed officiel OpenATV).",
+   "packages": [
+    "enigma2-plugin-extensions-bootlogoswitcher"
+   ],
+   "reviewed_version": "1.0+git1513+3ca5d510+3ca5d51a06-r0",
+   "reviewed_sha256": "ad371713fe6529f6132c63dbeed688a25b062576540b902c66bbbfca4a59ee61",
+   "reviewed": "2026-11-23",
+   "page": "https://github.com/stein17"
   }
  ],
  "doctor_rules": [

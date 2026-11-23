@@ -1,4 +1,4 @@
-# Sélection communauté — revue du 2026-11-22
+# Sélection communauté — revue du 2026-11-23
 
 Chaque paquet vient du feed officiel OpenATV 8.0.1 (vuzero4k). Vérifié : sha256 = liste du feed,
 aucune commande à risque dans les scripts d'installation ni dans le code (téléchargement envoyé à un shell,
@@ -21,3 +21,6 @@ base64 exécuté, telnet/ssh, mots de passe, crontab, pare-feu), aucun marqueur 
 | [SeriesPlugin](https://github.com/betonme/e2openplugin-SeriesPlugin) | V5.9.8-git79+38e43950+38e43953de-r0 | 143 Ko | 49 | 0 | OK |
 | [EnhancedMovieCenter](https://github.com/oe-alliance/enigma2-plugins) | 4.0.+git1804+a3769660+a376966b06-r0 | 687 Ko | 183 | 0 | OK |
 | [CoolTVGuide](https://www.opena.tv) | Coolman_V8.0_py3 | 2263 Ko | 168 | 0 | OK |
+| [xtraEvent](https://www.opena.tv) | 6.806 | 757 Ko | 70 | 0 | OK |
+| [SetPicon](https://github.com/oe-alliance/enigma2-plugins) | V1.1-git139+0ce5e4f0+0ce5e4fa06-r0 | 42 Ko | 11 | 0 | OK |
+| [BootlogoSwitcher](https://github.com/stein17) | 1.0+git1513+3ca5d510+3ca5d51a06-r0 | 63 Ko | 18 | 0 | OK |
