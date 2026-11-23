@@ -357,22 +357,6 @@ def main():
                                    % (c["summary"], c["page"], c["reviewed"], c["reviewed_version"].split("+")[0]),
                     "packages": [c["package"]], "reviewed_version": c["reviewed_version"],
                     "reviewed_sha256": c["reviewed_sha256"], "reviewed": c["reviewed"], "page": c["page"]})
-            # themed one-key packs of reviewed picks (all from the official OpenATV feed)
-            have = {c["package"] for c in picks}
-            titles = dict((c["package"], c["title"]) for c in picks)
-            at = len(items) - len(picks)
-            for pid, title, what in PACKS:
-                pack = [p for p in (("enigma2-plugin-skins-" + x[1:]) if x[0] == "@" else E + x for x in what) if p in have]
-                if len(pack) < 2:
-                    continue
-                items.insert(at, {
-                    "id": "c-pack-" + pid, "name": "Pack %s (%d)" % (title, len(pack)), "category": "communaute",
-                    "type": "opkg", "summary": ", ".join(titles[x] for x in pack),
-                    "description": "Pack %s : %s, en une fois.\n"
-                                   "Tout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés."
-                                   % (title, ", ".join(titles[x] for x in pack)),
-                    "packages": pack, "remove": pack, "reviewed": today_pack(picks)})
-                at += 1
     index = {
         "name": "Wacayoub Panel",
         "format": 1,
@@ -388,22 +372,6 @@ def main():
         json.dump(index, fh, ensure_ascii=False, indent=1)
         fh.write("\n")
     print("wrote", out, len(packages), "packages,", len(items), "items")
-
-
-E = "enigma2-plugin-extensions-"
-PACKS = [
-    ("iptv", "IPTV", ["xstreamity", "bouquetmakerxtream", "estalker", "jediepgxtream", "xcplugin-forever"]),
-    ("epg", "EPG & Enregistrements", ["xtraevent", "cooltvguide", "epgrefresh", "autotimer", "seriesplugin", "enhancedmoviecenter"]),
-    ("films", "Films & Séries", ["subssupport", "imdb", "tmdb", "youtube"]),
-    ("picons", "Picons & Chaînes", ["setpicon", "mmpicons", "apsattv"]),
-    ("meteo", "Météo & Loisirs", ["oaweather", "weatherplugin", "worldcam", "horoscope"]),
-    ("outils", "Outils", ["bootlogoswitcher", "internet-speedtest", "filecommander"]),
-    ("skins", "Skins", ["@aglare-fhd", "@maxy-fhd"]),
-]
-
-
-def today_pack(picks):
-    return max(c["reviewed"] for c in picks)
 
 
 def ipk_newer(a, b):
