@@ -35,7 +35,7 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -195,9 +195,12 @@ def _skin():
 class WacayoubPanel(Screen):
     skin = _skin()
 
-    def __init__(self, session):
+    def __init__(self, session, start_cat=None, start_action=None):
         Screen.__init__(self, session)
         self.setTitle("Wacayoub Panel")
+        self.start_cat, self.start_action = start_cat, start_action
+        self.start_timer = eTimer()
+        self.start_timer.callback.append(self._apply_start_action)
         self.feed = None
         self.atv = None
         self.installed = {}
@@ -270,10 +273,41 @@ class WacayoubPanel(Screen):
         self._refresh_all()
         self.refreshFeed(auto=True)
         self._fetch_images()
+        self._apply_start()
+
+    def _apply_start(self):
+        """Opened from the home screen: show the chosen category, then run the action once drawn."""
+        cat = self.start_cat
+        if cat == "images":
+            cat = ([c for c in self.cat_ids if c.startswith("img-")] or [None])[0]
+        if cat in self.cat_ids:
+            self["cats"].moveToIndex(self.cat_ids.index(cat))
+            self._build_items(keep=False)
+            if self["items"].list and not self.start_action:
+                self._set_focus(True)
+        if self.start_action:
+            self.start_timer.start(300, True)
+
+    def _apply_start_action(self):
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
+            return
+        act, self.start_action = self.start_action, None
+        if act == "update":
+            self.keyUpdateAll()
+        elif act == "search":
+            self.keySearch()
+        elif act and act.startswith("run:") and self.feed:
+            it = [i for i in self.feed.items if i["id"] == act[4:]]
+            if it:
+                self._set_focus(True)
+                if it[0] in [r[0] for r in self["items"].list]:
+                    self["items"].moveToIndex([r[0] for r in self["items"].list].index(it[0]))
+                self._install(it[0])
 
     def _on_close(self):
         self.closed = True
         self.stat_timer.stop()
+        self.start_timer.stop()
 
     def _load_cache(self):
         try:
@@ -980,18 +1014,21 @@ class WacayoubPanel(Screen):
     def keyUpdateAll(self):
         if not self.feed:
             return
-        names = []
+        own, opkg = [], []
         for it in self.feed.items:
-            if it.get("type") in ("script", "opkg"):
+            if it.get("type") == "script":
                 continue
+            target = opkg if it.get("type") == "opkg" else own
             for p in self.feed.outdated(it, self.installed):
-                if p not in names:
-                    names.append(p)
+                if p not in own and p not in opkg:
+                    target.append(p)
+        names = own + opkg
         if not names:
-            self.session.open(MessageBox, "Tous mes plugins sont à jour.", MessageBox.TYPE_INFO, timeout=4)
+            self.session.open(MessageBox, "Tout est à jour.", MessageBox.TYPE_INFO, timeout=4)
             return
-        self._confirm_run("Mettre à jour %d paquet(s) ?\n%s" % (len(names), "\n".join(names)),
-                          F.install_commands(self.feed, names), "Mise à jour")
+        shown = names[:14] + ([u"… et %d autre(s)" % (len(names) - 14)] if len(names) > 14 else [])
+        body = (F.install_commands(self.feed, own) if own else "") + (F.opkg_install_commands(opkg) if opkg else "")
+        self._confirm_run("Mettre à jour %d paquet(s) ?\n%s" % (len(names), "\n".join(shown)), body, "Mise à jour")
 
     # ------------------------------------------------------------ actions
     def _install(self, it, reinstall=False):
@@ -1081,8 +1118,343 @@ class WacayoubPanel(Screen):
         self.close()
 
 
+# ---------------------------------------------------------------- home screen (dashboard + alerts)
+HOME_TILES = [("fix", "fix"), ("addons", "addons"), ("softcam", "softcam"), ("skins", "skins"),
+              ("launch", LAUNCH), ("recv", RECV), ("dns", "dns"), ("img", "images")]
+LEVEL_ORDER = {"red": 0, "amber": 1, "blue": 2, "green": 3, "gray": 4}
+
+
+def count_updates(model, archs):
+    """Same list as BLUE 'Tout mettre à jour' in the panel (mine, OpenATV and other images' packages)."""
+    feed = F.Feed.load(F.CACHE_FILE)
+    installed = F.installed_packages()
+    atv = F.AtvCatalog(archs=archs)
+    own = set(installed) | set(atv.packages) | set(feed.data.get("packages", {}))
+    avail = set(installed) | atv.all_names
+    ext = X.load(own, avail, F.compare_versions, set(atv.packages), archs)
+    feed = F.Feed(feed.data)
+    feed.attach_atv(atv)
+    if ext:
+        feed.attach_ext(ext)
+    names = set()
+    for it in feed.items:
+        if it.get("type") != "script":
+            names |= set(feed.outdated(it, installed))
+    return len(names)
+
+
+def recent_crashes(days=7):
+    """(count, last plugin name) of enigma2 crash logs from the last days."""
+    import glob
+    import re
+    files = []
+    for pat in ("/home/root/logs/*crash*.log", "/media/hdd/*crash*.log", "/media/usb/*crash*.log"):
+        files += glob.glob(pat)
+    now = time.time()
+    files = sorted([f for f in files if now - os.path.getmtime(f) < days * 86400], key=os.path.getmtime)
+    plugin = ""
+    if files:
+        try:
+            with open(files[-1], errors="replace") as fh:
+                found = re.findall(r"/Plugins/(?:Extensions|SystemPlugins)/(\w+)", fh.read())
+            plugin = found[-1] if found else ""
+        except (IOError, OSError):
+            pass
+    return len(files), plugin
+
+
+def local_checks():
+    """Quick checks without network: [(level, text, action)]."""
+    out = []
+    t = S.cpu_temp()
+    if t and t >= 85:
+        out.append(("red", u"Température %d °C : trop chaude" % t, "fix"))
+    elif t and t >= 75:
+        out.append(("amber", u"Température %d °C : chaude" % t, "fix"))
+    n, plug = recent_crashes()
+    if n:
+        out.append(("amber", u"%d plantage(s) récent(s)%s  ·  OK pour voir" % (n, (u" (%s)" % plug) if plug else ""), "fix"))
+    free = F.free_bytes("/")
+    if 0 <= free < 50 * 1024 * 1024:
+        out.append(("red", u"Système presque plein : %s libres" % S.human(free), "fix"))
+    if time.localtime().tm_year < 2024:
+        out.append(("red", u"Heure fausse  ·  OK pour corriger", "fix"))
+    if (os.path.exists("/run/opkg.lock") or os.path.exists("/var/lib/opkg/lock")) and not os.system("pidof opkg >/dev/null 2>&1") == 0:
+        out.append(("amber", u"opkg bloqué  ·  OK pour réparer", "fix"))
+    epg = S.setting("config.misc.epgcache_filename") or "/etc/enigma2/epg.dat"
+    if not os.path.exists(epg) or os.path.getsize(epg) < 1024:
+        out.append(("amber", u"EPG vide  ·  OK pour vérifier", "fix"))
+    cam = S.softcam()
+    if cam.endswith(u"(arrêté)"):
+        out.append(("amber", u"Softcam %s arrêté  ·  OK pour Softcam Fix" % cam.split()[0], "run:softcamfix"))
+    return out
+
+
+class WacayoubHome(Screen):
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self.skin = self._skin()
+        self.setTitle("Wacayoub Panel")
+        self.closed = False
+        self.model, self.model_name = IM.box_model()
+        self.archs = F.supported_archs()
+        self.updates = None
+        self.net = None  # None = test running, else (internet ok, dns ok)
+        self.alerts = []
+        self.row, self.col = 0, 0  # row -1 = alerts, 0..1 = tiles
+        self.console = AsyncConsole()
+        self.timer = eTimer()
+        self.timer.callback.append(self._tick)
+        self.slow = eTimer()
+        self.slow.callback.append(self._slow_checks)
+        for k in ("clock", "sub", "hello", "line2", "line3"):
+            self[k] = Label("")
+        for k in ("temp", "cpu", "ram", "disk"):
+            self["ring_" + k] = Pixmap()
+            self["pct_" + k] = Label("")
+            self["lab_" + k] = Label({"temp": u"Température", "cpu": "CPU", "ram": "RAM", "disk": "Stockage"}[k])
+        for i in range(2):
+            self["a%d_bg" % i] = Pixmap()
+            self["a%d" % i] = Label("")
+        for i in range(3):
+            self["s%d_bg" % i] = Pixmap()
+            self["s%d" % i] = Label("")
+        self["sel_tile"] = Pixmap()
+        self["sel_alert"] = Pixmap()
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions"], {
+            "ok": self.keyOk, "cancel": self.close, "red": self.keyRed, "green": self.keyGreen,
+            "yellow": self.refresh, "blue": self.keyBlue, "menu": self.keyMenu,
+            "left": self.keyLeft, "right": self.keyRight, "up": self.keyUp, "down": self.keyDown,
+        }, -1)
+        self.onLayoutFinish.append(self._start)
+        self.onClose.append(self._on_close)
+
+    @staticmethod
+    def _skin():
+        d = {"W": s(1920), "H": s(1080), "img": IMG}
+        widgets = []
+
+        def lab(name, x, y, w, h, f, col="#00F1F5F9", extra=""):
+            widgets.append('<widget name="%s" position="%d,%d" size="%d,%d" font="Regular;%d" foregroundColor="%s" '
+                           'backgroundColor="#00070B14" transparent="1" valign="center" %s/>' % (name, s(x), s(y), s(w), s(h), s(f), col, extra))
+
+        def pixw(name, x, y, w, h, z=1):
+            widgets.append('<widget name="%s" position="%d,%d" size="%d,%d" alphatest="blend" scale="1" zPosition="%d" />'
+                           % (name, s(x), s(y), s(w), s(h), z))
+
+        lab("clock", 1100, 36, 772, 50, 30, "#008C9AB0", 'halign="right"')
+        lab("sub", 134, 92, 1200, 38, 24, "#007DD3FC")
+        lab("hello", 90, 172, 860, 70, 48)
+        lab("line2", 90, 250, 880, 42, 26, "#008C9AB0")
+        lab("line3", 90, 300, 880, 42, 26, "#008C9AB0")
+        for i, k in enumerate(("temp", "cpu", "ram", "disk")):
+            cx = 1035 + i * 225
+            pixw("ring_" + k, cx - 75, 205, 150, 150)
+            lab("pct_" + k, cx - 75, 255, 150, 50, 34, "#00FFFFFF", 'halign="center" zPosition="2"')
+            lab("lab_" + k, cx - 100, 368, 200, 36, 22, "#008C9AB0", 'halign="center"')
+        for i in range(2):
+            x = 48 + i * 927
+            pixw("a%d_bg" % i, x, 474, 897, 78)
+            lab("a%d" % i, x + 28, 474, 850, 78, 27, "#00F8FAFC", 'zPosition="2"')
+        for i in range(3):
+            x = 48 + i * 621
+            pixw("s%d_bg" % i, x, 573, 582, 78)
+            lab("s%d" % i, x + 28, 573, 540, 78, 26, "#00F8FAFC", 'zPosition="2"')
+        pixw("sel_tile", 48, 675, 438, 138, 3)
+        pixw("sel_alert", 48, 474, 897, 78, 3)
+        return ('<screen name="WacayoubHome" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14" title="Wacayoub Panel">'
+                '<ePixmap position="0,0" size="%(W)d,%(H)d" pixmap="%(img)s/bg-home.jpg" scale="1" zPosition="-2" />' % d
+                + "".join(widgets) + "</screen>")
+
+    def _start(self):
+        S.cpu_percent()
+        for k in ("sel_tile", "sel_alert"):
+            png = pix("hsel-tile.png" if k == "sel_tile" else "hsel-alert.png")
+            if png and self[k].instance:
+                self[k].instance.setPixmap(png)
+        self.refresh()
+        self.timer.start(2000, False)
+
+    def _on_close(self):
+        self.closed = True
+        self.timer.stop()
+        self.slow.stop()
+        self.console.killAll()
+
+    # ------------------------------------------------------------ data
+    def refresh(self):
+        h = time.localtime().tm_hour
+        self["hello"].setText(u"Bonjour" if 5 <= h < 18 else u"Bonsoir")
+        self["line2"].setText(u"%s  ·  %s  ·  allumé depuis %s" % (self.model_name or self.model or "?", S.image_version().split(" (build")[0], S.uptime_text()))
+        net = S.network()
+        tn = len(S.tuners())
+        self["line3"].setText(u"%s  ·  %d tuner%s  ·  Softcam : %s" % (
+            "  ".join("%s %s" % n for n in net[:1]) or u"pas de réseau", tn, "s" if tn > 1 else "", S.softcam()))
+        self["sub"].setText(u"Accueil  ·  v%s  ·  vérification…" % VERSION)
+        self.net = None
+        self._render()
+        self._tick()
+        self.console.ePopen("ping -c1 -W3 1.1.1.1 >/dev/null 2>&1 && echo NET; nslookup github.com >/dev/null 2>&1 && echo DNS",
+                            self._net_done)
+        self.slow.start(300, True)  # after the screen is drawn: reading the package lists takes a moment
+
+    def _slow_checks(self):
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
+            return
+        try:
+            self.updates = count_updates(self.model, self.archs)
+        except Exception as e:
+            print("[WacayoubPanel] home updates: %s" % e)
+            self.updates = None
+        self._render()
+
+    def _net_done(self, data, retval, extra=None):
+        if getattr(self, "closed", True):
+            return
+        out = data.decode("utf-8", "replace") if isinstance(data, bytes) else (data or "")
+        self.net = ("NET" in out, "DNS" in out)
+        self._render()
+
+    def _render(self):
+        alerts = local_checks()
+        if self.net is not None:
+            if not self.net[0]:
+                alerts.append(("red", u"Pas d'Internet  ·  OK pour tester", "fix"))
+            elif not self.net[1]:
+                alerts.append(("amber", u"DNS en panne  ·  OK pour changer", "dns"))
+        if self.updates:
+            alerts.append(("blue", u"%d mise(s) à jour  ·  BLEU pour tout" % self.updates, "update"))
+        alerts.sort(key=lambda a: LEVEL_ORDER[a[0]])
+        problems = [a for a in alerts if a[0] in ("red", "amber")]
+        if not alerts:
+            alerts = [("green", u"Tout va bien", None), ("green", u"Aucune mise à jour" if self.updates == 0 else u"Mises à jour : calcul…", None)]
+        elif len(alerts) == 1:
+            alerts.append(("green", u"Aucune mise à jour" if self.updates == 0 else u"Rien d'autre à signaler", None))
+        self.alerts = alerts[:2]
+        for i, (lvl, text, _a) in enumerate(self.alerts):
+            png = pix("ha-%s.png" % lvl)
+            if png and self["a%d_bg" % i].instance:
+                self["a%d_bg" % i].instance.setPixmap(png)
+            self["a%d" % i].setText(text)
+        extra = len(alerts) - 2
+        if extra > 0:
+            self["a1"].setText(self.alerts[1][1] + u"   (+%d)" % extra)
+        # status row
+        if self.net is None:
+            net = ("gray", u"Internet : test…")
+        elif self.net[0] and self.net[1]:
+            net = ("green", u"Internet et DNS OK")
+        else:
+            net = ("red", u"Internet : problème")
+        cam = S.softcam()
+        status = [("green", u"Santé : tout va bien") if not problems else ("amber", u"Santé : %d à vérifier" % len(problems)),
+                  net, ("amber" if cam.endswith(u"(arrêté)") else "green", u"Softcam : %s" % cam)]
+        for i, (lvl, text) in enumerate(status):
+            png = pix("hs-%s.png" % lvl)
+            if png and self["s%d_bg" % i].instance:
+                self["s%d_bg" % i].instance.setPixmap(png)
+            self["s%d" % i].setText(text)
+        if self.net is not None and self.updates is not None:
+            self["sub"].setText(u"Accueil  ·  v%s  ·  vérifié à %s" % (VERSION, time.strftime("%H:%M")))
+        if self.row == -1 and not self._alert_actionable():
+            self.row = 0
+        self._move_sel()
+
+    def _alert_actionable(self):
+        return [i for i, a in enumerate(self.alerts) if a[2]]
+
+    def _tick(self):
+        if getattr(self, "closed", True):
+            return
+        self["clock"].setText(time.strftime(u"%d/%m/%Y   %H:%M"))
+        temp = S.cpu_temp()
+        rp = S.ram()[0]
+        dp = S.storage("/")[0]
+        for key, pct, txt in (("temp", S.temp_step(temp), (u"%d°" % temp) if temp else u"–"), ("cpu", S.cpu_percent(), None),
+                              ("ram", rp, None), ("disk", dp, None)):
+            png = pix(S.ring_step(pct))
+            if png and self["ring_" + key].instance:
+                self["ring_" + key].instance.setPixmap(png)
+            self["pct_" + key].setText(txt if txt else "%d%%" % pct)
+
+    # ------------------------------------------------------------ keys
+    def _move_sel(self):
+        from enigma import ePoint
+        if self.row == -1:
+            self["sel_tile"].hide()
+            self["sel_alert"].show()
+            if self["sel_alert"].instance:
+                self["sel_alert"].instance.move(ePoint(s(48 + self.col * 927), s(474)))
+        else:
+            self["sel_alert"].hide()
+            self["sel_tile"].show()
+            if self["sel_tile"].instance:
+                self["sel_tile"].instance.move(ePoint(s(48 + self.col * 462), s(675 + self.row * 162)))
+
+    def keyLeft(self):
+        cols = 2 if self.row == -1 else 4
+        self.col = (self.col - 1) % cols
+        if self.row == -1 and self.col not in self._alert_actionable():
+            self.col = self._alert_actionable()[0]
+        self._move_sel()
+
+    def keyRight(self):
+        cols = 2 if self.row == -1 else 4
+        self.col = (self.col + 1) % cols
+        if self.row == -1 and self.col not in self._alert_actionable():
+            self.col = self._alert_actionable()[0]
+        self._move_sel()
+
+    def keyUp(self):
+        if self.row == 1:
+            self.row = 0
+        elif self.row == 0 and self._alert_actionable():
+            self.row = -1
+            ok = self._alert_actionable()
+            self.col = (1 if self.col >= 2 else 0) if (1 if self.col >= 2 else 0) in ok else ok[0]
+        self._move_sel()
+
+    def keyDown(self):
+        if self.row == -1:
+            self.row, self.col = 0, self.col * 2
+        elif self.row == 0:
+            self.row = 1
+        self._move_sel()
+
+    def keyOk(self):
+        if self.row == -1:
+            act = self.alerts[self.col][2] if self.col < len(self.alerts) else None
+            if act == "update":
+                return self._open(None, "update")
+            if act and act.startswith("run:"):
+                return self._open("scripts", act)
+            if act:
+                return self._open(act)
+            return
+        self._open(HOME_TILES[self.row * 4 + self.col][1])
+
+    def keyRed(self):
+        self._open("fix")
+
+    def keyGreen(self):
+        self._open("fix", "run:t-bilan-sante")
+
+    def keyBlue(self):
+        self._open(None, "update")
+
+    def keyMenu(self):
+        self._open(None, "search")
+
+    def _open(self, cat, action=None):
+        self.session.openWithCallback(self._back, WacayoubPanel, cat, action)
+
+    def _back(self, *args):
+        if not getattr(self, "closed", True):
+            self.refresh()
+
+
 def main(session, **kwargs):
-    session.open(WacayoubPanel)
+    session.open(WacayoubHome)
 
 
 def Plugins(**kwargs):

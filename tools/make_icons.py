@@ -235,6 +235,67 @@ def background(w, h):
     return im.convert("RGB")
 
 
+# Home screen (FHD coordinates, plugin.py HOME_* uses the same numbers)
+HOME_TILES = [("fix", "Réparer"), ("addons", "Addons"), ("softcam", "Softcam"), ("skins", "Skins"),
+              ("launch", "Mes outils"), ("recv", "Mon récepteur"), ("dns", "DNS"), ("img", "Images")]
+HOME_ALERT = (897, 78)
+HOME_STATUS = (582, 78)
+HOME_TILE = (438, 138)
+HOME_COLORS = {"red": (239, 68, 68), "amber": (245, 158, 11), "blue": (59, 130, 246), "green": (34, 197, 94), "gray": (100, 116, 139)}
+
+
+def home_tile_box(i):
+    x0, y0 = 48 + (i % 4) * 462, 675 + (i // 4) * 162
+    return [x0, y0, x0 + HOME_TILE[0], y0 + HOME_TILE[1]]
+
+
+def home_background(w=1920, h=1080):
+    from PIL import ImageFont
+    im = gradient(w, h, "#070B14", "#0B1424")
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(glow)
+    d.ellipse([-300, -420, 900, 420], fill=(47, 140, 255, 60))
+    d.ellipse([1300, 650, 2300, 1450], fill=(124, 92, 255, 45))
+    im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(160)))
+    lay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    card = dict(fill=(15, 23, 42, 170), outline=(148, 163, 184, 55), width=1)
+    d.rounded_rectangle([48, 150, 1872, 450], 24, **card)
+    fr = ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 31)
+    fk = ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 25)
+    ft = ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 45)
+    for i, (key, label) in enumerate(HOME_TILES):
+        x0, y0, x1, y1 = home_tile_box(i)
+        d.rounded_rectangle([x0, y0, x1, y1], 24, **card)
+        icon = tile(key, 96)
+        lay.alpha_composite(icon, (x0 + 24, y0 + 21))
+        d.text((x0 + 144, (y0 + y1) // 2), label, font=fr, fill=(241, 245, 249, 255), anchor="lm")
+    lay.alpha_composite(logo(66), (48, 36))
+    d.text((132, 30), "Wacayoub Panel", font=ft, fill=(241, 245, 249, 255))
+    x = 60
+    for col, lab in (("#EF4444", "Réparer"), ("#22C55E", "Bilan santé"), ("#F59E0B", "Actualiser"), ("#3B82F6", "Mises à jour")):
+        lay.alpha_composite(key_dot(col), (x, 1010))
+        d.text((x + 38, 1023), lab, font=fk, fill=(226, 232, 240, 255), anchor="lm")
+        x += 330
+    d.text((1860, 1023), "OK  ouvrir   ·   MENU  rechercher   ·   EXIT  quitter", font=fk, fill=(226, 232, 240, 255), anchor="rm")
+    return Image.alpha_composite(im, lay).convert("RGB")
+
+
+def home_bar(size, col):
+    w, h = size
+    r, g, b = HOME_COLORS[col]
+    im = Image.new("RGBA", (w * 2, h * 2), (0, 0, 0, 0))
+    ImageDraw.Draw(im).rounded_rectangle([1, 1, w * 2 - 2, h * 2 - 2], 32, fill=(r, g, b, 60), outline=(r, g, b, 175), width=3)
+    return im.resize(size, Image.LANCZOS)
+
+
+def home_select(size):
+    w, h = size
+    im = Image.new("RGBA", (w * 2, h * 2), (0, 0, 0, 0))
+    ImageDraw.Draw(im).rounded_rectangle([3, 3, w * 2 - 4, h * 2 - 4], 48, outline=(125, 211, 252, 255), width=8)
+    return im.resize(size, Image.LANCZOS)
+
+
 def key_dot(color, size=26):
     ss = 4
     im = Image.new("RGBA", (size * ss, size * ss), (0, 0, 0, 0))
@@ -304,6 +365,12 @@ def main():
     bar(1340, 80, "#1E3A8A", "#1D4ED8", 16, 235, accent="#7DD3FC").save(os.path.join(OUT, "sel-item.png"), optimize=True)
     bar(412, 52, "#2563EB", "#7C3AED", 14, 255).save(os.path.join(OUT, "sel-cat.png"), optimize=True)
     background(1920, 1080).save(os.path.join(OUT, "bg.jpg"), quality=88, optimize=True)
+    home_background().save(os.path.join(OUT, "bg-home.jpg"), quality=88, optimize=True)
+    for col in HOME_COLORS:
+        home_bar(HOME_ALERT, col).save(os.path.join(OUT, "ha-%s.png" % col), optimize=True)
+        home_bar(HOME_STATUS, col).save(os.path.join(OUT, "hs-%s.png" % col), optimize=True)
+    home_select(HOME_TILE).save(os.path.join(OUT, "hsel-tile.png"), optimize=True)
+    home_select(HOME_ALERT).save(os.path.join(OUT, "hsel-alert.png"), optimize=True)
     background_detail(1920, 1080).save(os.path.join(OUT, "bg-detail.jpg"), quality=88, optimize=True)
     for name, col in (("red", "#EF4444"), ("green", "#22C55E"), ("yellow", "#F59E0B"), ("blue", "#3B82F6"), ("menu", "#94A3B8")):
         key_dot(col).save(os.path.join(OUT, "k-%s.png" % name), optimize=True)

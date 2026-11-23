@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.2.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.3.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -26,6 +26,15 @@ Ensuite : **Menu > Plugins > Wacayoub Panel**.
 | Bleu | tout mettre à jour |
 | 0 | filtrer par source : Wacayoub, OpenATV, Universel, OpenPLi, OpenViX, OpenBH, EGAMI, OpenHDF (puis tout) |
 | MENU | rechercher (nom, paquet ou description ; accents ignorés) — EXIT efface la recherche |
+
+## Accueil (v2.3)
+
+Le panel s'ouvre sur un tableau de bord : bonjour, modèle, image, durée allumé, réseau, tuners et softcam ; quatre jauges
+(température, CPU, RAM, stockage) ; une bande d'**alertes** classées par importance (température, plantages récents, système plein,
+heure fausse, opkg bloqué, EPG vide, softcam arrêté, Internet / DNS, mises à jour) ; trois badges d'état ; huit tuiles
+(Réparer, Addons, Softcam, Skins, Mes outils, Mon récepteur, DNS, Images).
+OK sur une alerte ouvre le bon outil, OK sur une tuile ouvre la catégorie. ROUGE Réparer, VERT Bilan santé, JAUNE actualiser,
+BLEU tout mettre à jour (mes paquets, OpenATV et autres images), MENU rechercher, EXIT quitter.
 
 ## Catégories (v2)
 
