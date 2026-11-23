@@ -357,16 +357,22 @@ def main():
                                    % (c["summary"], c["page"], c["reviewed"], c["reviewed_version"].split("+")[0]),
                     "packages": [c["package"]], "reviewed_version": c["reviewed_version"],
                     "reviewed_sha256": c["reviewed_sha256"], "reviewed": c["reviewed"], "page": c["page"]})
-            # one-key pack of the most used reviewed picks (all from the official OpenATV feed)
-            pack = [x for x in PACK if x in {c["package"] for c in picks}]
-            if pack:
-                titles = dict((c["package"], c["title"]) for c in picks)
-                items.insert(len(items) - len(picks), {
-                    "id": "c-pack-essentiel", "name": "Pack essentiel (%d plugins)" % len(pack), "category": "communaute",
-                    "type": "opkg", "summary": "Installe en une fois : " + ", ".join(titles[x] for x in pack),
-                    "description": "Les %d plugins les plus utilisés de la sélection vérifiée, en une fois.\n"
-                                   "Tout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés." % len(pack),
+            # themed one-key packs of reviewed picks (all from the official OpenATV feed)
+            have = {c["package"] for c in picks}
+            titles = dict((c["package"], c["title"]) for c in picks)
+            at = len(items) - len(picks)
+            for pid, title, what in PACKS:
+                pack = [E + x for x in what if E + x in have]
+                if len(pack) < 2:
+                    continue
+                items.insert(at, {
+                    "id": "c-pack-" + pid, "name": "Pack %s (%d)" % (title, len(pack)), "category": "communaute",
+                    "type": "opkg", "summary": ", ".join(titles[x] for x in pack),
+                    "description": "Pack %s : %s, en une fois.\n"
+                                   "Tout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés."
+                                   % (title, ", ".join(titles[x] for x in pack)),
                     "packages": pack, "remove": pack, "reviewed": today_pack(picks)})
+                at += 1
     index = {
         "name": "Wacayoub Panel",
         "format": 1,
@@ -384,9 +390,13 @@ def main():
     print("wrote", out, len(packages), "packages,", len(items), "items")
 
 
-PACK = ["enigma2-plugin-extensions-xstreamity", "enigma2-plugin-extensions-bouquetmakerxtream",
-        "enigma2-plugin-extensions-xtraevent", "enigma2-plugin-extensions-setpicon",
-        "enigma2-plugin-extensions-bootlogoswitcher", "enigma2-plugin-extensions-subssupport"]
+E = "enigma2-plugin-extensions-"
+PACKS = [
+    ("iptv", "IPTV", ["xstreamity", "bouquetmakerxtream", "estalker", "jediepgxtream", "xcplugin-forever"]),
+    ("epg", "EPG & Picons", ["xtraevent", "setpicon", "epgrefresh", "autotimer"]),
+    ("films", "Films & Séries", ["subssupport", "imdb", "tmdb", "youtube"]),
+    ("outils", "Outils", ["bootlogoswitcher", "internet-speedtest", "weatherplugin", "filecommander"]),
+]
 
 
 def today_pack(picks):

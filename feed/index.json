@@ -191,8 +191,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
-   "sha256": "53be563a4be68f15037f89800cc55c6bc84d70abaab6e1d653ddd5a9469a7453",
-   "size": 1193558,
+   "sha256": "4b9a0dc079a54b3e4d6f4c3f142dd52a2702015af40958ac28943a48203185a4",
+   "size": 1193562,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
@@ -1130,27 +1130,88 @@
    ]
   },
   {
-   "id": "c-pack-essentiel",
-   "name": "Pack essentiel (6 plugins)",
+   "id": "c-pack-iptv",
+   "name": "Pack IPTV (5)",
    "category": "communaute",
    "type": "opkg",
-   "summary": "Installe en une fois : XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher, SubsSupport",
-   "description": "Les 6 plugins les plus utilisés de la sélection vérifiée, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "summary": "XStreamity, BouquetMakerXtream, EStalker, JediEPGXtream, XCplugin Forever",
+   "description": "Pack IPTV : XStreamity, BouquetMakerXtream, EStalker, JediEPGXtream, XCplugin Forever, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
    "packages": [
     "enigma2-plugin-extensions-xstreamity",
     "enigma2-plugin-extensions-bouquetmakerxtream",
-    "enigma2-plugin-extensions-xtraevent",
-    "enigma2-plugin-extensions-setpicon",
-    "enigma2-plugin-extensions-bootlogoswitcher",
-    "enigma2-plugin-extensions-subssupport"
+    "enigma2-plugin-extensions-estalker",
+    "enigma2-plugin-extensions-jediepgxtream",
+    "enigma2-plugin-extensions-xcplugin-forever"
    ],
    "remove": [
     "enigma2-plugin-extensions-xstreamity",
     "enigma2-plugin-extensions-bouquetmakerxtream",
+    "enigma2-plugin-extensions-estalker",
+    "enigma2-plugin-extensions-jediepgxtream",
+    "enigma2-plugin-extensions-xcplugin-forever"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-epg",
+   "name": "Pack EPG & Picons (4)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "xtraEvent, SetPicon, EPGRefresh, AutoTimer",
+   "description": "Pack EPG & Picons : xtraEvent, SetPicon, EPGRefresh, AutoTimer, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
     "enigma2-plugin-extensions-xtraevent",
     "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-epgrefresh",
+    "enigma2-plugin-extensions-autotimer"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-xtraevent",
+    "enigma2-plugin-extensions-setpicon",
+    "enigma2-plugin-extensions-epgrefresh",
+    "enigma2-plugin-extensions-autotimer"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-films",
+   "name": "Pack Films & Séries (4)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "SubsSupport, IMDb, TMDB, YouTube",
+   "description": "Pack Films & Séries : SubsSupport, IMDb, TMDB, YouTube, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
+    "enigma2-plugin-extensions-subssupport",
+    "enigma2-plugin-extensions-imdb",
+    "enigma2-plugin-extensions-tmdb",
+    "enigma2-plugin-extensions-youtube"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-subssupport",
+    "enigma2-plugin-extensions-imdb",
+    "enigma2-plugin-extensions-tmdb",
+    "enigma2-plugin-extensions-youtube"
+   ],
+   "reviewed": "2026-11-23"
+  },
+  {
+   "id": "c-pack-outils",
+   "name": "Pack Outils (4)",
+   "category": "communaute",
+   "type": "opkg",
+   "summary": "BootlogoSwitcher, Internet Speedtest, WeatherPlugin, File Commander",
+   "description": "Pack Outils : BootlogoSwitcher, Internet Speedtest, WeatherPlugin, File Commander, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
+   "packages": [
     "enigma2-plugin-extensions-bootlogoswitcher",
-    "enigma2-plugin-extensions-subssupport"
+    "enigma2-plugin-extensions-internet-speedtest",
+    "enigma2-plugin-extensions-weatherplugin",
+    "enigma2-plugin-extensions-filecommander"
+   ],
+   "remove": [
+    "enigma2-plugin-extensions-bootlogoswitcher",
+    "enigma2-plugin-extensions-internet-speedtest",
+    "enigma2-plugin-extensions-weatherplugin",
+    "enigma2-plugin-extensions-filecommander"
    ],
    "reviewed": "2026-11-23"
   },
