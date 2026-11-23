@@ -156,6 +156,14 @@ sha256 a changé, et installe le dossier du plugin sans fichiers `.pyc`. Revue :
 résultat dans [feed/CIEFP-REVIEW.md](feed/CIEFP-REVIEW.md). Refusés : E2 Editor, OSCam Editor, EPG Info et Vibes
 (ils se mettent à jour eux-mêmes avec un script téléchargé et lancé, « wget … | /bin/sh »).
 
+### LinuxsatPanel (non vérifié)
+
+[LinuxsatPanel](https://github.com/Belfagor2005/LinuxsatPanel) (Lululla, licence GPL-3) est ajouté à la demande, marqué
+**non vérifié** : le panel lui-même est revu de la même façon (version figée, sha256, pas de code compilé, rien hors de son
+dossier), mais les addons qu'il propose s'installent avec les scripts d'autres sites (« wget … | sh ») que Wacayoub
+ne vérifie pas. EliesatPanel n'est pas ajouté : son installateur remplace AJPanel par une copie modifiée et ajoute un
+feed opkg permanent (`/etc/opkg/eliesat-feed.conf`).
+
 ## Paquets OpenATV
 
 En plus de mes plugins, le panel montre les paquets du feed de l'image (lus dans `/var/lib/opkg/lists`)

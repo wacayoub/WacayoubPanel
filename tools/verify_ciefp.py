@@ -44,6 +44,12 @@ PICKS = [
     ("CiefpVibes", "Ciefp Vibes", "Juke-box musique locale et en ligne"),
 ]
 
+# catalogues that run other projects' installers (user's choice, shown as "non vérifié")
+# owner, repository, title, summary, launcher
+LAUNCHERS = [
+    ("Belfagor2005", "LinuxsatPanel", "LinuxsatPanel", "Catalogue d'addons Linuxsat-Support (Lululla)", True),
+]
+
 # what a plugin may also do over the network or on disk, shown in the review (not a refusal)
 NOTES = [
     (r"os\.system\(|subprocess\.", "lance des commandes"),
@@ -67,18 +73,20 @@ def deps_of(installer):
                 continue  # Python 2 branch
             if SAFE_DEP.match(w) and w not in out:
                 out.append(w)
-    for var, val in re.findall(r"^\s*(Package\w+)=(python3-[a-z0-9.+-]+)", installer, re.M):
+    for var, val in re.findall(r"^\s*(Package\w+)=['\"]?(python3-[a-z0-9.+-]+)", installer, re.M):
         if val not in out:
             out.append(val)
     return out
 
 
-def review(repo):
-    sha = gh("repos/ciefp/%s/commits/HEAD" % repo, "-q", ".sha")
-    date = gh("repos/ciefp/%s/commits/HEAD" % repo, "-q", ".commit.committer.date")[:10]
+def review(repo, owner="ciefp", launcher=False):
+    """launcher=True: a catalogue that runs other projects' installers on demand. Its own code is still
+    checked (malware markers, compiled code, files outside its folder) but those installer calls are only noted."""
+    sha = gh("repos/%s/%s/commits/HEAD" % (owner, repo), "-q", ".sha")
+    date = gh("repos/%s/%s/commits/HEAD" % (owner, repo), "-q", ".commit.committer.date")[:10]
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, "%s-%s.tar.gz" % (repo, sha[:12]))
-    url = "https://codeload.github.com/ciefp/%s/tar.gz/%s" % (repo, sha)
+    url = "https://codeload.github.com/%s/%s/tar.gz/%s" % (owner, repo, sha)
     if not os.path.exists(path):
         subprocess.check_call(["curl", "-sSfL", "--retry", "2", "-o", path + ".part", url])
         os.replace(path + ".part", path)
@@ -105,13 +113,14 @@ def review(repo):
             data = tar.extractfile(ti).read()
             text = data.decode("utf-8", "replace")
             if rel == "installer.sh":
-                v = re.search(r"^version='?([\w.\-]+)'?", text, re.M)
+                v = re.search(r"^version=['\"]?([\w.\-]+)", text, re.M)
                 res["version"] = v.group(1) if v else ""
                 res["depends"] = deps_of(text)
                 continue
             if not rel.startswith("usr/") or rel.endswith(".pyc"):
                 continue  # only usr/ is installed, never the .pyc files
             res["files"] += 1
+            res["bytes"] = res.get("bytes", 0) + len(data)
             parts = rel.split("/")
             res["paths"].add("/".join(parts[:7]) if rel.startswith("usr/lib/enigma2/python/Plugins/") else "/".join(parts[:3]))
             if data[:4] == b"\x7fELF" or rel.endswith(".so"):
@@ -122,6 +131,10 @@ def review(repo):
                     res["issues"].append("%s : %s" % (label, rel))
             if rel.endswith((".py", ".sh")):
                 for rx, label in RISKY:
+                    if launcher and label == "download piped into a shell":
+                        if re.search(rx, text):
+                            res["notes"].add("lance des installateurs non vérifiés (wget | sh)")
+                        continue
                     for m in re.finditer(rx, text):
                         ctx = text[max(0, m.start() - 30):m.end() + 30].replace("\n", " ")
                         res["issues"].append("%s : %s  (…%s…)" % (label, rel, ctx[:90]))
@@ -147,24 +160,24 @@ def main():
              "Vérifié : aucun code compilé, aucune commande à risque (téléchargement envoyé à un shell, base64 exécuté,",
              "telnet/ssh, mots de passe, crontab, pare-feu, code obfusqué), rien installé hors du dossier du plugin.", "",
              "| Plugin | Version | Commit | Fichiers | Ce qu'il fait aussi | Résultat |", "|---|---|---|---|---|---|"]
-    for repo, title, summary in PICKS:
-        r = review(repo)
+    for owner, repo, title, summary, launcher in [("ciefp",) + p + (False,) for p in PICKS] + LAUNCHERS:
+        r = review(repo, owner, launcher)
         verdict = "OK" if r["ok"] else "REFUSÉ : " + "; ".join(r["issues"])[:220]
         print("%-26s %s" % (repo, verdict))
-        lines.append("| [%s](https://github.com/ciefp/%s) | %s | %s (%s) | %d | %s | %s |" % (
-            title, repo, r["version"] or "-", r["commit"][:7], r["date"], r["files"],
+        lines.append("| [%s](https://github.com/%s/%s) | %s | %s (%s) | %d | %s | %s |" % (
+            title + (" (non vérifié)" if launcher else ""), owner, repo, r["version"] or "-", r["commit"][:7], r["date"], r["files"],
             ", ".join(sorted(r["notes"])) or "-", verdict))
         if r["ok"]:
-            out.append({"repo": repo, "title": title, "summary": summary, "version": r["version"] or "0",
+            out.append({"owner": owner, "launcher": launcher, "repo": repo, "title": title, "summary": summary, "version": r["version"] or "0",
                         "commit": r["commit"], "date": r["date"], "url": r["url"], "sha256": r["sha256"],
-                        "size": r["size"], "files": r["files"], "depends": r["depends"],
+                        "size": r["size"], "installed": r.get("bytes", 0), "files": r["files"], "depends": r["depends"],
                         "notes": sorted(r["notes"]), "reviewed": today})
     with open(os.path.join(ROOT, "feed", "ciefp.json"), "w", encoding="utf-8", newline="\n") as fh:
         json.dump(out, fh, ensure_ascii=False, indent=1)
         fh.write("\n")
     with open(os.path.join(ROOT, "feed", "CIEFP-REVIEW.md"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(lines) + "\n")
-    print("accepted %d / %d" % (len(out), len(PICKS)))
+    print("accepted %d / %d" % (len(out), len(PICKS) + len(LAUNCHERS)))
 
 
 if __name__ == "__main__":

@@ -70,9 +70,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefpbootlogo_2026.08.15+7ae3f96_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpbootlogo_2026.08.15+7ae3f96_all.ipk",
-   "sha256": "e354bd6f636f357e21bc775613cf959265771ef332e0e53bdf5fbd04300d740c",
-   "size": 1522,
-   "installed_size": 179833,
+   "sha256": "51dffaf45a8dfa775edccb2d3df5a54740a4f889e3be80ed117fe84fbbd588c8",
+   "size": 1516,
+   "installed_size": 1203,
    "depends": "enigma2, python3-core",
    "provides": []
   },
@@ -81,9 +81,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefppiconmanager_2026.11.01+f9c0fd2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefppiconmanager_2026.11.01+f9c0fd2_all.ipk",
-   "sha256": "d743aaca30ab53b6c08e767454b849680fb487885bf74a18496e8cc145847118",
-   "size": 1536,
-   "installed_size": 2947,
+   "sha256": "043d524c7cfe51dc820144aeceefd1f48c94d9af3b1e1d605bd1e43b925be221",
+   "size": 1530,
+   "installed_size": 1073,
    "depends": "enigma2, python3-core",
    "provides": []
   },
@@ -92,9 +92,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefpsatellitexmleditor_2026.07.21+8ddad90_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsatellitexmleditor_2026.07.21+8ddad90_all.ipk",
-   "sha256": "b5d8ba50a0b4b50d6a724ca66918d7bbe9f10fcdb671fcd050be9267ee06b3ec",
+   "sha256": "940799e47d09d5786475381e6517259caf9d798af6fee483e4cd93d887c18515",
    "size": 1570,
-   "installed_size": 6025,
+   "installed_size": 1707,
    "depends": "enigma2, python3-core, python3-six, python3-requests",
    "provides": []
   },
@@ -103,9 +103,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefpscreengrab_2026.07.26+d8bc64d_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpscreengrab_2026.07.26+d8bc64d_all.ipk",
-   "sha256": "6cd2628d359e504be41253c1887bf6269bf6234d504d899f923f58d8cc105af2",
-   "size": 1538,
-   "installed_size": 6289,
+   "sha256": "d2023102bdc4253a7d63a0813f798b02d9cf6c5fafd2bd36b64af52fd186361c",
+   "size": 1536,
+   "installed_size": 1638,
    "depends": "enigma2, python3-core, python3-six, python3-requests",
    "provides": []
   },
@@ -114,9 +114,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefpsettingsdownloader_2026.09.21+79d3409_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsettingsdownloader_2026.09.21+79d3409_all.ipk",
-   "sha256": "698c60d931441d32761103b7eb76cd30bbc98b5e66c393ab5314cbb20623d65d",
+   "sha256": "e4ff2da415bb643eb40edd7764d04014597082e8caaf646aeb718e087a6983eb",
    "size": 1552,
-   "installed_size": 6058,
+   "installed_size": 1384,
    "depends": "enigma2, python3-core, python3-six, python3-requests",
    "provides": []
   },
@@ -125,9 +125,9 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-ciefpsignalinfo_2026.09.21+49c30dc_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsignalinfo_2026.09.21+49c30dc_all.ipk",
-   "sha256": "c8160bce687008b361bd2ddbe2f6aa32390e935dd8d25f223e2896f2f7f7f59f",
-   "size": 1542,
-   "installed_size": 763,
+   "sha256": "9ddcfbfa550d1599223e8c045427ebea56306b869aed77f028d7c3ab530f72f1",
+   "size": 1540,
+   "installed_size": 326,
    "depends": "enigma2, python3-core, python3-six, python3-requests",
    "provides": []
   },
@@ -173,6 +173,17 @@
    "size": 21266,
    "installed_size": 65,
    "depends": "enigma2, python3-core, python3-json, python3-netclient, python3-xml",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-linuxsatpanel": {
+   "version": "2026.11.22+7f2c8a1",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-linuxsatpanel_2026.11.22+7f2c8a1_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-linuxsatpanel_2026.11.22+7f2c8a1_all.ipk",
+   "sha256": "753a94090ba0022bba5ddacc99670477de2b6a02068c63bf2607a62a189dbac9",
+   "size": 1544,
+   "installed_size": 24014,
+   "depends": "enigma2, python3-core, wget, python3-requests",
    "provides": []
   },
   "enigma2-plugin-extensions-metrixneohelper": {
@@ -257,7 +268,7 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
-   "sha256": "d15fefe6fe11735d7e38715b7d7a23c591d2d2a4bef5b33ca7ef84ad167a96d4",
+   "sha256": "e948c92000bdfe93312fe80f7068aa09624ab505b93f84a1749946ddf13896f1",
    "size": 1193560,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
@@ -1281,6 +1292,21 @@
     "enigma2-plugin-extensions-ciefpsettingsdownloader"
    ],
    "page": "https://github.com/ciefp/CiefpSettingsDownloader",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-linuxsatpanel",
+   "name": "LinuxsatPanel (non vérifié)",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Catalogue d'addons Linuxsat-Support (Lululla)  ·  ATTENTION : non vérifié",
+   "description": "Catalogue d'addons Linuxsat-Support (Lululla)  ·  https://github.com/Belfagor2005/LinuxsatPanel\nATTENTION : ce panel lance les installateurs d'autres sites (wget | sh). Wacayoub a vérifié le panel (version du 22/11/2026), PAS ce qu'il installe.",
+   "packages": [
+    "enigma2-plugin-extensions-linuxsatpanel"
+   ],
+   "page": "https://github.com/Belfagor2005/LinuxsatPanel",
    "requires": {
     "python": "3.9"
    }
