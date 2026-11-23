@@ -268,8 +268,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
-   "sha256": "e948c92000bdfe93312fe80f7068aa09624ab505b93f84a1749946ddf13896f1",
-   "size": 1193560,
+   "sha256": "8150c42875a73854afd43fe6f4dccb5005d5a84c84bc8c669ae9de350f9f2f26",
+   "size": 1193562,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
@@ -1302,7 +1302,7 @@
    "category": "communaute",
    "type": "plugin",
    "summary": "Catalogue d'addons Linuxsat-Support (Lululla)  ·  ATTENTION : non vérifié",
-   "description": "Catalogue d'addons Linuxsat-Support (Lululla)  ·  https://github.com/Belfagor2005/LinuxsatPanel\nATTENTION : ce panel lance les installateurs d'autres sites (wget | sh). Wacayoub a vérifié le panel (version du 22/11/2026), PAS ce qu'il installe.",
+   "description": "https://github.com/Belfagor2005/LinuxsatPanel  ·  version du 22/11/2026\nATTENTION : le panel est vérifié, PAS ce qu'il installe (scripts d'autres sites, wget | sh).",
    "packages": [
     "enigma2-plugin-extensions-linuxsatpanel"
    ],

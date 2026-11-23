@@ -88,8 +88,8 @@ def build_all(root):
         if c.get("launcher"):
             shown = "%s (non vérifié)" % c["title"]
             summary = "%s  ·  ATTENTION : non vérifié" % c["summary"]
-            desc = ("%s  ·  %s\nATTENTION : ce panel lance les installateurs d'autres sites (wget | sh). "
-                    "Wacayoub a vérifié le panel (version du %s), PAS ce qu'il installe." % (c["summary"], page, day))
+            desc = ("%s  ·  version du %s\nATTENTION : le panel est vérifié, PAS ce qu'il installe "
+                    "(scripts d'autres sites, wget | sh)." % (page, day))
         else:
             shown = c["title"]
             summary = "%s  ·  %s" % (c["summary"], who)
