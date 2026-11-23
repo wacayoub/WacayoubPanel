@@ -285,6 +285,8 @@ def build_panel():
 
 def main():
     build_panel()
+    import ciefp_pkg
+    ciefp_items = ciefp_pkg.build_all(ROOT)
     pkg_dir = os.path.join(ROOT, "packages")
     packages = {}
     for fn in sorted(os.listdir(pkg_dir)):
@@ -329,6 +331,7 @@ def main():
             raise SystemExit("bad doctor rule fix: %s" % r)
     # curated community picks reviewed by tools/verify_community.py (installed from the OpenATV feed)
     categories, items = list(CATEGORIES), [dict(i) for i in ITEMS]
+    items += ciefp_items  # reviewed Ciefp plugins (tools/verify_ciefp.py), shown in Communauté
     for it in items:
         # what the receiver must have; the panel refuses to install otherwise
         if it["type"] in ("plugin", "skin", "panel"):

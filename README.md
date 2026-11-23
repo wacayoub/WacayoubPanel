@@ -147,6 +147,15 @@ WireGuard VPN (code compilé, impossible à vérifier) et E2iPlayer (code compil
 
 Les installateurs « wget … | sh » de sites tiers ne sont jamais utilisés.
 
+### Plugins Ciefp
+
+Six plugins de [Ciefp](https://github.com/ciefp) sont aussi dans Communauté : Satellite XML Editor, Signal Info, Picon Manager,
+ScreenGrab, Bootlogo et Settings Downloader. Ciefp ne publie ni paquet ni licence, donc son code n'est pas copié ici :
+chaque petit paquet du feed télécharge l'archive du plugin chez Ciefp, à la version revue (commit), la refuse si son
+sha256 a changé, et installe le dossier du plugin sans fichiers `.pyc`. Revue : `tools/verify_ciefp.py`,
+résultat dans [feed/CIEFP-REVIEW.md](feed/CIEFP-REVIEW.md). Refusés : E2 Editor, OSCam Editor, EPG Info et Vibes
+(ils se mettent à jour eux-mêmes avec un script téléchargé et lancé, « wget … | /bin/sh »).
+
 ## Paquets OpenATV
 
 En plus de mes plugins, le panel montre les paquets du feed de l'image (lus dans `/var/lib/opkg/lists`)

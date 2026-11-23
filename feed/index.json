@@ -65,6 +65,72 @@
    "depends": "enigma2, python3-core, python3-json, python3-pickle, python3-compression",
    "provides": []
   },
+  "enigma2-plugin-extensions-ciefpbootlogo": {
+   "version": "2026.08.15+7ae3f96",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefpbootlogo_2026.08.15+7ae3f96_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpbootlogo_2026.08.15+7ae3f96_all.ipk",
+   "sha256": "e354bd6f636f357e21bc775613cf959265771ef332e0e53bdf5fbd04300d740c",
+   "size": 1522,
+   "installed_size": 179833,
+   "depends": "enigma2, python3-core",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-ciefppiconmanager": {
+   "version": "2026.11.01+f9c0fd2",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefppiconmanager_2026.11.01+f9c0fd2_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefppiconmanager_2026.11.01+f9c0fd2_all.ipk",
+   "sha256": "d743aaca30ab53b6c08e767454b849680fb487885bf74a18496e8cc145847118",
+   "size": 1536,
+   "installed_size": 2947,
+   "depends": "enigma2, python3-core",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-ciefpsatellitexmleditor": {
+   "version": "2026.07.21+8ddad90",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefpsatellitexmleditor_2026.07.21+8ddad90_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsatellitexmleditor_2026.07.21+8ddad90_all.ipk",
+   "sha256": "b5d8ba50a0b4b50d6a724ca66918d7bbe9f10fcdb671fcd050be9267ee06b3ec",
+   "size": 1570,
+   "installed_size": 6025,
+   "depends": "enigma2, python3-core, python3-six, python3-requests",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-ciefpscreengrab": {
+   "version": "2026.07.26+d8bc64d",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefpscreengrab_2026.07.26+d8bc64d_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpscreengrab_2026.07.26+d8bc64d_all.ipk",
+   "sha256": "6cd2628d359e504be41253c1887bf6269bf6234d504d899f923f58d8cc105af2",
+   "size": 1538,
+   "installed_size": 6289,
+   "depends": "enigma2, python3-core, python3-six, python3-requests",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-ciefpsettingsdownloader": {
+   "version": "2026.09.21+79d3409",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefpsettingsdownloader_2026.09.21+79d3409_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsettingsdownloader_2026.09.21+79d3409_all.ipk",
+   "sha256": "698c60d931441d32761103b7eb76cd30bbc98b5e66c393ab5314cbb20623d65d",
+   "size": 1552,
+   "installed_size": 6058,
+   "depends": "enigma2, python3-core, python3-six, python3-requests",
+   "provides": []
+  },
+  "enigma2-plugin-extensions-ciefpsignalinfo": {
+   "version": "2026.09.21+49c30dc",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-ciefpsignalinfo_2026.09.21+49c30dc_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-ciefpsignalinfo_2026.09.21+49c30dc_all.ipk",
+   "sha256": "c8160bce687008b361bd2ddbe2f6aa32390e935dd8d25f223e2896f2f7f7f59f",
+   "size": 1542,
+   "installed_size": 763,
+   "depends": "enigma2, python3-core, python3-six, python3-requests",
+   "provides": []
+  },
   "enigma2-plugin-extensions-epgmanager": {
    "version": "2026.11.14-rc88",
    "arch": "all",
@@ -191,8 +257,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
-   "sha256": "813d4d44316ab8505d241fe366760e21afefd6a71ff8236e99b47ad5112b897f",
-   "size": 1193558,
+   "sha256": "d15fefe6fe11735d7e38715b7d7a23c591d2d2a4bef5b33ca7ef84ad167a96d4",
+   "size": 1193560,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
@@ -1128,6 +1194,96 @@
    "packages": [
     "script-swap-supprimer"
    ]
+  },
+  {
+   "id": "cf-ciefpsatellitexmleditor",
+   "name": "Ciefp Satellite XML Editor",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Modifier le fichier satellites.xml  ·  Ciefp",
+   "description": "Modifier le fichier satellites.xml  ·  https://github.com/ciefp/CiefpSatelliteXmlEditor\nPlugin de Ciefp, téléchargé chez lui. Version du 21/07/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefpsatellitexmleditor"
+   ],
+   "page": "https://github.com/ciefp/CiefpSatelliteXmlEditor",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-ciefpsignalinfo",
+   "name": "Ciefp Signal Info",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Infos signal et chaîne  ·  Ciefp",
+   "description": "Infos signal et chaîne  ·  https://github.com/ciefp/CiefpSignalInfo\nPlugin de Ciefp, téléchargé chez lui. Version du 21/09/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefpsignalinfo"
+   ],
+   "page": "https://github.com/ciefp/CiefpSignalInfo",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-ciefppiconmanager",
+   "name": "Ciefp Picon Manager",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Gestion avancée des picons  ·  Ciefp",
+   "description": "Gestion avancée des picons  ·  https://github.com/ciefp/CiefpPiconManager\nPlugin de Ciefp, téléchargé chez lui. Version du 01/11/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefppiconmanager"
+   ],
+   "page": "https://github.com/ciefp/CiefpPiconManager",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-ciefpscreengrab",
+   "name": "Ciefp ScreenGrab",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Captures d'écran de l'interface  ·  Ciefp",
+   "description": "Captures d'écran de l'interface  ·  https://github.com/ciefp/CiefpScreenGrab\nPlugin de Ciefp, téléchargé chez lui. Version du 26/07/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefpscreengrab"
+   ],
+   "page": "https://github.com/ciefp/CiefpScreenGrab",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-ciefpbootlogo",
+   "name": "Ciefp Bootlogo",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Créer un logo de démarrage depuis une image  ·  Ciefp",
+   "description": "Créer un logo de démarrage depuis une image  ·  https://github.com/ciefp/CiefpBootlogo\nPlugin de Ciefp, téléchargé chez lui. Version du 15/08/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefpbootlogo"
+   ],
+   "page": "https://github.com/ciefp/CiefpBootlogo",
+   "requires": {
+    "python": "3.9"
+   }
+  },
+  {
+   "id": "cf-ciefpsettingsdownloader",
+   "name": "Ciefp Settings Downloader",
+   "category": "communaute",
+   "type": "plugin",
+   "summary": "Télécharger les listes de chaînes Ciefp  ·  Ciefp",
+   "description": "Télécharger les listes de chaînes Ciefp  ·  https://github.com/ciefp/CiefpSettingsDownloader\nPlugin de Ciefp, téléchargé chez lui. Version du 21/09/2026 vérifiée par Wacayoub le 2026-11-23 (sans fichiers compilés, empreinte contrôlée).",
+   "packages": [
+    "enigma2-plugin-extensions-ciefpsettingsdownloader"
+   ],
+   "page": "https://github.com/ciefp/CiefpSettingsDownloader",
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "c-xstreamity",

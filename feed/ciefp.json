@@ -1,0 +1,110 @@
+[
+ {
+  "repo": "CiefpSatelliteXmlEditor",
+  "title": "Ciefp Satellite XML Editor",
+  "summary": "Modifier le fichier satellites.xml",
+  "version": "1.0",
+  "commit": "8ddad909922f96c92caec48442f13d29ab1c2fdd",
+  "date": "2026-07-21",
+  "url": "https://codeload.github.com/ciefp/CiefpSatelliteXmlEditor/tar.gz/8ddad909922f96c92caec48442f13d29ab1c2fdd",
+  "sha256": "62f8490f343085fdeae5b6dff9134195aabdc6a6157c25f021154f996c1ea76c",
+  "size": 2057130,
+  "files": 5,
+  "depends": [
+   "python3-six",
+   "python3-requests"
+  ],
+  "notes": [],
+  "reviewed": "2026-11-23"
+ },
+ {
+  "repo": "CiefpSignalInfo",
+  "title": "Ciefp Signal Info",
+  "summary": "Infos signal et chaîne",
+  "version": "1.5",
+  "commit": "49c30dc0d469742e6d09d566d2b1903ac4e13e3a",
+  "date": "2026-09-21",
+  "url": "https://codeload.github.com/ciefp/CiefpSignalInfo/tar.gz/49c30dc0d469742e6d09d566d2b1903ac4e13e3a",
+  "sha256": "a69a82a0de5c6c6cecbae4ab521ddcc8a59d96db319366fb08827e18b9a5f781",
+  "size": 260870,
+  "files": 13,
+  "depends": [
+   "python3-six",
+   "python3-requests"
+  ],
+  "notes": [],
+  "reviewed": "2026-11-23"
+ },
+ {
+  "repo": "CiefpPiconManager",
+  "title": "Ciefp Picon Manager",
+  "summary": "Gestion avancée des picons",
+  "version": "1.0",
+  "commit": "f9c0fd2fd2b12c480486b94947fb1a4923c7cc9b",
+  "date": "2026-11-01",
+  "url": "https://codeload.github.com/ciefp/CiefpPiconManager/tar.gz/f9c0fd2fd2b12c480486b94947fb1a4923c7cc9b",
+  "sha256": "7298643acf1d99220c54238ee27a6c70d95469aa0478e90ffab4f5db7d827363",
+  "size": 1006028,
+  "files": 13,
+  "depends": [],
+  "notes": [
+   "lance des commandes"
+  ],
+  "reviewed": "2026-11-23"
+ },
+ {
+  "repo": "CiefpScreenGrab",
+  "title": "Ciefp ScreenGrab",
+  "summary": "Captures d'écran de l'interface",
+  "version": "1.5",
+  "commit": "d8bc64d5f3a6d8ff99e48b5ccfd32a015c48a8f6",
+  "date": "2026-07-26",
+  "url": "https://codeload.github.com/ciefp/CiefpScreenGrab/tar.gz/d8bc64d5f3a6d8ff99e48b5ccfd32a015c48a8f6",
+  "sha256": "3e6d669f3889b82cc8087f3bbcbd61ee58aefa23ed67bcf8382b5efc244a3e80",
+  "size": 2146455,
+  "files": 5,
+  "depends": [
+   "python3-six",
+   "python3-requests"
+  ],
+  "notes": [],
+  "reviewed": "2026-11-23"
+ },
+ {
+  "repo": "CiefpBootlogo",
+  "title": "Ciefp Bootlogo",
+  "summary": "Créer un logo de démarrage depuis une image",
+  "version": "1.0",
+  "commit": "7ae3f9695aef9a8d3c4a520dbea595b1e93740dd",
+  "date": "2026-08-15",
+  "url": "https://codeload.github.com/ciefp/CiefpBootlogo/tar.gz/7ae3f9695aef9a8d3c4a520dbea595b1e93740dd",
+  "sha256": "2b814f61ac742ce5c31d05cb908ef0e7a54e56fc7cf1caf99752ce372bd33b27",
+  "size": 61383097,
+  "files": 4,
+  "depends": [],
+  "notes": [
+   "télécharge des données"
+  ],
+  "reviewed": "2026-11-23"
+ },
+ {
+  "repo": "CiefpSettingsDownloader",
+  "title": "Ciefp Settings Downloader",
+  "summary": "Télécharger les listes de chaînes Ciefp",
+  "version": "1.0",
+  "commit": "79d3409846288ee66955aa13ceee64bad158d098",
+  "date": "2026-09-21",
+  "url": "https://codeload.github.com/ciefp/CiefpSettingsDownloader/tar.gz/79d3409846288ee66955aa13ceee64bad158d098",
+  "sha256": "492ce60376d96c75676bfdf3142dad857e860e57fa36e7284a4943a2825dc21f",
+  "size": 2067587,
+  "files": 5,
+  "depends": [
+   "python3-six",
+   "python3-requests"
+  ],
+  "notes": [
+   "télécharge des données"
+  ],
+  "reviewed": "2026-11-23"
+ }
+]

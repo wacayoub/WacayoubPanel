@@ -66,7 +66,7 @@ PICKS = [
 ]
 
 RISKY = [
-    (r"(wget|curl)[^\n|;]*\|\s*(ba)?sh", "download piped into a shell"),
+    (r"(wget|curl)[^\n|;]*\|\s*(/usr)?(/bin/)?(ba)?sh\b", "download piped into a shell"),
     (r"base64\s+-d[^\n]*\|\s*(ba)?sh|exec\(\s*base64|eval\(\s*base64", "base64 decoded and executed"),
     (r"telnetd|dropbear\s+-|/etc/init\.d/(telnet|dropbear)\s+start", "starts telnet/ssh server"),
     (r"/etc/shadow|passwd\s+root|chpasswd", "changes passwords"),
