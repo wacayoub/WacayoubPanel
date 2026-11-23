@@ -37,7 +37,7 @@ from . import sysinfo as S
 from . import docteur as D
 from . import garde as G
 
-VERSION = "2.4.3"
+VERSION = "2.5.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -122,7 +122,7 @@ def item_tile(it):
     if it.get("type") == RECV:
         return pix("t-r-%s.png" % it.get("tile")) or pix("t-recv.png")
     if it.get("type") == DOCTOR:
-        return pix("t-doctor.png")
+        return pix("t-p2p.png" if it.get("id") == "p2p" else "t-doctor.png")
     g = F.group_of(it)
     if g and it.get("type") in ("opkg", "ext") and pix("t-%s.png" % g):
         return pix("t-%s.png" % g)
@@ -540,7 +540,12 @@ class WacayoubPanel(Screen):
         if cat_id == "feeds":
             return self._feed_sources()
         if cat_id == RECV:
-            return self._recv_rows()
+            p2p = {"id": "p2p", "type": DOCTOR, "category": RECV, "name": u"Partage LAN (entre deux récepteurs)",
+                   "summary": u"Envoyer ou recevoir les chaînes, l'IPTV et la softcam sur le réseau de la maison",
+                   "description": u"Copie les chaînes, l'IPTV et la softcam d'un récepteur à l'autre sur le même réseau, "
+                                  u"avec un code à 8 chiffres. Ce qui est remplacé est gardé (annulable).\nOK : ouvrir",
+                   "packages": []}
+            return [p2p] + self._recv_rows()
         if cat_id == "fix":
             doc = {"id": "doctor", "type": DOCTOR, "category": "fix", "name": u"Fixo (réparation intelligente)",
                    "summary": u"Analyse les plantages et propose la réparation (feeds et règles en ligne)",
@@ -799,7 +804,7 @@ class WacayoubPanel(Screen):
         if it.get("type") == RECV:
             return
         if it.get("type") == DOCTOR:
-            return self.session.open(WacayoubDoctor)
+            return self.session.open(WacayoubP2P if it.get("id") == "p2p" else WacayoubDoctor)
         if it.get("type") == FEEDSRC:
             self.src_filter = it["src"]
             self._refresh_all()
@@ -973,7 +978,7 @@ class WacayoubPanel(Screen):
             if it.get("type") in (RECV, FEEDSRC):
                 return
             if it.get("type") == DOCTOR:
-                return self.session.open(WacayoubDoctor)
+                return self.session.open(WacayoubP2P if it.get("id") == "p2p" else WacayoubDoctor)
             if it.get("type") == LAUNCH:
                 return self._launch(it)
             if it.get("type") == "image":
@@ -1754,6 +1759,290 @@ class WacayoubDoctor(Screen):
         body = ("echo %s; grep -E '^(crashdate|skin|imageversion)=' %s; echo; sed -n '/Traceback/,$p' %s | grep -v '^<' | head -60\n"
                 % (D.sh(os.path.basename(path)), D.sh(path), D.sh(path)))
         self.session.open(Console, title=u"Rapport de plantage", cmdlist=F.write_run_script(body, "doctor-show.sh"))
+
+
+# ---------------------------------------------------------------- Partage LAN (P2P between two receivers)
+P2P_PY = os.path.join(PLUGIN_DIR, "p2p.py")
+P2P_WHAT = [(u"Tout : chaînes, IPTV et softcam", "chaines,iptv,softcam"), (u"Chaînes satellite + IPTV", "chaines,iptv"),
+            (u"Chaînes satellite seulement", "chaines"), (u"IPTV seulement (bouquets + réglages des plugins IPTV)", "iptv"),
+            (u"Softcam seulement (configs et clés)", "softcam")]
+P2P_KIND = {"chaines": u"chaînes", "iptv": u"IPTV", "softcam": u"softcam"}
+
+
+def p2p_what(counts, kinds):
+    unit = {"chaines": u"bouquets de chaînes", "iptv": u"bouquets IPTV", "softcam": u"fichiers softcam"}
+    return u", ".join(u"%d %s" % (counts.get(k, 0), unit.get(k, k)) for k in kinds)
+
+
+def reload_channels():
+    try:
+        from enigma import eDVBDB
+        db = eDVBDB.getInstance()
+        db.reloadServicelist()
+        db.reloadBouquets()
+    except Exception as e:
+        print("[WacayoubPanel] p2p reload: %s" % e)
+
+
+class WacayoubP2P(Screen):
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self.skin = WacayoubDoctor._skin().replace('name="WacayoubDoctor"', 'name="WacayoubP2P"').replace(
+            'B-doctor.png', 'B-p2p.png').replace('title="Fixo"', 'title="Partage LAN"').replace(
+            '<widget name="desc"', '<widget name="code" position="%d,%d" size="%d,%d" font="Regular;%d" foregroundColor="#00FBBF24" '
+            'backgroundColor="#00070B14" transparent="1" halign="center" valign="center" />\n          <widget name="desc"'
+            % (s(520), s(260), s(1340), s(200), s(120)))
+        self.setTitle(u"Partage LAN")
+        self.closed = False
+        self.mode = "menu"
+        self.rows = []
+        self.proc = None
+        self.peers = []
+        self.console = AsyncConsole()
+        self.poll = eTimer()
+        self.poll.callback.append(self._poll)
+        self["title"] = Label(u"Partage LAN  ·  entre deux récepteurs")
+        self["status"] = Label(u"Même réseau (box Internet), aucun réglage à faire")
+        self["sub"] = Label("")
+        self["summary"] = Label("")
+        self["items"] = _List(80, [("Regular", 28), ("Regular", 22)])
+        self["code"] = Label("")
+        self["desc"] = Label("")
+        self["key_red"] = Label(u"Fermer")
+        self["key_green"] = Label(u"Choisir")
+        self["key_yellow"] = Label(u"Chercher")
+        self["key_blue"] = Label("")
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
+            "ok": self.keyOk, "green": self.keyOk, "cancel": self.keyBack, "red": self.keyBack, "yellow": self.keyFind,
+            "up": self.keyUp, "down": self.keyDown,
+        }, -1)
+        self.onLayoutFinish.append(self._first)
+        self.onClose.append(self._on_close)
+
+    def _first(self):
+        self["items"].selectionEnabled(True)
+        model, name = IM.box_model()
+        self["sub"].setText(u"%s  ·  v%s" % (name or model or "?", VERSION))
+        self._menu()
+
+    def _on_close(self):
+        self.closed = True
+        self.poll.stop()
+        self._stop_server()
+        self.console.killAll()
+
+    def _stop_server(self):
+        if self.proc:
+            try:
+                self.proc.terminate()
+            except Exception:
+                pass
+            self.proc = None
+
+    # ------------------------------------------------------------ list
+    def _set_rows(self, rows):
+        """rows: [(key, title, subtitle, tile)]"""
+        self.rows = rows
+        out = []
+        for r in rows:
+            row = [r]
+            if pix(r[3]):
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=pix(r[3]), flags=PIX_FLAGS))
+            row.append(MultiContentEntryText(pos=(s(94), s(6)), size=(s(1220), s(40)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                             text=r[1], color=C_TEXT, color_sel=0xFFFFFF))
+            row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(1220), s(30)), font=1, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                             text=r[2], color=C_DIM, color_sel=0xDBEAFE))
+            out.append(row)
+        self["items"].setList(out)
+
+    def _cur(self):
+        c = self["items"].getCurrent()
+        return c[0] if c else None
+
+    def keyUp(self):
+        self["items"].up()
+
+    def keyDown(self):
+        self["items"].down()
+
+    def _last_backup(self):
+        try:
+            names = sorted(d for d in os.listdir("/home/root/wacayoub-p2p") if d.startswith("echange-"))
+            with open(os.path.join("/home/root/wacayoub-p2p", names[-1], "backup.json"), encoding="utf-8") as fh:
+                return json.load(fh)
+        except Exception:
+            return None
+
+    def _menu(self):
+        self.mode = "menu"
+        self._stop_server()
+        self.poll.stop()
+        self["code"].setText("")
+        self["key_yellow"].setText(u"")
+        self["key_green"].setText(u"Choisir")
+        self["status"].setText(u"Même réseau (box Internet), aucun réglage à faire")
+        rows = [("send", u"Envoyer depuis ce récepteur", u"Chaînes, IPTV, softcam : l'autre récepteur reçoit avec un code", "t-p2p.png"),
+                ("recv", u"Recevoir sur ce récepteur", u"Cherche l'autre récepteur sur le réseau, puis demande son code", "t-p2p.png")]
+        last = self._last_backup()
+        if last:
+            rows.append(("undo", u"Annuler le dernier échange reçu",
+                         u"Reçu de %s le %s : %s" % (last.get("from", "?"), last.get("date", ""),
+                                                      ", ".join(P2P_KIND.get(k, k) for k in last.get("kinds", []))), "t-fix.png"))
+        self._set_rows(rows)
+        self["summary"].setText(u"Copie les chaînes, l'IPTV et la softcam d'un récepteur à l'autre.\n\n"
+                                u"1. Sur le premier : Envoyer\n2. Sur le second : Recevoir\n3. Taper le code affiché\n\n"
+                                u"Ce qui est remplacé est gardé : on peut annuler.")
+        self["desc"].setText(u"Fonctionne seulement sur le réseau de la maison. Transfert chiffré avec un code à 8 chiffres, "
+                             u"valable 10 minutes, pour un seul envoi. 3 codes faux arrêtent l'envoi.")
+
+    def keyBack(self):
+        if self.mode == "menu":
+            return self.close()
+        self._menu()
+
+    def keyOk(self):
+        r = self._cur()
+        if not r:
+            return
+        if self.mode == "menu":
+            if r[0] == "send":
+                self.session.openWithCallback(self._send_what, ChoiceBox, title=u"Quoi envoyer ?", list=P2P_WHAT)
+            elif r[0] == "recv":
+                self._receive()
+            elif r[0] == "undo":
+                self._undo()
+        elif self.mode == "recv" and r[0] == "peer":
+            self._ask_code(r[4])
+
+    # ------------------------------------------------------------ send
+    def _send_what(self, choice):
+        if not choice or getattr(self, "closed", True):
+            return
+        import random
+        import subprocess
+        code = "%08d" % random.SystemRandom().randrange(10 ** 8)
+        try:
+            os.remove("/tmp/wacayoub-p2p/status.json")
+        except OSError:
+            pass
+        env = dict(os.environ, WP2P_CODE=code)
+        try:
+            with open(os.devnull, "wb") as null:
+                self.proc = subprocess.Popen(["python3", "-I", P2P_PY, "serve", choice[1]], env=env, stdin=null, stdout=null,
+                                             stderr=null, close_fds=True)
+        except Exception as e:
+            self.session.open(MessageBox, u"Impossible de lancer l'envoi : %s" % e, MessageBox.TYPE_ERROR)
+            return
+        self.mode = "send"
+        self.sent_what = choice[0]
+        self["key_yellow"].setText("")
+        self["key_green"].setText("")
+        self._set_rows([])
+        self["code"].setText(u"%s %s" % (code[:4], code[4:]))
+        self["summary"].setText(u"Sur l'autre récepteur :\nWacayoub Panel\n→ Mon récepteur\n→ Partage LAN\n→ Recevoir\n\npuis taper ce code.")
+        self["desc"].setText(u"Envoi : %s. Le code est valable 10 minutes et pour un seul envoi. EXIT : arrêter." % choice[0])
+        self["status"].setText(u"Préparation…")
+        self.poll.start(1000, False)
+
+    def _poll(self):
+        if getattr(self, "closed", True) or self.mode != "send":
+            return
+        try:
+            with open("/tmp/wacayoub-p2p/status.json", encoding="utf-8") as fh:
+                st = json.load(fh)
+        except Exception:
+            return
+        state = st.get("state")
+        counts = st.get("counts", {})
+        what = p2p_what(counts, counts.keys())
+        if state == "waiting":
+            self["status"].setText(u"Prêt : %s  ·  en attente" % what)
+            if st.get("wrong"):
+                self["desc"].setText(u"Code faux reçu (%d/3). Vérifie le code tapé sur l'autre récepteur." % st["wrong"])
+        elif state == "sending":
+            self["status"].setText(st.get("text", ""))
+        elif state in ("sent", "locked", "expired", "error"):
+            self.poll.stop()
+            self.proc = None
+            self["code"].setText({"sent": u"Envoyé ✓", "locked": u"Arrêté", "expired": u"Expiré", "error": u"Erreur"}[state])
+            self["status"].setText(st.get("text", ""))
+            self["desc"].setText({"sent": u"L'autre récepteur a reçu %s. EXIT : retour." % what,
+                                  "locked": u"3 codes faux : l'envoi est arrêté par sécurité. EXIT puis Envoyer pour un nouveau code.",
+                                  "expired": u"Personne n'a reçu en 10 minutes. EXIT puis Envoyer pour un nouveau code.",
+                                  "error": st.get("text", "")}[state])
+
+    # ------------------------------------------------------------ receive
+    def keyFind(self):
+        if self.mode == "recv":
+            self._receive()
+
+    def _receive(self):
+        self.mode = "recv"
+        self.peers = []
+        self["key_yellow"].setText(u"Chercher")
+        self["code"].setText("")
+        self._set_rows([])
+        self["status"].setText(u"Recherche des récepteurs sur le réseau…")
+        self["summary"].setText(u"Sur l'autre récepteur :\nPartage LAN → Envoyer\n\nIl apparaît ici, choisis-le puis tape son code.")
+        self["desc"].setText(u"JAUNE : chercher à nouveau. EXIT : retour.")
+        self.console.ePopen(["python3", "python3", "-I", P2P_PY, "find"], self._found)
+
+    def _found(self, data, retval, extra=None):
+        if getattr(self, "closed", True) or self.mode != "recv":
+            return
+        out = data.decode("utf-8", "replace") if isinstance(data, bytes) else (data or "")
+        rows = []
+        for line in out.splitlines():
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            counts = d.get("counts", {})
+            what = p2p_what(counts, d.get("kinds", []))
+            rows.append(("peer", u"%s  ·  %s" % (d.get("name", "?"), d.get("ip", "")), u"Envoie : %s" % what, "t-p2p.png", d))
+        self._set_rows(rows)
+        self["status"].setText(u"%d récepteur(s) prêt(s) à envoyer" % len(rows) if rows else
+                               u"Aucun récepteur trouvé : sur l'autre, Partage LAN → Envoyer, puis JAUNE")
+
+    def _ask_code(self, peer):
+        from Screens.InputBox import InputBox
+        from Components.Input import Input
+
+        def got(code):
+            code = (code or "").replace(" ", "")
+            if not code or getattr(self, "closed", True):
+                return
+            if len(code) != 8 or not code.isdigit():
+                self.session.open(MessageBox, u"Le code a 8 chiffres.", MessageBox.TYPE_ERROR, timeout=5)
+                return
+            kinds = u", ".join(P2P_KIND.get(k, k) for k in peer.get("kinds", []))
+            q = (u"Recevoir %s depuis %s ?\n\n" % (kinds, peer.get("name", "?")) +
+                 (u"Les chaînes satellite d'ici sont remplacées (tes bouquets IPTV restent).\n" if "chaines" in peer.get("kinds", []) else u"") +
+                 u"Tout ce qui est remplacé est gardé : « Annuler le dernier échange » le remet.")
+
+            def go(ok):
+                if ok and not getattr(self, "closed", True):
+                    body = ("export WP2P_CODE=%s\nrm -f \"$0\"\npython3 -I %s receive %s %d\n"
+                            % (code, D.sh(P2P_PY), D.sh(peer["ip"]), int(peer.get("port", 47811))))
+                    self.session.openWithCallback(self._after, Console, title=u"Partage LAN : réception",
+                                                  cmdlist=F.write_run_script(body, "p2p-recv.sh"))
+            self.session.openWithCallback(go, MessageBox, q, MessageBox.TYPE_YESNO)
+        self.session.openWithCallback(got, InputBox, title=u"Code affiché sur %s (8 chiffres)" % peer.get("name", "?"),
+                                      text=" " * 8, maxSize=True, type=Input.NUMBER)
+
+    def _undo(self):
+        def go(ok):
+            if ok and not getattr(self, "closed", True):
+                self.session.openWithCallback(self._after, Console, title=u"Partage LAN : annulation",
+                                              cmdlist=F.write_run_script("python3 -I %s undo\n" % D.sh(P2P_PY), "p2p-undo.sh"))
+        self.session.openWithCallback(go, MessageBox, u"Remettre les chaînes, l'IPTV et la softcam d'avant le dernier échange ?",
+                                      MessageBox.TYPE_YESNO)
+
+    def _after(self, *args):
+        if getattr(self, "closed", True):
+            return
+        reload_channels()
+        self._menu()
 
 
 def main(session, **kwargs):

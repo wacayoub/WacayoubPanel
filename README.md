@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.3_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -67,6 +67,26 @@ Fixo et l'accueil surveillent aussi ce qu'un malware ou un installateur tiers ch
   « blocked for more than 120 seconds », ou Enigma2 bloqué 4 minutes sans réponse de l'interface web). Il écrit un rapport
   `/home/root/logs/wacayoub-gel-*.log` et redémarre le récepteur. Le fichier `/home/root/wacayoub-gel-off` coupe le
   redémarrage automatique (rapport seulement). Au retour, l'accueil et Fixo affichent le blocage.
+
+## Partage LAN (v2.5)
+
+**Mon récepteur → Partage LAN** copie les chaînes, l'IPTV et la softcam d'un récepteur à l'autre sur le même réseau :
+
+1. sur le premier : **Envoyer**, choisir quoi (tout, chaînes + IPTV, chaînes, IPTV, softcam) ; un code à 8 chiffres s'affiche ;
+2. sur le second : **Recevoir** ; il trouve le premier tout seul (diffusion sur le réseau local), choisir puis taper le code.
+
+- **Chaînes** : `lamedb`, `lamedb5` et les bouquets satellite (avec leurs sous-bouquets). Les bouquets satellite du receveur
+  sont remplacés, ses bouquets IPTV restent.
+- **IPTV** : les bouquets dont la plupart des chaînes sont des flux, ajoutés à la liste, plus les réglages des plugins IPTV
+  (IPTV Bouquet AI, BouquetMakerXtream, XStreamity, EStalker, JediEPGXtream).
+- **Softcam** : `/etc/tuxbox/config`, `/usr/keys`, `/etc/CCcam.cfg` (pas les programmes : la même softcam doit être installée),
+  puis la softcam est redémarrée.
+
+Sécurité : l'envoi ne tourne que tant que l'écran est ouvert (10 minutes au plus) et pour un seul transfert ; seules les adresses
+du réseau local (192.168.x, 10.x, 172.16-31.x) sont servies ; le receveur doit prouver qu'il connaît le code avant de recevoir
+quoi que ce soit, 3 codes faux arrêtent l'envoi ; le transfert est chiffré et contrôlé avec une clé tirée du code. Le receveur
+n'écrit que des noms de fichiers connus dans ces dossiers et garde ce qu'il remplace dans `/home/root/wacayoub-p2p`
+(3 derniers échanges) : **Annuler le dernier échange reçu** remet tout comme avant.
 
 ## Catégories (v2)
 
