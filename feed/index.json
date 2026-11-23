@@ -264,13 +264,13 @@
    "provides": []
   },
   "enigma2-plugin-extensions-wacayoubchaines": {
-   "version": "1.1.0",
+   "version": "1.2.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubchaines_1.1.0_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubchaines_1.1.0_all.ipk",
-   "sha256": "274049e5c5ba1f445eb3dced306222de696096c98be9bb341945acaa78b620c3",
-   "size": 65154,
-   "installed_size": 124,
+   "file": "enigma2-plugin-extensions-wacayoubchaines_1.2.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubchaines_1.2.0_all.ipk",
+   "sha256": "bc63731b32b90fa7b30f2eb101efc64e64f13a6d04cc675511f40af98f96a009",
+   "size": 68180,
+   "installed_size": 138,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
   },
@@ -279,8 +279,8 @@
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk",
-   "sha256": "22ece40fa223053b51e3a3c9d354b51ca1c26208a7d26d7661da813041adfad5",
-   "size": 1244392,
+   "sha256": "f965594a59b4f996450d24fe6f830211626211ee16ecd77b18a5bef181755a9b",
+   "size": 1244410,
    "installed_size": 1439,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []

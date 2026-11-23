@@ -355,9 +355,25 @@ def chaines_images(font):
     import shutil
     ch = os.path.join(ROOT, "src", "WacayoubChaines", "img")
     os.makedirs(ch, exist_ok=True)
-    for fn in ("bg.jpg", "sel-item.png", "sel-cat.png", "sel.png", "k-red.png", "k-green.png", "k-yellow.png", "k-blue.png", "k-menu.png"):
+    for fn in ("sel.png", "k-red.png", "k-green.png", "k-yellow.png", "k-blue.png", "k-menu.png"):
         shutil.copy2(os.path.join(OUT, fn), ch)
     tile("i-chaines", 64).save(os.path.join(ch, "logo.png"), optimize=True)
+    # compact layout (20 rows per page): own background and thinner selection bars
+    im = gradient(1920, 1080, "#070B14", "#0B1424")
+    glow = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
+    d = ImageDraw.Draw(glow)
+    d.ellipse([-300, -420, 900, 420], fill=(47, 140, 255, 60))
+    d.ellipse([1300, 650, 2300, 1450], fill=(124, 92, 255, 45))
+    im = Image.alpha_composite(im, glow.filter(ImageFilter.GaussianBlur(160)))
+    card = Image.new("RGBA", (1920, 1080), (0, 0, 0, 0))
+    d = ImageDraw.Draw(card)
+    d.rounded_rectangle([48, 128, 488, 930], 20, fill=(255, 255, 255, 14), outline=(255, 255, 255, 22), width=1)
+    d.rounded_rectangle([508, 128, 1872, 930], 20, fill=(255, 255, 255, 9), outline=(255, 255, 255, 18), width=1)
+    im = Image.alpha_composite(im, card).convert("RGB")
+    im.save(os.path.join(ch, "bg-ch.jpg"), quality=88, optimize=True)
+    bar(1340, 39, "#1E3A8A", "#1D4ED8", 10, 235, accent="#7DD3FC").save(os.path.join(ch, "sel-row.png"), optimize=True)
+    bar(416, 39, "#2563EB", "#7C3AED", 10, 255).save(os.path.join(ch, "sel-bq.png"), optimize=True)
+    bar(1340, 39, "#92400E", "#B45309", 10, 235, accent="#FBBF24").save(os.path.join(ch, "sel-move.png"), optimize=True)
     for name, key in (("tv", "recv"), ("iptv", "dns"), ("radio", "audio"), ("bouquet", "settings")):
         tile(key, 60).save(os.path.join(ch, "t-%s.png" % name), optimize=True)
     pb = Image.new("RGBA", (220, 132), (0, 0, 0, 0))

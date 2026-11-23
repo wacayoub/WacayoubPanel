@@ -338,15 +338,16 @@ class Library(object):
         b.entries = [e for i, e in enumerate(b.entries) if i not in s]
         b.dirty = True
 
-    def copy_to(self, b, idx, target, move=False):
+    def copy_to(self, b, idx, target, move=False, at_start=False):
         have = set(e.norm() for e in target.entries)
-        added = 0
+        new = []
         for i in sorted(idx):
             e = b.entries[i]
             if e.kind in ("service", "stream") and e.norm() not in have:
-                target.entries.append(Entry(e.ref, e.desc, list(e.extra)))
+                new.append(Entry(e.ref, e.desc, list(e.extra)))
                 have.add(e.norm())
-                added += 1
+        added = len(new)
+        target.entries = (new + target.entries) if at_start else (target.entries + new)
         target.dirty = True
         if move:
             self.delete(b, idx)
@@ -393,6 +394,74 @@ class Library(object):
         tops.insert(j, tops.pop(i))
         self.tops_dirty.add(b.kind)
         return True
+
+    # -------------------------------------------------------------- precise moves
+    @staticmethod
+    def rest_pos_of_number(b, idx, n):
+        """Position (in the list without the block idx) where the block lands to become channel number n."""
+        s = set(idx)
+        rest = [e for i, e in enumerate(b.entries) if i not in s]
+        count = 0
+        for p, e in enumerate(rest):
+            if e.kind in ("service", "stream"):
+                count += 1
+                if count == n:
+                    return p
+        return len(rest)
+
+    @staticmethod
+    def rest_pos_after(b, idx, marker_index):
+        """Position (in the list without the block) just after the entry marker_index."""
+        s = set(idx)
+        return sum(1 for i in range(marker_index + 1) if i not in s)
+
+    def move_to(self, b, idx, pos):
+        """Block idx to position pos of the list without the block; returns the new indexes."""
+        idx = sorted(idx)
+        return self.move_block(b, idx, pos - idx[0])
+
+    @staticmethod
+    def swap(b, i, j):
+        b.entries[i], b.entries[j] = b.entries[j], b.entries[i]
+        b.dirty = True
+
+    @staticmethod
+    def reverse(b, idx):
+        idx = sorted(idx)
+        items = [b.entries[i] for i in idx][::-1]
+        for i, e in zip(idx, items):
+            b.entries[i] = e
+        b.dirty = True
+
+    def paste(self, target, pos, entries, src=None):
+        """Insert entries at pos in target (duplicates already there are skipped). src: bouquet to take them out of (cut).
+        Returns (number inserted, index of the first one)."""
+        ids = set(id(e) for e in entries) if src is not None else set()
+        later = [x for x in target.entries[max(0, pos):] if id(x) not in ids]
+        anchor = later[0] if later else None
+        if src is not None:
+            src.entries = [e for e in src.entries if id(e) not in ids]
+            src.dirty = True
+        have = set(e.norm() for e in target.entries)
+        new = [e if src is not None else Entry(e.ref, e.desc, list(e.extra)) for e in entries
+               if e.kind == "marker" or e.norm() not in have]
+        if anchor is not None and any(x is anchor for x in target.entries):
+            pos = [i for i, x in enumerate(target.entries) if x is anchor][0]
+        else:
+            pos = len(target.entries)
+        target.entries = target.entries[:pos] + new + target.entries[pos:]
+        target.dirty = True
+        return len(new), pos
+
+    @staticmethod
+    def snapshot(bouquets):
+        return dict((b.file, (b, list(b.entries), b.dirty)) for b in bouquets if b is not None)
+
+    @staticmethod
+    def restore(snap):
+        for _f, (b, entries, dirty) in snap.items():
+            b.entries = list(entries)
+            b.dirty = dirty
 
     def move_tops(self, kind, files, delta):
         """Move several top bouquets as one block (kept in their order). Returns False if none is a top bouquet."""

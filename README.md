@@ -68,10 +68,10 @@ Fixo et l'accueil surveillent aussi ce qu'un malware ou un installateur tiers ch
   `/home/root/logs/wacayoub-gel-*.log` et redémarre le récepteur. Le fichier `/home/root/wacayoub-gel-off` coupe le
   redémarrage automatique (rapport seulement). Au retour, l'accueil et Fixo affichent le blocage.
 
-## Wacayoub Chaînes (plugin à part, v1.1)
+## Wacayoub Chaînes (plugin à part, v1.2)
 
 Organiser les chaînes : **Outils & Infos → Wacayoub Chaînes** dans le panel, puis Extensions → Wacayoub Chaînes.
-Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, HD). Code : `src/WacayoubChaines`.
+Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, HD), **20 lignes par page**. Code : `src/WacayoubChaines`.
 
 | Touche | Bouquets (gauche) | Chaînes (droite) |
 |---|---|---|
@@ -83,6 +83,16 @@ Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, 
 | MENU | outils intelligents | outils intelligents |
 | 0 | marquer plusieurs bouquets | sélection continue : HAUT / BAS marquent en passant |
 | INFO | rechercher une chaîne dans tous les bouquets | |
+
+**Déplacer facilement** :
+- JAUNE = mode déplacement (barre orange) : HAUT / BAS = 1 ligne, GAUCHE / DROITE ou CH+ / CH- = 1 page (20),
+  chiffres = aller directement à la position n°, VERT = tout en haut, BLEU = tout en bas, MENU = juste après un séparateur,
+  OK / JAUNE = poser, ROUGE = annuler le déplacement. Marche aussi pour les bouquets (gauche).
+- MENU → Déplacer… : tout en haut, tout en bas, position n°…, après un séparateur…, vers un autre bouquet (au début ou à la fin,
+  déplacer ou copier), **couper / copier puis coller** n'importe où (même dans un autre bouquet), échanger 2 chaînes,
+  inverser l'ordre des chaînes marquées.
+- Chiffres hors déplacement : aller à la chaîne n° (droite) ou au bouquet n° (gauche).
+- MENU → Annuler la dernière action : retour arrière pas à pas (30 actions) avant d'enregistrer.
 
 **Sélection multiple** : bouquets marqués (touche 0) → ROUGE les supprime, JAUNE les déplace ensemble, BLEU les **fusionne**
 (sans doublons, en gardant ou supprimant les anciens), MENU les trie ou les nettoie tous. Chaînes : OK, sélection continue (0),

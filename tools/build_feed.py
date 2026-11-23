@@ -42,7 +42,7 @@ PANEL = {
 }
 CHAINES = {
     "Package": "enigma2-plugin-extensions-wacayoubchaines",
-    "Version": "1.1.0",
+    "Version": "1.2.0",
     "Description": "Wacayoub Chaines: move, delete, sort and organise channels and bouquets",
     "Section": "extra",
     "Priority": "optional",
