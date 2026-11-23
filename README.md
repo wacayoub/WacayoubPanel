@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -33,12 +33,12 @@ Le panel s'ouvre sur un tableau de bord : bonjour, modèle, image, durée allum�
 (température, CPU, RAM, stockage) ; une bande d'**alertes** classées par importance (température, plantages récents, système plein,
 heure fausse, opkg bloqué, EPG vide, softcam arrêté, Internet / DNS, mises à jour) ; trois badges d'état ; huit tuiles
 (Réparer, Addons, Softcam, Skins, Mes outils, Mon récepteur, DNS, Images).
-OK sur une alerte ouvre le bon outil, OK sur une tuile ouvre la catégorie. ROUGE Docteur, VERT Bilan santé, JAUNE actualiser,
+OK sur une alerte ouvre le bon outil, OK sur une tuile ouvre la catégorie. ROUGE Fixo, VERT Bilan santé, JAUNE actualiser,
 BLEU tout mettre à jour (mes paquets, OpenATV et autres images), MENU rechercher, EXIT quitter.
 
-## Docteur Enigma2 (v2.4)
+## Fixo (v2.4)
 
-ROUGE sur l'accueil, une alerte « plantage », ou la première ligne de **Réparer**. Le Docteur :
+ROUGE sur l'accueil, une alerte « plantage », ou la première ligne de **Réparer**. Fixo :
 
 1. met à jour les listes de paquets et relit le feed du panel **sur Internet** (avec les règles en ligne `feed/doctor-rules.json`) ;
 2. lit les rapports de plantage d'Enigma2 (`/home/root/logs`, disques), trouve l'erreur Python et le plugin en cause

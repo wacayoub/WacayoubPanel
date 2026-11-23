@@ -36,7 +36,7 @@ from .details import WacayoubDetails
 from . import sysinfo as S
 from . import docteur as D
 
-VERSION = "2.4.0"
+VERSION = "2.4.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -57,7 +57,7 @@ TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "
 SEARCH = "search"
 FEEDSRC = "feedsrc"
 RECV = "recv"  # 'Mon récepteur' info rows (nothing to install)
-DOCTOR = "doctor"  # row that opens the Docteur Enigma2 screen
+DOCTOR = "doctor"  # row that opens the Fixo screen
 TOOL_CATS = ('communaute', 'scripts', 'fix', 'dns', 'deps', 'disk')  # categories of the index shown as they are
 # where an item comes from, shown on every row (lists are merged across sources)
 SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, u"Installé": 0x4ADE80, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
@@ -541,9 +541,9 @@ class WacayoubPanel(Screen):
         if cat_id == RECV:
             return self._recv_rows()
         if cat_id == "fix":
-            doc = {"id": "doctor", "type": DOCTOR, "category": "fix", "name": u"Docteur Enigma2",
+            doc = {"id": "doctor", "type": DOCTOR, "category": "fix", "name": u"Fixo (réparation intelligente)",
                    "summary": u"Analyse les plantages et propose la réparation (feeds et règles en ligne)",
-                   "description": u"Docteur Enigma2 : lit les rapports de plantage, trouve le plugin et l'erreur, cherche une version "
+                   "description": u"Fixo : lit les rapports de plantage, trouve le plugin et l'erreur, cherche une version "
                                   u"corrigée sur Internet et propose la réparation (installer, mettre à jour, réinstaller, désactiver).\nOK : ouvrir",
                    "packages": []}
             return [doc] + (self.feed.items_in(cat_id) if self.feed else [])
@@ -1192,7 +1192,7 @@ def local_checks():
         out.append(("amber", u"Température %d °C : chaude" % t, "fix"))
     n, plug = recent_crashes()
     if n:
-        out.append(("amber", u"%d plantage(s) récent(s)%s  ·  OK : Docteur" % (n, (u" (%s)" % plug) if plug else ""), "doctor"))
+        out.append(("amber", u"%d plantage(s) récent(s)%s  ·  OK : Fixo" % (n, (u" (%s)" % plug) if plug else ""), "doctor"))
     free = F.free_bytes("/")
     if 0 <= free < 50 * 1024 * 1024:
         out.append(("red", u"Système presque plein : %s libres" % S.human(free), "fix"))
@@ -1474,12 +1474,12 @@ class WacayoubHome(Screen):
             self.refresh()
 
 
-# ---------------------------------------------------------------- Docteur Enigma2 (crash logs -> fixes)
+# ---------------------------------------------------------------- Fixo (crash logs -> fixes)
 class WacayoubDoctor(Screen):
     def __init__(self, session):
         Screen.__init__(self, session)
         self.skin = self._skin()
-        self.setTitle("Docteur Enigma2")
+        self.setTitle("Fixo")
         self.closed = False
         self.feed = None
         self.findings = []
@@ -1487,7 +1487,7 @@ class WacayoubDoctor(Screen):
         self.console = AsyncConsole()
         self.later = eTimer()
         self.later.callback.append(self._analyse)
-        self["title"] = Label(u"Docteur Enigma2")
+        self["title"] = Label(u"Fixo  ·  réparation intelligente")
         self["status"] = Label("")
         self["sub"] = Label("")
         self["summary"] = Label("")
@@ -1517,7 +1517,7 @@ class WacayoubDoctor(Screen):
             d["l%d" % i] = d["k%d" % i] + s(38)
         d["kw"] = s(300)
         return """
-        <screen name="WacayoubDoctor" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14" title="Docteur Enigma2">
+        <screen name="WacayoubDoctor" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14" title="Fixo">
           <ePixmap position="0,0" size="%(W)d,%(H)d" pixmap="%(img)s/bg.jpg" scale="1" zPosition="-2" />
           <ePixmap position="%(lx)d,%(ly)d" size="%(lw)d,%(lw)d" pixmap="%(img)s/logo.png" alphatest="blend" scale="1" />
           <ePixmap position="%(bx)d,%(by)d" size="%(bw)d,%(bw)d" pixmap="%(img)s/B-doctor.png" alphatest="blend" scale="1" />
@@ -1636,7 +1636,7 @@ class WacayoubDoctor(Screen):
     def _desc(self):
         f = self._cur()
         if not f:
-            self["desc"].setText(u"Le Docteur lit les rapports de plantage d'Enigma2, cherche la cause et propose une réparation "
+            self["desc"].setText(u"Fixo lit les rapports de plantage d'Enigma2, cherche la cause et propose une réparation "
                                  u"(feeds OpenATV et Wacayoub, règles en ligne). JAUNE : analyser à nouveau.")
             return
         txt = f.get("explain", "")
@@ -1679,7 +1679,7 @@ class WacayoubDoctor(Screen):
         def go(ok):
             if ok:
                 cmd = F.write_run_script(body, "doctor.sh")
-                self.session.openWithCallback(lambda *a: self._done(f), Console, title=u"Docteur : %s" % f["fix_label"], cmdlist=cmd)
+                self.session.openWithCallback(lambda *a: self._done(f), Console, title=u"Fixo : %s" % f["fix_label"], cmdlist=cmd)
         self.session.openWithCallback(go, MessageBox, q, MessageBox.TYPE_YESNO)
 
     def _done(self, f):

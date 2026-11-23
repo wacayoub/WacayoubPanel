@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Docteur Enigma2: reads the enigma2 crash logs, finds the plugin and the error, and proposes a fix.
+"""Fixo: reads the enigma2 crash logs, finds the plugin and the error, and proposes a fix.
 
 Knowledge comes from three places:
 - built-in rules below;
@@ -366,7 +366,7 @@ def _diagnose(g, rules, installed, available, own, times, plugins):
         plan = "update_or_disable" if (name and len(g["logs"]) >= 2) else "update_or_none"
     f["fix"] = _plan(plan, f, pkg, has_update, newest, name, kind)
     if not f["fix"] and name and len(g["logs"]) < 2:
-        f["explain"] += u"\nUn seul plantage : rien n'est changé. S'il revient, le Docteur proposera de désactiver %s." % who
+        f["explain"] += u"\nUn seul plantage : rien n'est changé. S'il revient, Fixo proposera de désactiver %s." % who
     return _finish(f)
 
 
@@ -428,7 +428,7 @@ def _quarantined():
         kind = "SystemPlugins" if os.path.exists(os.path.join(QUARANTINE, d, ".systemplugin")) else "Extensions"
         out.append({"id": "q|" + d, "plugin": d, "kind": kind, "package": None, "count": 0, "logs": [], "exception": "",
                     "where": "", "sure": True, "date": "", "level": "blue", "title": u"%s est désactivé" % d,
-                    "explain": u"Mis de côté par le Docteur dans %s. VERT le remet à sa place (redémarrage de l'interface)." % QUARANTINE,
+                    "explain": u"Mis de côté par Fixo dans %s. VERT le remet à sa place (redémarrage de l'interface)." % QUARANTINE,
                     "fix": {"type": "restore", "plugin": d, "kind": kind}, "fix_label": FIX_LABEL["restore"] % d})
     return out
 
@@ -462,7 +462,7 @@ def fix_commands(f, feed=None):
         lines.append("rm -rf %s; mv %s %s || exit 1" % (sh(dst), sh(src), sh(dst)))
         if fx["kind"] == "SystemPlugins":
             lines.append("touch %s/.systemplugin" % sh(dst))
-        lines.append("echo '>>> %s désactivé (gardé dans %s, réactivable par le Docteur)'" % (fx["plugin"], QUARANTINE))
+        lines.append("echo '>>> %s désactivé (gardé dans %s, réactivable par Fixo)'" % (fx["plugin"], QUARANTINE))
     elif t == "restore":
         src = "%s/%s" % (QUARANTINE, fx["plugin"])
         dst = "%s/%s/%s" % (PLUGIN_ROOT, fx["kind"], fx["plugin"])

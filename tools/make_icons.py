@@ -275,7 +275,7 @@ def home_background(w=1920, h=1080):
     lay.alpha_composite(logo(66), (48, 36))
     d.text((132, 30), "Wacayoub Panel", font=ft, fill=(241, 245, 249, 255))
     x = 60
-    for col, lab in (("#EF4444", "Docteur"), ("#22C55E", "Bilan santé"), ("#F59E0B", "Actualiser"), ("#3B82F6", "Mises à jour")):
+    for col, lab in (("#EF4444", "Fixo"), ("#22C55E", "Bilan santé"), ("#F59E0B", "Actualiser"), ("#3B82F6", "Mises à jour")):
         lay.alpha_composite(key_dot(col), (x, 1010))
         d.text((x + 38, 1023), lab, font=fk, fill=(226, 232, 240, 255), anchor="lm")
         x += 330
