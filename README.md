@@ -68,7 +68,7 @@ Fixo et l'accueil surveillent aussi ce qu'un malware ou un installateur tiers ch
   `/home/root/logs/wacayoub-gel-*.log` et redémarre le récepteur. Le fichier `/home/root/wacayoub-gel-off` coupe le
   redémarrage automatique (rapport seulement). Au retour, l'accueil et Fixo affichent le blocage.
 
-## Wacayoub Chaînes (plugin à part, v1.0)
+## Wacayoub Chaînes (plugin à part, v1.1)
 
 Organiser les chaînes : **Outils & Infos → Wacayoub Chaînes** dans le panel, puis Extensions → Wacayoub Chaînes.
 Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, HD). Code : `src/WacayoubChaines`.
@@ -81,7 +81,12 @@ Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, 
 | JAUNE | déplacer le bouquet (HAUT / BAS) | déplacer les chaînes marquées en bloc (HAUT / BAS, GAUCHE / DROITE = page) |
 | BLEU | renommer | déplacer ou copier vers un autre bouquet (ou un nouveau) |
 | MENU | outils intelligents | outils intelligents |
+| 0 | marquer plusieurs bouquets | sélection continue : HAUT / BAS marquent en passant |
 | INFO | rechercher une chaîne dans tous les bouquets | |
+
+**Sélection multiple** : bouquets marqués (touche 0) → ROUGE les supprime, JAUNE les déplace ensemble, BLEU les **fusionne**
+(sans doublons, en gardant ou supprimant les anciens), MENU les trie ou les nettoie tous. Chaînes : OK, sélection continue (0),
+ou MENU → sélection par nom, HD / 4K, SD, IPTV, satellite, inverser.
 
 Outils intelligents : trier de A à Z ou 4K / HD d'abord (dans chaque section entre séparateurs), supprimer les doublons, supprimer
 les chaînes mortes (absentes de la liste des chaînes), **bouquets par thème** (★ Sport, ★ Info, ★ Enfants, ★ Documentaires,

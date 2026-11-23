@@ -394,6 +394,64 @@ class Library(object):
         self.tops_dirty.add(b.kind)
         return True
 
+    def move_tops(self, kind, files, delta):
+        """Move several top bouquets as one block (kept in their order). Returns False if none is a top bouquet."""
+        tops = self.tops[kind]
+        tags = ['"%s"' % f for f in files]
+        idx = [i for i, e in enumerate(tops) if any(t in e.ref for t in tags)]
+        if not idx:
+            return False
+        block = [tops[i] for i in idx]
+        rest = [e for i, e in enumerate(tops) if i not in set(idx)]
+        pos = max(0, min(len(rest), idx[0] + delta))
+        self.tops[kind] = rest[:pos] + block + rest[pos:]
+        self.tops_dirty.add(kind)
+        return True
+
+    def merge(self, sources, name, keep=True):
+        """New bouquet with every channel of sources (in order, without duplicates). keep=False deletes the sources."""
+        kind = sources[0].kind
+        tag = '"%s"' % sources[0].file
+        pos = [i for i, e in enumerate(self.tops[kind]) if tag in e.ref]
+        target = self.new_bouquet(name, kind)
+        if pos:  # the merged bouquet takes the place of the first one
+            self.tops[kind].insert(pos[0], self.tops[kind].pop())
+        for b in sources:
+            self.copy_to(b, range(len(b.entries)), target)
+        if not keep:
+            for b in sources:
+                if b.file in self.bouquets:
+                    self.delete_bouquet(b)
+        return target
+
+    def select(self, b, how, text=u""):
+        """Indexes of the entries of b matching a smart selection."""
+        out = []
+        q = [w for w in fold(text).split() if w]
+        for i, e in enumerate(b.entries):
+            if e.kind not in ("service", "stream"):
+                continue
+            if how == "name":
+                n = fold(e.name(self.services))
+                ok = bool(q) and all(w in n for w in q)
+            elif how == "hd":
+                n = fold(e.name(self.services))
+                ok = bool(re.search(r"\b(4k|uhd|fhd|hd)\b", n)) or e.info(self.services).endswith("HD")
+            elif how == "sd":
+                n = fold(e.name(self.services))
+                ok = not (re.search(r"\b(4k|uhd|fhd|hd)\b", n) or e.info(self.services).endswith("HD"))
+            elif how == "iptv":
+                ok = e.kind == "stream"
+            elif how == "sat":
+                ok = e.kind == "service"
+            elif how == "dead":
+                ok = e.kind == "service" and bool(self.services.db) and not self.services.get(e.key())
+            else:
+                ok = False
+            if ok:
+                out.append(i)
+        return out
+
     def rename(self, b, name):
         b.name = name
         b.dirty = True

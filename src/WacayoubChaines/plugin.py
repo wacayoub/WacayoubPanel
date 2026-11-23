@@ -23,7 +23,7 @@ except ImportError:
 
 from . import bouquets as B
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(HERE, "img")
 SC = (getDesktop(0).size().width() or 1920) / 1920.0
@@ -106,6 +106,8 @@ class WacayoubChaines(Screen):
         self.kind = "tv"
         self.focus = "left"
         self.marked = set()
+        self.bmarked = set()      # files of the marked bouquets
+        self.sweep = False        # continuous selection: moving marks every channel passed
         self.move = None          # None, "chan" (block of indexes) or "bouquet"
         self.block = []
         self.bqs = []
@@ -120,7 +122,8 @@ class WacayoubChaines(Screen):
         for k in ("red", "green", "yellow", "blue", "menu"):
             self["key_" + k] = Label(u"")
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions", "MenuActions",
-                                     "ChannelSelectBaseActions", "InfoActions"], {
+                                     "ChannelSelectBaseActions", "InfoActions", "NumberActions"], {
+            "0": self.keyZero,
             "ok": self.keyOk, "cancel": self.keyCancel, "red": self.keyRed, "green": self.keyGreen,
             "yellow": self.keyYellow, "blue": self.keyBlue, "menu": self.keyMenu, "info": self.search,
             "up": lambda: self.keyMove(-1), "down": lambda: self.keyMove(1),
@@ -188,19 +191,38 @@ class WacayoubChaines(Screen):
 
     def _build_left(self, keep=None):
         self.bqs = self.lib.ordered(self.kind)
-        rows = []
-        for b in self.bqs:
-            n = b.count()
-            name = (u"   " * b.depth) + clean(b.name) + (u"  •" if b.dirty else u"")
-            rows.append([b,
-                         MultiContentEntryText(pos=(s(16), 0), size=(s(300), s(52)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
-                                               text=name, color=C_DIRTY if b.dirty else C_TEXT, color_sel=0xFFFFFF),
-                         MultiContentEntryText(pos=(s(312), 0), size=(s(86), s(52)), font=1, flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER,
-                                               text=u"%d" % n, color=C_DIM, color_sel=0xE2E8F0)])
-        self["bouquets"].setList(rows)
+        self.bmarked &= set(b.file for b in self.bqs)
+        self["bouquets"].setList([self._brow(b) for b in self.bqs])
         if keep is not None and keep in self.bqs:
             self["bouquets"].moveToIndex(self.bqs.index(keep))
         self._build_right()
+
+    def _brow(self, b):
+        mk = b.file in self.bmarked
+        name = (u"   " * b.depth) + clean(b.name) + (u"  •" if b.dirty else u"")
+        row = [b, MultiContentEntryText(pos=(s(16), 0), size=(s(290 if mk else 300), s(52)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                        text=name, color=C_MARK if mk else C_DIRTY if b.dirty else C_TEXT, color_sel=0xFFFFFF),
+               MultiContentEntryText(pos=(s(300), 0), size=(s(66 if mk else 98), s(52)), font=1, flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER,
+                                     text=u"%d" % b.count(), color=C_DIM, color_sel=0xE2E8F0)]
+        if mk and img("sel.png"):
+            row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(372), s(13)), size=(s(26), s(26)), png=img("sel.png"), flags=PIX_FLAGS))
+        return row
+
+    def _brefresh(self, b):
+        if b in self.bqs:
+            i = self.bqs.index(b)
+            self["bouquets"].list[i] = self._brow(b)
+            try:
+                self["bouquets"].l.invalidateEntry(i)
+            except Exception:
+                self["bouquets"].setList(self["bouquets"].list)
+
+    def _bsel(self):
+        """Marked bouquets, or the current one."""
+        if self.bmarked:
+            return [b for b in self.bqs if b.file in self.bmarked]
+        b = self._cur_bouquet()
+        return [b] if b else []
 
     def _left_row_refresh(self):
         b = self._cur_bouquet()
@@ -266,7 +288,8 @@ class WacayoubChaines(Screen):
         dirty = self.lib.dirty()
         tail = u"  ·  modifié : VERT pour enregistrer" if dirty else u""
         if b:
-            st = u"%s  ·  %d chaînes%s" % (clean(b.name), b.count(), (u"  ·  %d marquée(s)" % len(self.marked)) if self.marked else u"")
+            st = u"%s  ·  %d chaînes%s%s" % (clean(b.name), b.count(), (u"  ·  %d marquée(s)" % len(self.marked)) if self.marked else u"",
+                                             (u"  ·  %d bouquet(s) marqué(s)" % len(self.bmarked)) if self.bmarked else u"")
         else:
             st = u"Aucun bouquet"
         self["status"].setText(st + tail)
@@ -278,14 +301,21 @@ class WacayoubChaines(Screen):
         elif self.move == "bouquet":
             keys = {"red": u"", "green": u"", "yellow": u"Poser ici", "blue": u"", "menu": u""}
             self["desc"].setText(u"Déplacement du bouquet : HAUT / BAS. OK ou JAUNE pour poser.")
+        elif self.sweep:
+            self["desc"].setText(u"Sélection continue : HAUT / BAS (et CH+ / CH-) marquent chaque chaîne au passage. 0 ou OK : arrêter.")
+        elif self.focus == "left" and self.bmarked:
+            n = len(self.bmarked)
+            keys.update(red=u"Supprimer (%d)" % n, yellow=u"Déplacer (%d)" % n, blue=u"Fusionner (%d)" % n)
+            self["desc"].setText(u"%d bouquet(s) marqué(s).  0 : marquer / démarquer.  ROUGE : les supprimer.  JAUNE : les déplacer ensemble.  "
+                                 u"BLEU : les fusionner en un seul.  MENU : trier / nettoyer tous les bouquets marqués." % n)
         elif self.focus == "left":
             keys.update(red=u"Suppr. bouquet", yellow=u"Déplacer bouquet", blue=u"Renommer")
-            self["desc"].setText(u"OK / DROITE : ouvrir le bouquet.  MENU : outils intelligents (trier, doublons, chaînes mortes, "
-                                 u"bouquets par thème, nouveau bouquet, TV / Radio, annuler).  INFO : rechercher une chaîne.")
+            self["desc"].setText(u"OK / DROITE : ouvrir.  0 : marquer plusieurs bouquets (supprimer, déplacer, fusionner ensemble).  "
+                                 u"MENU : outils intelligents.  INFO : rechercher une chaîne.")
         else:
             e = self._cur_entry()
-            self["desc"].setText(u"OK : marquer plusieurs chaînes.  JAUNE : déplacer.  BLEU : déplacer ou copier vers un autre bouquet.  "
-                                 u"GAUCHE : bouquets.  CH+/CH- : page." + (u"\n%s" % clean(e.ref) if e and e.kind == "service" else u""))
+            self["desc"].setText(u"OK : marquer.  0 : sélection continue (HAUT / BAS marquent en passant).  MENU : sélection intelligente "
+                                 u"(par nom, HD, SD, IPTV, tout, inverser).  JAUNE : déplacer.  BLEU : vers un autre bouquet.  GAUCHE : bouquets.")
         for k, v in keys.items():
             self["key_" + k].setText(v)
 
@@ -293,11 +323,39 @@ class WacayoubChaines(Screen):
         b, i = self._cur_bouquet(), self._cur_index()
         return b.entries[i] if b and 0 <= i < len(b.entries) else None
 
+    def keyZero(self):
+        if not self.lib or self.move:
+            return
+        if self.focus == "left":
+            b = self._cur_bouquet()
+            if b:
+                self.bmarked.symmetric_difference_update([b.file])
+                self._brefresh(b)
+                self["bouquets"].down()
+                self.rtimer.start(250, True)
+                self._update()
+            return
+        self.sweep = not self.sweep
+        if self.sweep:
+            self._mark_range(self._cur_index(), self._cur_index())
+        self._update()
+
+    def _mark_range(self, a, b):
+        if a < 0 or b < 0:
+            return
+        lo, hi = min(a, b), max(a, b)
+        bq = self._cur_bouquet()
+        new = [i for i in range(lo, hi + 1) if i < len(bq.entries) and bq.entries[i].kind in ("service", "stream", "marker")]
+        if new:
+            self.marked.update(new)
+            self._refresh_rows(lo, hi)
+
     def keyLeft(self):
         if self.move == "chan":
             return self._move_block(-8)
         if self.move:
             return
+        self.sweep = False
         if self.focus == "right":
             self._set_focus("left")
         else:
@@ -322,10 +380,12 @@ class WacayoubChaines(Screen):
             return self._move_block(d)
         if self.move == "bouquet":
             b = self._cur_bouquet()
-            if b and self.lib.move_top(b, 1 if d > 0 else -1):
+            files = [x.file for x in self._bsel()]
+            if b and self.lib.move_tops(self.kind, files, 1 if d > 0 else -1):
                 self._build_left(b)
             return
         lst = self["bouquets"] if self.focus == "left" else self["chans"]
+        before = self._cur_index()
         if d == -1:
             lst.up()
         elif d == 1:
@@ -339,6 +399,8 @@ class WacayoubChaines(Screen):
             self.rtimer.start(250, True)
             self._update()
         else:
+            if self.sweep:
+                self._mark_range(before, self._cur_index())
             self._update()
 
     def _right_now(self):
@@ -349,6 +411,9 @@ class WacayoubChaines(Screen):
     def keyOk(self):
         if self.move:
             return self.keyYellow()
+        if self.sweep:
+            self.sweep = False
+            return self._update()
         if self.focus == "left":
             self._right_now()
             if self.rows:
@@ -382,6 +447,15 @@ class WacayoubChaines(Screen):
     def keyCancel(self):
         if self.move:
             return self.keyYellow()
+        if self.sweep:
+            self.sweep = False
+            return self._update()
+        if self.focus == "left" and self.bmarked:
+            marked = [b for b in self.bqs if b.file in self.bmarked]
+            self.bmarked = set()
+            for b in marked:
+                self._brefresh(b)
+            return self._update()
         if self.focus == "right":
             if self.marked:
                 old = sorted(self.marked)
@@ -415,13 +489,17 @@ class WacayoubChaines(Screen):
         if self.move:
             self.move = None
             self.marked = set()
+            self.bmarked = set()
             if self.focus == "right":
                 self._build_right(self.block[0] if self.block else None)
             self._build_left(self._cur_bouquet()) if self.focus == "left" else self._update()
             return
         if self.focus == "left":
-            b = self._cur_bouquet()
-            if b and b.depth == 0:
+            sel = [b for b in self._bsel() if b.depth == 0]
+            if sel:
+                self.bmarked = set(b.file for b in sel) if self.bmarked else set()
+                self.lib.move_tops(self.kind, [b.file for b in sel], 0)
+                self._build_left(sel[0])
                 self.move = "bouquet"
                 self._update()
             return
@@ -449,15 +527,7 @@ class WacayoubChaines(Screen):
         """Shows the '•' (modified) on the current bouquet without rebuilding the right list."""
         b = self._cur_bouquet()
         if b and b.dirty:
-            i = self.bqs.index(b)
-            rows = self["bouquets"].list
-            rows[i] = [b] + rows[i][1:]
-            rows[i][1] = MultiContentEntryText(pos=(s(16), 0), size=(s(300), s(52)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
-                                               text=(u"   " * b.depth) + clean(b.name) + u"  •", color=C_DIRTY, color_sel=0xFFFFFF)
-            try:
-                self["bouquets"].l.invalidateEntry(i)
-            except Exception:
-                pass
+            self._brefresh(b)
         self._update()
 
     def keyRed(self):
@@ -466,6 +536,12 @@ class WacayoubChaines(Screen):
         b = self._cur_bouquet()
         if not b:
             return
+        if self.focus == "left" and self.bmarked:
+            sel = self._bsel()
+            return self.session.openWithCallback(lambda ok: ok and self._del_bouquets(sel), MessageBox,
+                                                 u"Supprimer %d bouquets (%d chaînes) ?\n%s\nRien n'est perdu avant VERT, et MENU → Annuler remet l'ancien."
+                                                 % (len(sel), sum(x.count() for x in sel), u", ".join(clean(x.name) for x in sel[:6]) +
+                                                    (u"…" if len(sel) > 6 else u"")), MessageBox.TYPE_YESNO)
         if self.focus == "left":
             n = b.count()
             return self.session.openWithCallback(lambda ok: ok and self._del_bouquet(b), MessageBox,
@@ -484,6 +560,16 @@ class WacayoubChaines(Screen):
                 self._left_mark()
         self.session.openWithCallback(go, MessageBox, u"Supprimer %s de « %s » ?" % (what, clean(b.name)), MessageBox.TYPE_YESNO,
                                       default=True)
+
+    def _del_bouquets(self, sel):
+        i = self.bqs.index(sel[0]) if sel[0] in self.bqs else 0
+        for b in sel:
+            if b.file in self.lib.bouquets:
+                self.lib.delete_bouquet(b)
+        self.bmarked = set()
+        self._build_left()
+        self["bouquets"].moveToIndex(max(0, min(i, len(self.bqs) - 1)))
+        self._build_right(0)
 
     def _del_bouquet(self, b):
         i = self.bqs.index(b)
@@ -505,6 +591,16 @@ class WacayoubChaines(Screen):
         b = self._cur_bouquet()
         if not b:
             return
+        if self.focus == "left" and len(self.bmarked) >= 2:
+            sel = self._bsel()
+
+            def keep(c):
+                if c:
+                    self.session.openWithCallback(lambda t: t and self._merge(sel, t, c[1]), VirtualKeyBoard,
+                                                  title=u"Nom du bouquet fusionné", text=clean(sel[0].name))
+            return self.session.openWithCallback(keep, ChoiceBox, title=u"Fusionner %d bouquets (%d chaînes, sans doublons)" % (
+                len(sel), sum(x.count() for x in sel)), list=[(u"Fusionner et supprimer les anciens bouquets", False),
+                                                              (u"Fusionner et garder les anciens bouquets", True)])
         if self.focus == "left":
             return self.session.openWithCallback(lambda t: t and self._rename_bouquet(b, t), VirtualKeyBoard,
                                                  title=u"Nouveau nom du bouquet", text=b.name)
@@ -532,6 +628,14 @@ class WacayoubChaines(Screen):
         self.session.open(MessageBox, u"%d chaîne(s) %s dans « %s »%s." % (
             added, u"déplacée(s)" if move else u"copiée(s)", clean(target.name),
             u" (les doublons ne sont pas ajoutés)" if added < len(sel) else u""), MessageBox.TYPE_INFO, timeout=4)
+
+    def _merge(self, sel, name, keep):
+        target = self.lib.merge(sel, name.strip() or clean(sel[0].name), keep=keep)
+        self.bmarked = set()
+        self._build_left(target)
+        self._set_focus("left")
+        self.session.open(MessageBox, u"« %s » : %d chaînes (VERT pour enregistrer)." % (clean(target.name), target.count()),
+                          MessageBox.TYPE_INFO, timeout=4)
 
     def _rename_bouquet(self, b, name):
         self.lib.rename(b, name.strip() or b.name)
@@ -584,6 +688,19 @@ class WacayoubChaines(Screen):
             return
         b = self._cur_bouquet()
         menu = []
+        if self.focus == "left" and self.bmarked:
+            n = len(self.bmarked)
+            menu += [(u"Trier les %d bouquets marqués de A à Z (chaînes)" % n, "msort"),
+                     (u"Trier les %d bouquets marqués : 4K et HD d'abord" % n, "msorthd"),
+                     (u"Supprimer les doublons des %d bouquets marqués" % n, "mdups"),
+                     (u"Supprimer les chaînes mortes des %d bouquets marqués" % n, "mdead"),
+                     (u"Démarquer les bouquets", "bunmark")]
+        elif self.focus == "left":
+            menu.append((u"Marquer tous les bouquets", "ball"))
+        if b and self.focus == "right":
+            menu += [(u"Sélection : par nom…", "s:name"), (u"Sélection : chaînes HD / 4K", "s:hd"), (u"Sélection : chaînes SD", "s:sd"),
+                     (u"Sélection : chaînes IPTV", "s:iptv"), (u"Sélection : chaînes satellite", "s:sat"),
+                     (u"Sélection : inverser", "s:invert")]
         if b:
             dups, dead = self.lib.duplicates(b), self.lib.dead(b)
             menu += [(u"Trier « %s » de A à Z" % clean(b.name), "sort"),
@@ -612,6 +729,28 @@ class WacayoubChaines(Screen):
             return
         a = c[1]
         b = self._cur_bouquet()
+        if a.startswith("s:"):
+            return self._smart_select(b, a[2:])
+        if a in ("msort", "msorthd", "mdups", "mdead"):
+            total = 0
+            for x in self._bsel():
+                if a == "msort" or a == "msorthd":
+                    self.lib.sort(x, "hd" if a == "msorthd" else "name")
+                else:
+                    idx = self.lib.duplicates(x) if a == "mdups" else self.lib.dead(x)
+                    total += len(idx)
+                    if idx:
+                        self.lib.delete(x, idx)
+            self._build_left(b)
+            if a in ("mdups", "mdead"):
+                self.session.open(MessageBox, u"%d chaîne(s) supprimée(s) (VERT pour enregistrer)." % total, MessageBox.TYPE_INFO, timeout=4)
+            return
+        if a == "bunmark":
+            self.bmarked = set()
+            return self._build_left(b)
+        if a == "ball":
+            self.bmarked = set(x.file for x in self.bqs)
+            return self._build_left(b)
         if a in ("sort", "sorthd"):
             self.lib.sort(b, "hd" if a == "sorthd" else "name")
             self.marked = set()
@@ -664,6 +803,23 @@ class WacayoubChaines(Screen):
             self._set_focus("left")
         elif a == "undo":
             self._undo()
+
+    def _smart_select(self, b, how):
+        if how == "name":
+            return self.session.openWithCallback(lambda t: t and self._smart_select_name(b, t), VirtualKeyBoard,
+                                                 title=u"Marquer les chaînes dont le nom contient…", text=u"")
+        if how == "invert":
+            self.marked = set(i for i, e in enumerate(b.entries) if e.kind in ("service", "stream")) - self.marked
+        else:
+            self.marked |= set(self.lib.select(b, how))
+        self._build_right(self._cur_index())
+
+    def _smart_select_name(self, b, text):
+        found = self.lib.select(b, "name", text)
+        self.marked |= set(found)
+        self._build_right(found[0] if found else self._cur_index())
+        if not found:
+            self.session.open(MessageBox, u"Aucune chaîne « %s » dans ce bouquet." % text, MessageBox.TYPE_INFO, timeout=3)
 
     def _new_bouquet(self, name):
         if name:
