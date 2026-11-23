@@ -121,8 +121,8 @@ def installed_packages(path=OPKG_STATUS):
             block = {}
             for line in fh.read().split("\n") + [""]:
                 if not line.strip():
-                    if block.get("Package") and "installed" in block.get("Status", "") \
-                            and "not-installed" not in block.get("Status", ""):
+                    # 'install ok installed' only: a 'half-installed' package (failed install) is not offered as an update
+                    if block.get("Package") and block.get("Status", "").split()[-1:] == ["installed"]:
                         out[block["Package"]] = block.get("Version", "")
                     block = {}
                     continue
@@ -584,7 +584,10 @@ QUIET_OPKG = r"""opkg() {
 		$1 == "Upgrading" || $1 == "Downgrading" { n++; print "  [" n "] Mise a jour : " $2; fflush(); next }
 		$1 == "Installing" { n++; print "  [" n "] Installation : " $2; fflush(); next }
 		$1 == "Removing" { print "  Suppression : " $2; fflush(); next }
-		/^(Collected errors|ERROR|Error|error|Not downloading|Cannot|Package .* not)/ || /^ \* / { print; fflush() }
+		/check_data_file_clashes/ { c++; next }
+		/already provided by package/ { next }
+		/^(Collected errors|ERROR|Error|error|Not downloading|Cannot|Package .* not)/ || /^ \* / { if (e++ < 20) { print; fflush() } }
+		END { if (c) print "  ERREUR : " c " fichier(s) deja fournis par un autre paquet (conflit), rien n est installe pour ce paquet"; if (e > 20) print "  (" e - 20 " autre(s) erreur(s) dans /tmp/wacayoubpanel/opkg.log)" }
 	'
 	return $(cat /tmp/wacayoubpanel/opkg.rc 2>/dev/null || echo 1)
 }

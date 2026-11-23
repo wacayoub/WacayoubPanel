@@ -37,7 +37,7 @@ from . import sysinfo as S
 from . import docteur as D
 from . import garde as G
 
-VERSION = "2.5.1"
+VERSION = "2.5.2"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")

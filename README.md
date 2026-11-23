@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.1_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.2_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -117,6 +117,8 @@ Rien n'est écrit avant VERT ; chaque enregistrement garde l'ancienne version da
 - Si des plugins OpenATV sont mis à jour et que le cœur `enigma2` du récepteur est plus ancien que le feed, il est mis à jour
   avec eux (sinon ServiceApp, PositionerSetup… ne se chargent plus).
 - La console du panel a son propre écran, lisible sur tous les skins (texte clair sur fond opaque).
+- v2.5.2 : un paquet « half-installed » (installation ratée) n'est plus proposé en mise à jour, et les milliers de
+  conflits de fichiers entre paquets de picons tiennent en une ligne au lieu de noyer la console.
 
 ## Partage LAN (v2.5)
 

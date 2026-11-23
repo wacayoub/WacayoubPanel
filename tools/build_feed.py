@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.5.1",
+    "Version": "2.5.2",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
