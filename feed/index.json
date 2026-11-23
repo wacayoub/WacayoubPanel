@@ -263,14 +263,25 @@
    "depends": "python3-core, enigma2",
    "provides": []
   },
+  "enigma2-plugin-extensions-wacayoubchaines": {
+   "version": "1.0.0",
+   "arch": "all",
+   "file": "enigma2-plugin-extensions-wacayoubchaines_1.0.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubchaines_1.0.0_all.ipk",
+   "sha256": "b81f6107a1ec753719e37bd0c8e3285a2b56092c017cfdb985c668daaad251e4",
+   "size": 63074,
+   "installed_size": 114,
+   "depends": "enigma2, python3-core, python3-json",
+   "provides": []
+  },
   "enigma2-plugin-extensions-wacayoubpanel": {
    "version": "2.5.0",
    "arch": "all",
    "file": "enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk",
    "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk",
-   "sha256": "7e68a51a4f8fb193226078a1c9c1625260feae819500b37111886b1e22264276",
-   "size": 1232640,
-   "installed_size": 1427,
+   "sha256": "10526634863b8e3fc70b35d1d9d2386fac04933476b7867d1cdb342bb33511af",
+   "size": 1244392,
+   "installed_size": 1439,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
   },
@@ -711,6 +722,20 @@
     "python": "3.9"
    },
    "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/ipaudio.jpg?v=60ead3c3"
+  },
+  {
+   "id": "chaines",
+   "name": "Wacayoub Chaînes",
+   "category": "tools",
+   "type": "plugin",
+   "summary": "Organiser les chaînes : déplacer, supprimer, trier, ranger par thème",
+   "description": "Wacayoub Chaînes : bouquets à gauche, chaînes à droite avec picons. Marquer, déplacer, supprimer, copier vers un autre bouquet, trier (A-Z, HD d'abord), doublons, chaînes mortes, bouquets par thème (Sport, Info, Enfants…), recherche. Sauvegarde avant chaque enregistrement, annulable.",
+   "packages": [
+    "enigma2-plugin-extensions-wacayoubchaines"
+   ],
+   "requires": {
+    "python": "3.9"
+   }
   },
   {
    "id": "salaatneo",

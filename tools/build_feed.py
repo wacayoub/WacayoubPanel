@@ -40,6 +40,29 @@ PANEL = {
     "Architecture": "all",
     "Depends": "enigma2, python3-core, python3-json",
 }
+CHAINES = {
+    "Package": "enigma2-plugin-extensions-wacayoubchaines",
+    "Version": "1.0.0",
+    "Description": "Wacayoub Chaines: move, delete, sort and organise channels and bouquets",
+    "Section": "extra",
+    "Priority": "optional",
+    "Maintainer": "wacayoub",
+    "Architecture": "all",
+    "Depends": "enigma2, python3-core, python3-json",
+}
+CHAINES_POSTINST = """#!/bin/sh
+find /usr/lib/enigma2/python/Plugins/Extensions/WacayoubChaines -name '*.pyc' -delete 2>/dev/null
+exit 0
+"""
+CHAINES_POSTRM = """#!/bin/sh
+case "$1" in
+  remove|purge)
+    rm -rf /usr/lib/enigma2/python/Plugins/Extensions/WacayoubChaines/__pycache__ 2>/dev/null
+    rmdir /usr/lib/enigma2/python/Plugins/Extensions/WacayoubChaines 2>/dev/null
+    ;;
+esac
+exit 0
+"""
 PANEL_POSTINST = """#!/bin/sh
 find /usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel -name '*.pyc' -delete 2>/dev/null
 exit 0
@@ -95,6 +118,12 @@ ITEMS = [
      "packages": [P + "ipaudiopro", P + "ipaudiosmartai"],
      "main": P + "ipaudiopro",
      "remove": [P + "ipaudiosmartai", P + "ipaudiopro"]},
+    {"id": "chaines", "name": "Wacayoub Chaînes", "category": "tools", "type": "plugin",
+     "summary": "Organiser les chaînes : déplacer, supprimer, trier, ranger par thème",
+     "description": "Wacayoub Chaînes : bouquets à gauche, chaînes à droite avec picons. Marquer, déplacer, supprimer, copier vers "
+                    "un autre bouquet, trier (A-Z, HD d'abord), doublons, chaînes mortes, bouquets par thème (Sport, Info, Enfants…), "
+                    "recherche. Sauvegarde avant chaque enregistrement, annulable.",
+     "packages": [P + "wacayoubchaines"]},
     {"id": "salaatneo", "name": "Salaat NEO", "category": "tools", "type": "plugin",
      "summary": "Horaires de prière, rappels et adhan",
      "description": "Salaat NEO : calendrier des prières et rappels visuels, avec les sons d'adhan.",
@@ -262,6 +291,26 @@ def sha256(path):
     return h.hexdigest()
 
 
+def build_plugin(folder, control, postinst, postrm):
+    import shutil
+    stage = os.path.join(ROOT, "build", folder.lower())
+    dest = os.path.join(stage, "usr/lib/enigma2/python/Plugins/Extensions", folder)
+    if os.path.isdir(stage):
+        shutil.rmtree(stage)
+    os.makedirs(dest)
+    src = os.path.join(ROOT, "src", folder)
+    for fn in sorted(os.listdir(src)):
+        if fn.endswith((".py", ".png", ".sh")):
+            shutil.copy2(os.path.join(src, fn), dest)
+    if os.path.isdir(os.path.join(src, "img")):
+        shutil.copytree(os.path.join(src, "img"), os.path.join(dest, "img"))
+    ctl = dict(control)
+    ctl["Installed-Size"] = str(sum(os.path.getsize(os.path.join(dp, f)) for dp, _d, fs in os.walk(dest) for f in fs) // 1024 + 1)
+    out = os.path.join(ROOT, "packages", "%s_%s_all.ipk" % (ctl["Package"], ctl["Version"]))
+    ipk.build_ipk(out, ctl, stage, {"postinst": postinst, "postrm": postrm})
+    return out
+
+
 def build_panel():
     stage = os.path.join(ROOT, "build", "panel")
     dest = os.path.join(stage, "usr/lib/enigma2/python/Plugins/Extensions/WacayoubPanel")
@@ -285,6 +334,7 @@ def build_panel():
 
 def main():
     build_panel()
+    build_plugin("WacayoubChaines", CHAINES, CHAINES_POSTINST, CHAINES_POSTRM)
     import ciefp_pkg
     ciefp_items = ciefp_pkg.build_all(ROOT)
     pkg_dir = os.path.join(ROOT, "packages")

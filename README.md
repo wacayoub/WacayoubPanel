@@ -68,6 +68,30 @@ Fixo et l'accueil surveillent aussi ce qu'un malware ou un installateur tiers ch
   `/home/root/logs/wacayoub-gel-*.log` et redémarre le récepteur. Le fichier `/home/root/wacayoub-gel-off` coupe le
   redémarrage automatique (rapport seulement). Au retour, l'accueil et Fixo affichent le blocage.
 
+## Wacayoub Chaînes (plugin à part, v1.0)
+
+Organiser les chaînes : **Outils & Infos → Wacayoub Chaînes** dans le panel, puis Extensions → Wacayoub Chaînes.
+Bouquets à gauche, chaînes à droite (numéro, picon, fournisseur, satellite, HD). Code : `src/WacayoubChaines`.
+
+| Touche | Bouquets (gauche) | Chaînes (droite) |
+|---|---|---|
+| OK | ouvrir | marquer / démarquer (plusieurs) |
+| ROUGE | supprimer le bouquet | supprimer les chaînes marquées |
+| VERT | enregistrer | enregistrer |
+| JAUNE | déplacer le bouquet (HAUT / BAS) | déplacer les chaînes marquées en bloc (HAUT / BAS, GAUCHE / DROITE = page) |
+| BLEU | renommer | déplacer ou copier vers un autre bouquet (ou un nouveau) |
+| MENU | outils intelligents | outils intelligents |
+| INFO | rechercher une chaîne dans tous les bouquets | |
+
+Outils intelligents : trier de A à Z ou 4K / HD d'abord (dans chaque section entre séparateurs), supprimer les doublons, supprimer
+les chaînes mortes (absentes de la liste des chaînes), **bouquets par thème** (★ Sport, ★ Info, ★ Enfants, ★ Documentaires,
+★ Musique, ★ Cinéma & Séries, ★ Religion, créés en haut sans toucher aux autres bouquets), supprimer les bouquets vides,
+nouveau bouquet, séparateur, renommer une chaîne, TV / Radio.
+
+Rapide : un bouquet n'est lu qu'à son ouverture (965 bouquets en 1,4 s sur l'Octagon), picons jusqu'à 400 chaînes par bouquet.
+Rien n'est écrit avant VERT ; chaque enregistrement garde l'ancienne version dans `/home/root/wacayoub-chaines`
+(5 dernières) et **MENU → Annuler le dernier enregistrement** la remet. La liste des chaînes d'Enigma2 est rechargée aussitôt.
+
 ## Partage LAN (v2.5)
 
 **Mon récepteur → Partage LAN** copie les chaînes, l'IPTV et la softcam d'un récepteur à l'autre sur le même réseau :

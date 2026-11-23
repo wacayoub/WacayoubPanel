@@ -130,6 +130,7 @@ TILES = {
     "i-osappletv": ("tv", "#374151", "#9CA3AF"),
     "i-infosysteme": ("info", "#475569", "#94A3B8"),
     "i-panel": ("box", "#2563EB", "#7C3AED"),
+    "i-chaines": ("list", "#0EA5E9", "#22C55E"),
     "i-wmultiboot": ("drive", "#0F172A", "#2563EB"),
 }
 
@@ -349,6 +350,23 @@ def logo(size=64):
     return im
 
 
+def chaines_images(font):
+    """Images of the Wacayoub Chaînes plugin (same style as the panel)."""
+    import shutil
+    ch = os.path.join(ROOT, "src", "WacayoubChaines", "img")
+    os.makedirs(ch, exist_ok=True)
+    for fn in ("bg.jpg", "sel-item.png", "sel-cat.png", "sel.png", "k-red.png", "k-green.png", "k-yellow.png", "k-blue.png", "k-menu.png"):
+        shutil.copy2(os.path.join(OUT, fn), ch)
+    tile("i-chaines", 64).save(os.path.join(ch, "logo.png"), optimize=True)
+    for name, key in (("tv", "recv"), ("iptv", "dns"), ("radio", "audio"), ("bouquet", "settings")):
+        tile(key, 60).save(os.path.join(ch, "t-%s.png" % name), optimize=True)
+    pb = Image.new("RGBA", (220, 132), (0, 0, 0, 0))
+    pb.alpha_composite(bar(220, 132, "#0B1B3A", "#1E1B4B", 22, 255))
+    pb.alpha_composite(tile("i-chaines", 84), (68, 10))
+    ImageDraw.Draw(pb).text((110, 114), u"CHAÎNES", font=font, fill=(226, 232, 240, 255), anchor="mm")
+    pb.save(os.path.join(ROOT, "src", "WacayoubChaines", "plugin.png"), optimize=True)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for k in TILES:
@@ -394,6 +412,7 @@ def main():
         f = ImageFont.load_default()
     ImageDraw.Draw(pb).text((110, 114), "WACAYOUB", font=f, fill=(226, 232, 240, 255), anchor="mm")
     pb.save(os.path.join(ROOT, "src", "WacayoubPanel", "plugin.png"), optimize=True)
+    chaines_images(f)
     total = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
     print("images:", len(os.listdir(OUT)), "total KB:", total // 1024)
 
