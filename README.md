@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.0.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.1.0_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -44,6 +44,22 @@ Tout est fusionné, mes plugins compris (source **Wacayoub**) :
 | **Multiboot** | gestionnaires multiboot |
 | **Feeds** | une ligne par source (Wacayoub, OpenATV, Universel, OpenPLi, OpenViX…) ; OK n'affiche que cette source |
 | Communauté, Scripts, Images | sélection vérifiée, scripts, images firmware |
+
+## Softcams (OSCam, NCam)
+
+La catégorie **Softcam** propose les builds officiels open source **OSCam** (latest, emu, pcscd) et **NCam** des feeds OpenViX/OpenPLi,
+compilés pour le même processeur (les binaires fermés CCcam/mgcamd ne sont pas proposés). À l'installation, le panel :
+
+1. vérifie l'empreinte du paquet ;
+2. **adapte ses dépendances à OpenATV** (`ipkfix.py`) : retire `softcam-support` (cadre softcam d'OpenViX/OpenPLi, en conflit avec
+   `initscripts` d'OpenATV qui a son propre système) et remplace `libusb1` par `libusb-1.0-0` ; le binaire, le script et les configs ne changent pas ;
+3. sauvegarde `/etc/tuxbox/config` dans `/tmp/wacayoubpanel/softcam-config-backup.tgz` ;
+4. installe (les bibliothèques manquantes, ex. `libdvbcsa1`, viennent du feed OpenATV) puis **lance le binaire** (`-V`) :
+   s'il ne démarre pas sur cette image, il est désinstallé aussitôt.
+
+Le softcam reste sur « None » : on l'active dans **Menu > Configuration > Softcam**. Script **Softcam Fix** (catégorie Scripts) :
+arrête le softcam, vide les caches (`/tmp/.oscam`, `/tmp/.ncam`, `ecm.info`) et les PID restés, répare droits et lien
+`/etc/init.d/softcam`, puis le relance. Les configurations ne sont jamais modifiées.
 
 ## Fiche détail et compatibilité
 

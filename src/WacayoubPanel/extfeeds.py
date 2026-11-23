@@ -36,11 +36,14 @@ FEEDS = [
      ["http://feeds2.openbh.net/openbh/5.6/{m}/{a}", "http://feeds.openbh.net/5.6/{m}/{a}"]),
 ]
 PREFIXES = ("enigma2-plugin-extensions-", "enigma2-plugin-systemplugins-", "enigma2-plugin-skins-")
+# open-source softcams only (OSCam, NCam), official builds of the image feeds; closed binaries (CCcam, mgcamd) are left out
+SOFTCAM_RE = re.compile(r"^enigma2-plugin-softcams-(oscam|ncam)(-[a-z0-9]+)*$")
+SOFTCAM_FIXED_DEPS = ("softcam-support", "libusb1")  # rewritten by ipkfix.py before install
 # merged lists: other images' packages go into the same categories as the image's own feed
 MERGED_CAT = {"enigma2-plugin-extensions-": "atv-ext", "enigma2-plugin-systemplugins-": "atv-sys", "enigma2-plugin-skins-": "atv-skins"}
 SKIP_SUFFIX = ("-dev", "-dbg", "-src", "-staticdev", "-meta", "-doc", "-po", "-locale")
 # never offered from another image: they replace parts of this image's system
-SYSTEM_WORDS = ("softwaremanager", "networkwizard", "wirelesslan", "networkbrowser", "inifansetup", "boot", "socketmmi",
+SYSTEM_WORDS = ("softcamsetup", "softwaremanager", "networkwizard", "wirelesslan", "networkbrowser", "inifansetup", "boot", "socketmmi",
                 "ciplushelper", "fastboot", "flashexpander", "imagemanager", "recoverymanager", "videomode", "hdmicec")
 
 
@@ -114,7 +117,8 @@ def load(own_names, available, compare_versions, image_names=(), archs=()):
                     f[k.strip()] = v.strip()
                 pkg = f.get("Package", "")
                 arch = f.get("Architecture", "")
-                if not pkg.startswith(PREFIXES) or pkg.endswith(SKIP_SUFFIX):
+                softcam = bool(SOFTCAM_RE.match(pkg))
+                if not (pkg.startswith(PREFIXES) or softcam) or pkg.endswith(SKIP_SUFFIX):
                     continue
                 if arch != "all" and arch not in archs:
                     continue
@@ -125,14 +129,16 @@ def load(own_names, available, compare_versions, image_names=(), archs=()):
                     continue
                 if sys.version_info[0] >= 3 and re.search(r"(^|[\s,])python-(?!3)", f.get("Depends", "")):
                     continue
+                if softcam and [d for d in _deps(f) if d not in available and d not in SOFTCAM_FIXED_DEPS]:
+                    continue  # binary built against libraries this image does not have: try the next image
                 old = best.get(pkg)
                 if old and compare_versions(old[0].get("Version", ""), f.get("Version", "")) >= 0:
                     continue
                 best[pkg] = (f, base, arch != "all")
         n = 0
         for pkg, (f, base, native) in sorted(best.items()):
-            deps = [d.split("|")[0].strip().split(" ")[0] for d in f.get("Depends", "").split(",") if d.strip()]
-            missing = [d for d in deps if d and d not in available]
+            softcam = bool(SOFTCAM_RE.match(pkg))
+            missing = [d for d in _deps(f) if d not in available and not (softcam and d in SOFTCAM_FIXED_DEPS)]
             try:
                 size = int(f.get("Size", "0") or 0)
                 isize = int(f.get("Installed-Size", "0") or 0)
@@ -142,11 +148,18 @@ def load(own_names, available, compare_versions, image_names=(), archs=()):
                              "file": os.path.basename(f["Filename"]), "url": "%s/%s" % (base, f["Filename"]),
                              "sha256": f.get("SHA256sum", ""), "md5": f.get("MD5Sum", ""), "size": size,
                              "installed_size": isize // 1024 if isize > 100000 else isize, "depends": f.get("Depends", ""),
-                             "ext": name, "missing": missing, "native": native}
+                             "ext": name, "missing": missing, "native": native, "softcam": softcam}
             desc = (f.get("Description", "") or "").strip()
             if not desc or desc.startswith(pkg):
                 desc = u"Pas de description"
-            note = (u"Paquet compilé pour le processeur, vérifié à l'installation : refusé s'il contient du code binaire "
+            if softcam:
+                cam = pkg[len("enigma2-plugin-softcams-"):]
+                note = (u"Binaire officiel open source du feed %s, compilé pour ce processeur : lancé après l'installation "
+                        u"et désinstallé s'il ne démarre pas. Config : /etc/tuxbox/config/%s/ (gardée aux mises à jour). "
+                        u"Ensuite : Menu > Configuration > Softcam pour l'activer." % (name, cam))
+            else:
+                note = None
+            note = note or (u"Paquet compilé pour le processeur, vérifié à l'installation : refusé s'il contient du code binaire "
                     u"ou du Python sans source (il ne marcherait pas ici)." if native else
                     u"Installé tel quel, dépendances prises dans OpenATV uniquement.")
             merged = [c for pre, c in MERGED_CAT.items() if pkg.startswith(pre)]
@@ -160,6 +173,10 @@ def load(own_names, available, compare_versions, image_names=(), archs=()):
     items.sort(key=lambda i: (i["category"], i["name"].lower()))
     common = dict((p, sorted(s)) for p, s in where.items() if len(s) >= 2)
     return cats, packages, items, common
+
+
+def _deps(f):
+    return [d.split("|")[0].strip().split(" ")[0] for d in f.get("Depends", "").split(",") if d.strip()]
 
 
 def age_hours():

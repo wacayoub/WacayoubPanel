@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.0.0",
+    "Version": "2.1.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -131,6 +131,11 @@ ITEMS = [
      "summary": "Skin FHD style Apple TV, accueil et météo",
      "description": "Skin OS APPLE TV en Full HD : écran d'accueil, météo et préférences du skin.",
      "packages": ["enigma2-plugin-skins-osappletv"]},
+    {"id": "softcamfix", "name": "Softcam Fix", "category": "scripts", "type": "script",
+     "summary": "Arrête le softcam, vide caches et PID, répare droits et lien, puis le relance",
+     "description": "Softcam Fix : arrête le softcam actif, supprime les caches (/tmp/.oscam, /tmp/.ncam, ecm.info) et les fichiers PID restés, "
+                    "remet les droits de /usr/softcams et le lien /etc/init.d/softcam, puis relance le softcam. Les configurations ne sont pas modifiées.",
+     "packages": ["script-softcam-fix"]},
     {"id": "infosysteme", "name": "Info système", "category": "scripts", "type": "script",
      "summary": "Affiche modèle, image, mémoire, place libre et mes paquets (ne change rien)",
      "description": "Script en lecture seule : modèle, version de l'image, RAM, place libre, skin actif et liste de vos paquets installés.",
@@ -141,7 +146,39 @@ ITEMS = [
      "packages": [PANEL["Package"]]},
 ]
 
-SCRIPTS = {"script-info-systeme": ("feed/scripts/info-systeme.sh", "1.0")}
+SCRIPTS = {"script-info-systeme": ("feed/scripts/info-systeme.sh", "1.0"),
+           "script-softcam-fix": ("feed/scripts/softcam-fix.sh", "1.0")}
+
+# Compatibility shim for OSCam/NCam builds of other images (OpenViX, OpenPLi): they depend on
+# "softcam-support" (their softcam framework; OpenATV has its own /etc/init.d/softcam system) and
+# "libusb1" (OpenATV names the same library libusb-1.0-0). No files: it only satisfies those names.
+COMPAT = {
+    "Package": "wacayoub-softcam-compat",
+    "Version": "1.0",
+    "Description": "Softcam compatibility for OSCam/NCam builds of other images on OpenATV (no files)",
+    "Section": "misc",
+    "Priority": "optional",
+    "Maintainer": "wacayoub",
+    "Architecture": "all",
+    "Depends": "libusb-1.0-0",
+    "Provides": "softcam-support, libusb1",
+}
+
+
+def build_compat():
+    import shutil
+    stage = os.path.join(ROOT, "build", "compat")
+    if os.path.isdir(stage):
+        shutil.rmtree(stage)
+    doc = os.path.join(stage, "usr", "share", "doc", "wacayoub-softcam-compat")
+    os.makedirs(doc)
+    with open(os.path.join(doc, "README"), "w", newline="\n") as fh:
+        fh.write("Installed by Wacayoub Panel so that OSCam/NCam packages from OpenViX/OpenPLi feeds\n"
+                 "can be installed on OpenATV. OpenATV's own softcam system (/etc/init.d/softcam) is used.\n")
+    ctl = dict(COMPAT)
+    ctl["Installed-Size"] = "1"
+    out = os.path.join(ROOT, "packages", "%s_%s_all.ipk" % (ctl["Package"], ctl["Version"]))
+    ipk.build_ipk(out, ctl, stage)
 
 
 def sha256(path):
@@ -194,6 +231,7 @@ def main():
             "size": os.path.getsize(path),
             "installed_size": int(c.get("Installed-Size", "0") or 0),
             "depends": c.get("Depends", ""),
+            "provides": [x.strip().split(" ")[0] for x in c.get("Provides", "").split(",") if x.strip()],
         }
     for name, (rel, ver) in SCRIPTS.items():
         path = os.path.join(ROOT, rel)

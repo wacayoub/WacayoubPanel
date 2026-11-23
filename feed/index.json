@@ -46,7 +46,8 @@
    "sha256": "1d22edb3d6d032e882326b2b2d35f3c5337e56fee9d201e52797036495b9117e",
    "size": 1836592,
    "installed_size": 1869,
-   "depends": "enigma2, python3-core, python3-json, python3-pickle, python3-compression"
+   "depends": "enigma2, python3-core, python3-json, python3-pickle, python3-compression",
+   "provides": []
   },
   "enigma2-plugin-extensions-epgmanager": {
    "version": "2026.11.14-rc88",
@@ -56,7 +57,8 @@
    "sha256": "5e1239d5e64c363e9244019809f85329289d2d0830cc464de030214c0e43c67c",
    "size": 703430,
    "installed_size": 2777099,
-   "depends": "python3, python3-requests, python3-asyncio, python3-compression, python3-datetime, python3-difflib, python3-email, python3-html, python3-io, python3-json, python3-logging, python3-math, python3-xml"
+   "depends": "python3, python3-requests, python3-asyncio, python3-compression, python3-datetime, python3-difflib, python3-email, python3-html, python3-io, python3-json, python3-logging, python3-math, python3-xml",
+   "provides": []
   },
   "enigma2-plugin-extensions-ipaudiopro": {
    "version": "2026.11.22",
@@ -66,7 +68,8 @@
    "sha256": "2d3cfc6c57cab61846448d7ed1ea3cf41cbe3c8a9d83623d97e5f7e1abe34e45",
    "size": 4680736,
    "installed_size": 9020,
-   "depends": "enigma2, python3-core, gstreamer1.0"
+   "depends": "enigma2, python3-core, gstreamer1.0",
+   "provides": []
   },
   "enigma2-plugin-extensions-ipaudiosmartai": {
    "version": "2026.11.22",
@@ -76,7 +79,8 @@
    "sha256": "b1a6781f3ddf8c5f925b68ea5e64e8256e4a0e72509e161169050295c5d668d4",
    "size": 69292,
    "installed_size": 246,
-   "depends": "enigma2, python3-core, enigma2-plugin-extensions-ipaudiopro"
+   "depends": "enigma2, python3-core, enigma2-plugin-extensions-ipaudiopro",
+   "provides": []
   },
   "enigma2-plugin-extensions-iptvbouquetai": {
    "version": "1.1.4",
@@ -86,7 +90,8 @@
    "sha256": "7a547be76e1d967ed7ade8dab43e016a3891df7e9bc0aa5e99eadf3698245f65",
    "size": 21266,
    "installed_size": 65,
-   "depends": "enigma2, python3-core, python3-json, python3-netclient, python3-xml"
+   "depends": "enigma2, python3-core, python3-json, python3-netclient, python3-xml",
+   "provides": []
   },
   "enigma2-plugin-extensions-metrixneohelper": {
    "version": "0.1.41",
@@ -96,7 +101,8 @@
    "sha256": "26298e6c4a7f2828b4cf24d97dc133f34f9ec4f092ac4d8bebc8b5daf6db3b39",
    "size": 40122,
    "installed_size": 111,
-   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime (= 0.1.41), python3-netclient, python3-twisted-core, enigma2-tools-weatherinfo"
+   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime (= 0.1.41), python3-netclient, python3-twisted-core, enigma2-tools-weatherinfo",
+   "provides": []
   },
   "enigma2-plugin-extensions-neoconnect": {
    "version": "0.1.0",
@@ -106,7 +112,8 @@
    "sha256": "bc18d020e60bea229e9e402a9edd04e68a5714cddde15f8f68a90e1d18c7a9ad",
    "size": 2567818,
    "installed_size": 0,
-   "depends": "enigma2, python3-core, python3-json, python3-threading, python3-netclient, python3-netserver, python3-misc, python3-asyncio, python3-crypt, openssl"
+   "depends": "enigma2, python3-core, python3-json, python3-threading, python3-netclient, python3-netserver, python3-misc, python3-asyncio, python3-crypt, openssl",
+   "provides": []
   },
   "enigma2-plugin-extensions-neoweather": {
    "version": "1.0.1",
@@ -116,7 +123,8 @@
    "sha256": "30d169b2f7966ff0348e5472d37b53767a9130a56f34ded1c2cda20f97992fe1",
    "size": 17400,
    "installed_size": 29,
-   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime, enigma2-plugin-extensions-metrixneohelper, python3-core, python3-json, python3-twisted-core"
+   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime, enigma2-plugin-extensions-metrixneohelper, python3-core, python3-json, python3-twisted-core",
+   "provides": []
   },
   "enigma2-plugin-extensions-salaatneo-sounds-salaatfirst": {
    "version": "1.0.0",
@@ -126,7 +134,8 @@
    "sha256": "6b9489dae55c5c0190c394860688b1d2ac616cad8f2b14b9a988e2e4d06b75e8",
    "size": 9846390,
    "installed_size": 10000,
-   "depends": "enigma2-plugin-extensions-salaatneo (>= 0.3.4)"
+   "depends": "enigma2-plugin-extensions-salaatneo (>= 0.3.4)",
+   "provides": []
   },
   "enigma2-plugin-extensions-salaatneo-sounds": {
    "version": "0.3.1",
@@ -136,7 +145,8 @@
    "sha256": "187a7f03ac013a1859a03fe4a3cf9ac479913e2f4e2e9c292fcb9c3ec2001747",
    "size": 14847422,
    "installed_size": 14710,
-   "depends": "enigma2-plugin-extensions-salaatneo (>= 0.3.0)"
+   "depends": "enigma2-plugin-extensions-salaatneo (>= 0.3.0)",
+   "provides": []
   },
   "enigma2-plugin-extensions-salaatneo": {
    "version": "0.3.4-r1",
@@ -146,7 +156,8 @@
    "sha256": "436e4672d1bcd13e680748966fecfda13583a848cc7fd32c37cdbb59dfe2787b",
    "size": 37350,
    "installed_size": 113,
-   "depends": "enigma2, python3-core (>= 3.9), python3-json, python3-datetime, python3-zoneinfo, python3-math, python3-threading, python3-io, python3-logging, python3-xml, python3-misc, python3-netclient, python3-unixadmin, ca-certificates, tzdata, tzdata-africa, gstreamer1.0, gstreamer1.0-libav, gstreamer1.0-plugins-base-alsa, gstreamer1.0-plugins-good-audioparsers, gstreamer1.0-plugins-base-audioconvert, gstreamer1.0-plugins-base-audioresample, gstreamer1.0-plugins-base-volume, gstreamer1.0-plugins-good-isomp4"
+   "depends": "enigma2, python3-core (>= 3.9), python3-json, python3-datetime, python3-zoneinfo, python3-math, python3-threading, python3-io, python3-logging, python3-xml, python3-misc, python3-netclient, python3-unixadmin, ca-certificates, tzdata, tzdata-africa, gstreamer1.0, gstreamer1.0-libav, gstreamer1.0-plugins-base-alsa, gstreamer1.0-plugins-good-audioparsers, gstreamer1.0-plugins-base-audioconvert, gstreamer1.0-plugins-base-audioresample, gstreamer1.0-plugins-base-volume, gstreamer1.0-plugins-good-isomp4",
+   "provides": []
   },
   "enigma2-plugin-extensions-satiptvbridge": {
    "version": "1.0.46-r80.3.22-engine-rc36",
@@ -156,17 +167,19 @@
    "sha256": "5a33aa74a558f21972a94c337037b71b75ad0d9e1594f8710a11af914a52b2e2",
    "size": 2416358,
    "installed_size": 0,
-   "depends": "python3-core, enigma2"
+   "depends": "python3-core, enigma2",
+   "provides": []
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "2.0.0",
+   "version": "2.1.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_2.0.0_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.0.0_all.ipk",
-   "sha256": "af8713dbada223d0ab2d214aa73a3f49165a45461b3fb0606b7d354b2d293709",
-   "size": 845828,
-   "installed_size": 932,
-   "depends": "enigma2, python3-core, python3-json"
+   "file": "enigma2-plugin-extensions-wacayoubpanel_2.1.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.1.0_all.ipk",
+   "sha256": "57f13ac70fb385abc9c435fcfcbb138bf9f268b0ab76e5ef2e292fd576b8327e",
+   "size": 847760,
+   "installed_size": 938,
+   "depends": "enigma2, python3-core, python3-json",
+   "provides": []
   },
   "enigma2-plugin-skincomponents-metrixneo-runtime": {
    "version": "0.1.41",
@@ -176,7 +189,8 @@
    "sha256": "a4d0cb6a3ad605b3fc03350c11eaef6e91aa222f0368f4171a3833ceb0ed387a",
    "size": 93902,
    "installed_size": 295,
-   "depends": "enigma2, python3-core, python3-json"
+   "depends": "enigma2, python3-core, python3-json",
+   "provides": []
   },
   "enigma2-plugin-skins-metrixneo": {
    "version": "0.1.41",
@@ -186,7 +200,8 @@
    "sha256": "6b25f43bd7318558591c54b5aadcd93f4accc0d84ae698fea064249aaea77f2c",
    "size": 7249130,
    "installed_size": 10369,
-   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime (= 0.1.41)"
+   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime (= 0.1.41)",
+   "provides": []
   },
   "enigma2-plugin-skins-novaorbit": {
    "version": "2026.11.22",
@@ -196,7 +211,8 @@
    "sha256": "bc03566f1fca4cd7e6e6c1f453a6d485aed222d013b7d10debe97efba793d843",
    "size": 23717890,
    "installed_size": 26707,
-   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime"
+   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime",
+   "provides": []
   },
   "enigma2-plugin-skins-orbitai": {
    "version": "2026.11.22",
@@ -206,7 +222,8 @@
    "sha256": "e9d895ef6b3ffc74e9e9bd3c650b05074a14845c61352aebe40234065e5c0aab",
    "size": 90686824,
    "installed_size": 96705,
-   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime"
+   "depends": "enigma2, enigma2-plugin-skincomponents-metrixneo-runtime",
+   "provides": []
   },
   "enigma2-plugin-skins-osappletv": {
    "version": "2026.11.22",
@@ -216,7 +233,8 @@
    "sha256": "e369635ff6af15c995c497a2a0a22b7c27bcfd370da316be191374086f8a57d3",
    "size": 11271840,
    "installed_size": 12687,
-   "depends": "enigma2"
+   "depends": "enigma2",
+   "provides": []
   },
   "script-info-systeme": {
    "version": "1.0",
@@ -225,6 +243,16 @@
    "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/info-systeme.sh",
    "sha256": "515e928026f5ad84094dcd677ac59746cdcbc9b483c1fe7851e13f55e37afe7d",
    "size": 889,
+   "installed_size": 0,
+   "depends": ""
+  },
+  "script-softcam-fix": {
+   "version": "1.0",
+   "arch": "all",
+   "file": "softcam-fix.sh",
+   "url": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/scripts/softcam-fix.sh",
+   "sha256": "372d79e0f1bd9e9809a9a6fd554f246834c70e37c7e30f5f47b9edd3025ff4e9",
+   "size": 1412,
    "installed_size": 0,
    "depends": ""
   }
@@ -459,6 +487,17 @@
     "min_width": 1920
    },
    "preview": "https://raw.githubusercontent.com/wacayoub/WacayoubPanel/main/feed/previews/osappletv.jpg?v=dbcba7f9"
+  },
+  {
+   "id": "softcamfix",
+   "name": "Softcam Fix",
+   "category": "scripts",
+   "type": "script",
+   "summary": "Arrête le softcam, vide caches et PID, répare droits et lien, puis le relance",
+   "description": "Softcam Fix : arrête le softcam actif, supprime les caches (/tmp/.oscam, /tmp/.ncam, ecm.info) et les fichiers PID restés, remet les droits de /usr/softcams et le lien /etc/init.d/softcam, puis relance le softcam. Les configurations ne sont pas modifiées.",
+   "packages": [
+    "script-softcam-fix"
+   ]
   },
   {
    "id": "infosysteme",

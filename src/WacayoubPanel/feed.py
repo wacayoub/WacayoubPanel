@@ -13,6 +13,7 @@ CACHE_DIR = "/etc/enigma2/wacayoubpanel"
 CACHE_FILE = CACHE_DIR + "/index.json"
 DL_DIR = "/tmp/wacayoubpanel"
 IPKCHECK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ipkcheck.py")
+IPKFIX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ipkfix.py")
 OPKG_STATUS = "/var/lib/opkg/status"
 ARCH_CONF = "/etc/opkg/arch.conf"
 
@@ -343,9 +344,16 @@ class Feed(object):
             if p not in installed or compare_versions(installed[p], meta.get("version", "")) < 0:
                 res.append(p)
         # add my own feed packages they depend on (opkg cannot find those in the image feed)
+        provides = {}
+        for pname, pmeta in self.packages.items():
+            if pmeta.get("url") and not pmeta.get("ext"):
+                for pr in pmeta.get("provides", []):
+                    provides.setdefault(pr, pname)
         queue = list(res)
         while queue:
             for dep in parse_depends(self.packages.get(queue.pop(), {}).get("depends", "")):
+                if dep not in self.packages and dep in provides and dep not in installed:
+                    dep = provides[dep]
                 meta = self.packages.get(dep)
                 if meta and meta.get("url") and not meta.get("ext") and dep not in installed and dep not in res:
                     res.append(dep)
@@ -523,12 +531,24 @@ def install_commands(feed, names, reinstall=False):
         algo, digest = ("sha256", meta.get("sha256")) if meta.get("sha256") else ("md5", meta.get("md5"))
         cmds.append("echo %s | %ssum -c - >/dev/null || { echo 'ERREUR: fichier corrompu (%s)'; rm -f %s; exit 1; }"
                     % (sh_quote("%s  %s" % (digest, dest)), algo, algo, sh_quote(dest)))
-        if meta.get("native"):  # CPU-feed package from another image: open it and refuse compiled code
+        if meta.get("softcam"):  # OSCam/NCam from another image: fix its Depends for OpenATV (ipkfix.py)
+            cmds.append("python3 %s %s || { rm -f %s; exit 1; }" % (sh_quote(IPKFIX), sh_quote(dest), sh_quote(dest)))
+        if meta.get("native") and not meta.get("softcam"):  # CPU-feed package from another image: refuse compiled code
             cmds.append("python3 %s %s || { rm -f %s; exit 1; }"
                         % (sh_quote(IPKCHECK), sh_quote(dest), sh_quote(dest)))
     flags = "--force-reinstall " if reinstall else ""
     cmds.append("echo '>>> Installation'")
+    cams = [n for n in names if feed.packages[n].get("softcam")]
+    if cams:  # keep the user's softcam configs whatever happens (opkg keeps conffiles too)
+        cmds.append("[ -d /etc/tuxbox/config ] && tar czf /tmp/wacayoubpanel/softcam-config-backup.tgz -C /etc/tuxbox config 2>/dev/null; true")
     cmds.append("opkg install %s%s || { echo 'ERREUR: opkg'; exit 1; }" % (flags, " ".join(sh_quote(f) for f in files)))
+    for n in cams:  # softcam binary from another image: it must start here, else it is removed again
+        cmds.append("B=$(opkg files %s | grep '/usr/softcams/' | head -1); "
+                    "if [ -n \"$B\" ] && chmod 755 \"$B\" && \"$B\" -V >/dev/null 2>&1; then echo '>>> Softcam OK : '$(basename \"$B\")' démarre sur ce récepteur'; "
+                    "else echo 'ERREUR: le softcam ne démarre pas sur cette image, il est désinstallé'; opkg remove %s; exit 1; fi"
+                    % (sh_quote(n), sh_quote(n)))
+    if cams:
+        cmds.append("echo '>>> Pour l activer : Menu > Configuration > Softcam (config dans /etc/tuxbox/config/)'")
     cmds.append("rm -f %s/*.ipk; echo '>>> Terminé avec succès'" % DL_DIR)
     # one script so 'exit 1' stops the whole sequence
     return "\n".join(cmds) + "\n"
