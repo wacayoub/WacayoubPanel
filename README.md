@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.2_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.3_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -119,6 +119,15 @@ Rien n'est écrit avant VERT ; chaque enregistrement garde l'ancienne version da
 - La console du panel a son propre écran, lisible sur tous les skins (texte clair sur fond opaque).
 - v2.5.2 : un paquet « half-installed » (installation ratée) n'est plus proposé en mise à jour, et les milliers de
   conflits de fichiers entre paquets de picons tiennent en une ligne au lieu de noyer la console.
+
+## Panel plus rapide (v2.5.3)
+
+- Catalogue OpenATV gardé en mémoire et dans `/tmp/wacayoubpanel/atv-cache.json` : relu seulement après un `opkg update`
+  (Octagon : 1,1 s → 0,001 s, 0,08 s après un redémarrage de l'interface). Pareil pour les feeds des autres images et les
+  versions du feed (Fixo, mises à jour).
+- Liste des paquets installés relue seulement quand opkg a changé quelque chose ; état de chaque paquet calculé une fois.
+- Dans les catégories, la liste suit les touches un instant après (plus d'attente à chaque touche).
+- Fixo ne lance `opkg update` que si les listes ont plus de 6 h ; Garde vérifie les fichiers système au plus toutes les 30 s.
 
 ## Partage LAN (v2.5)
 

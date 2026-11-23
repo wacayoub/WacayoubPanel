@@ -259,8 +259,19 @@ def _host(url):
     return url.split("//", 1)[-1].split("/", 1)[0]
 
 
+_ALERTS = {}
+
+
 def alerts():
-    """Home screen lines: [(level, text, action)]."""
+    """Home screen lines: [(level, text, action)] (system files checked at most every 30 s)."""
+    if _ALERTS and time.time() - _ALERTS["t"] < 30:
+        return list(_ALERTS["v"])
+    v = _alerts()
+    _ALERTS.update(t=time.time(), v=v)
+    return list(v)
+
+
+def _alerts():
     out = []
     try:
         bad, srcs = check()

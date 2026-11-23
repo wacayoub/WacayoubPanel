@@ -113,8 +113,26 @@ def short_version(v, limit=22):
 
 
 # ---------------------------------------------------------------- receiver state
+_INSTALLED = {}
+
+
 def installed_packages(path=OPKG_STATUS):
-    """{package: version} for packages whose status is 'install ... installed'."""
+    """{package: version} for packages whose status is 'install ... installed'.
+    Read again only when opkg's status file changed; the same dict is returned meanwhile (do not modify it)."""
+    try:
+        st = os.stat(path)
+        sig = (path, st.st_mtime, st.st_size)
+    except OSError:
+        sig = None
+    if sig and _INSTALLED.get("sig") == sig:
+        return _INSTALLED["data"]
+    out = _read_installed(path)
+    if sig:
+        _INSTALLED.update(sig=sig, data=out)
+    return out
+
+
+def _read_installed(path):
     out = {}
     try:
         with open(path, "r", encoding="utf-8", errors="replace") as fh:
@@ -293,7 +311,16 @@ class Feed(object):
 
     # -- per item state ------------------------------------------------
     def item_state(self, item, installed, archs):
-        """Return (state, text) for an item."""
+        """Return (state, text) for an item (cached until 'installed' is a new dict)."""
+        cache = getattr(self, "_states", None)
+        if cache is None or cache[0] is not installed or cache[1] != archs:
+            cache = self._states = (installed, archs, {})
+        key = id(item)
+        if key not in cache[2]:
+            cache[2][key] = self._item_state(item, installed, archs)
+        return cache[2][key]
+
+    def _item_state(self, item, installed, archs):
         pkgs = item.get("packages", [])
         for p in pkgs:
             meta = self.packages.get(p)
@@ -418,6 +445,48 @@ ATV_SKIP_NAMES = ("piconmanager", "iptvquickzapguard", "vudoctorpro")
 def _pretty(name, prefix):
     short = name[len(prefix):]
     return short.replace("-", " ").strip().title() if short.islower() else short
+
+
+_CATALOG = {}
+CATALOG_CACHE = "/tmp/wacayoubpanel/atv-cache.json"
+
+
+def _lists_sig(lists_dir):
+    try:
+        return [(f, int(os.path.getmtime(os.path.join(lists_dir, f))), os.path.getsize(os.path.join(lists_dir, f)))
+                for f in sorted(os.listdir(lists_dir))]
+    except OSError:
+        return []
+
+
+def catalog(archs=None, lists_dir=OPKG_LISTS):
+    """AtvCatalog, read again only when 'opkg update' changed the lists (memory, then /tmp cache)."""
+    sig = [lists_dir, sorted(archs or []), _lists_sig(lists_dir)]
+    if _CATALOG.get("sig") == sig:
+        return _CATALOG["cat"]
+    cat = None
+    try:
+        with open(CATALOG_CACHE, encoding="utf-8") as fh:
+            d = json.load(fh)
+        if d.get("sig") == json.loads(json.dumps(sig)):
+            cat = AtvCatalog.__new__(AtvCatalog)
+            cat.packages, cat.items, cat.lists_time = d["packages"], d["items"], d["lists_time"]
+            cat.all_names = set(d["all_names"])
+    except (IOError, OSError, ValueError, KeyError):
+        cat = None
+    if cat is None:
+        cat = AtvCatalog(lists_dir, archs)
+        try:
+            if not os.path.isdir(os.path.dirname(CATALOG_CACHE)):
+                os.makedirs(os.path.dirname(CATALOG_CACHE))
+            with open(CATALOG_CACHE + ".tmp", "w", encoding="utf-8") as fh:
+                json.dump({"sig": sig, "packages": cat.packages, "items": cat.items, "lists_time": cat.lists_time,
+                           "all_names": sorted(cat.all_names)}, fh)
+            os.replace(CATALOG_CACHE + ".tmp", CATALOG_CACHE)
+        except (IOError, OSError, TypeError, ValueError) as e:
+            print("[WacayoubPanel] catalog cache: %s" % e)
+    _CATALOG.update(sig=sig, cat=cat)
+    return cat
 
 
 class AtvCatalog(object):

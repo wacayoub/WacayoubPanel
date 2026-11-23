@@ -37,7 +37,7 @@ from . import sysinfo as S
 from . import docteur as D
 from . import garde as G
 
-VERSION = "2.5.2"
+VERSION = "2.5.3"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -235,6 +235,8 @@ class WacayoubPanel(Screen):
         self.start_cat, self.start_action = start_cat, start_action
         self.start_timer = eTimer()
         self.start_timer.callback.append(self._apply_start_action)
+        self.items_timer = eTimer()
+        self.items_timer.callback.append(self._items_timeout)
         self.feed = None
         self.atv = None
         self.installed = {}
@@ -342,6 +344,7 @@ class WacayoubPanel(Screen):
         self.closed = True
         self.stat_timer.stop()
         self.start_timer.stop()
+        self.items_timer.stop()
 
     def _load_cache(self):
         try:
@@ -351,7 +354,7 @@ class WacayoubPanel(Screen):
 
     def _load_atv(self):
         try:
-            self.atv = F.AtvCatalog(archs=self.archs)
+            self.atv = F.catalog(self.archs)
         except Exception as e:
             self.atv = None
             print("[WacayoubPanel] OpenATV lists: %s" % e)
@@ -778,14 +781,28 @@ class WacayoubPanel(Screen):
         self["cats"].selectionEnabled(not items)
         self["items"].selectionEnabled(items)
 
+    def _items_later(self):
+        """Moving in the categories: the item list follows a moment later, so keys never wait for it."""
+        self.items_timer.start(180, True)
+
+    def _items_now(self):
+        if self.items_timer.isActive():
+            self.items_timer.stop()
+            self._build_items(keep=False)
+
+    def _items_timeout(self):
+        if not getattr(self, "closed", True):
+            self._build_items(keep=False)
+
     def keyLeft(self):
         if self.focus_items:
             self._set_focus(False)
         else:
             self["cats"].pageUp()
-            self._build_items(keep=False)
+            self._items_later()
 
     def keyRight(self):
+        self._items_now()
         if not self.focus_items and self["items"].list:
             self._set_focus(True)
         elif self.focus_items:
@@ -798,7 +815,7 @@ class WacayoubPanel(Screen):
             self._update_desc()
         else:
             self["cats"].up()
-            self._build_items(keep=False)
+            self._items_later()
 
     def keyDown(self):
         if self.focus_items:
@@ -806,7 +823,7 @@ class WacayoubPanel(Screen):
             self._update_desc()
         else:
             self["cats"].down()
-            self._build_items(keep=False)
+            self._items_later()
 
     def keySearch(self):
         self.session.openWithCallback(self._search_done, VirtualKeyBoard,
@@ -821,6 +838,7 @@ class WacayoubPanel(Screen):
         self._set_focus(bool(self.query and self["items"].list))
 
     def keyOk(self):
+        self._items_now()
         if not self.focus_items:
             if self["items"].list:
                 self._set_focus(True)
@@ -1206,7 +1224,7 @@ def count_updates(model, archs):
     """Same list as BLUE 'Tout mettre à jour' in the panel (mine, OpenATV and other images' packages)."""
     feed = F.Feed.load(F.CACHE_FILE)
     installed = F.installed_packages()
-    atv = F.AtvCatalog(archs=archs)
+    atv = F.catalog(archs)
     own = set(installed) | set(atv.packages) | set(feed.data.get("packages", {}))
     avail = set(installed) | atv.all_names
     ext = X.load(own, avail, F.compare_versions, set(atv.packages), archs)
@@ -1616,7 +1634,11 @@ class WacayoubDoctor(Screen):
         self["status"].setText(u"Connexion aux feeds (Internet)…")
         self["summary"].setText(u"Analyse en cours…")
         tmp = "/tmp/wacayoubpanel-doctor-index.json"
-        self.console.ePopen("opkg update >/dev/null 2>&1; " + F.index_fetch_command(tmp), self._online_done, tmp)
+        try:
+            fresh = time.time() - max([0] + [m for _f, m, _s in F._lists_sig(F.OPKG_LISTS)]) < 6 * 3600
+        except Exception:
+            fresh = False
+        self.console.ePopen(("" if fresh else "opkg update >/dev/null 2>&1; ") + F.index_fetch_command(tmp), self._online_done, tmp)
 
     def _online_done(self, data, retval, tmp):
         if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens

@@ -243,8 +243,18 @@ def changed_before(when, plugins, hours=48):
     return [(n, time.strftime("%d/%m %H:%M", time.localtime(m))) for m, n in sorted(out, reverse=True)[:3]]
 
 
+_VERSIONS = {}
+
+
 def feed_versions():
-    """{package: newest version} from the opkg lists (refreshed by 'opkg update')."""
+    """{package: newest version} from the opkg lists (read again only when 'opkg update' changed them)."""
+    sig = [F._lists_sig(d) for d in OPKG_LISTS]
+    if _VERSIONS.get("sig") != sig:
+        _VERSIONS.update(sig=sig, data=_feed_versions())
+    return _VERSIONS["data"]
+
+
+def _feed_versions():
     out = {}
     for d in OPKG_LISTS:
         for fn in glob.glob(os.path.join(d, "*")):

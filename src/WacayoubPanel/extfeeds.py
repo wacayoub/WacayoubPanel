@@ -97,7 +97,26 @@ def _read(name):
     return out
 
 
+_LOADED = {}
+
+
+def _work_sig():
+    try:
+        return tuple((f, int(os.path.getmtime(os.path.join(WORK, f)))) for f in sorted(os.listdir(WORK)))
+    except OSError:
+        return ()
+
+
 def load(own_names, available, compare_versions, image_names=(), archs=()):
+    """Cached _load(): parsed again only when the downloaded feeds or the inputs changed."""
+    key = (_work_sig(), hash(frozenset(own_names)), hash(frozenset(available)), hash(frozenset(image_names)),
+           tuple(sorted(archs)))
+    if _LOADED.get("key") != key:
+        _LOADED.update(key=key, value=_load(own_names, available, compare_versions, image_names, archs))
+    return _LOADED["value"]
+
+
+def _load(own_names, available, compare_versions, image_names=(), archs=()):
     """Return (categories, packages, items, common) for the feeds downloaded in WORK.
     own_names: packages already offered by this image's feed or mine (skipped);
     available: every package name this image can install or has installed (dependency check);
