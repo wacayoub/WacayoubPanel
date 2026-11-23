@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -144,6 +144,9 @@ Chaque paquet est revu par `tools/verify_community.py` : téléchargement, sha25
 (téléchargement envoyé à un shell, base64 exécuté, telnet/ssh, mots de passe, crontab, pare-feu, code obfusqué) et refus du code fermé (compilé).
 Résultat détaillé : [feed/COMMUNITY-REVIEW.md](feed/COMMUNITY-REVIEW.md). Refusés : AJPanel (change le mot de passe root, code obfusqué)
 et WireGuard VPN (code compilé, impossible à vérifier).
+
+**Pack essentiel** : installe en une fois XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher et SubsSupport,
+tous depuis le feed officiel OpenATV. Les installateurs « wget … | sh » de sites tiers ne sont jamais utilisés.
 
 ## Paquets OpenATV
 

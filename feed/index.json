@@ -187,12 +187,12 @@
    "provides": []
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "2.4.1",
+   "version": "2.4.2",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.1_all.ipk",
-   "sha256": "3441f5288d4033d661473d0a29f2c34523f808187c61eacd5c6326c55f98e75f",
-   "size": 1193516,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk",
+   "sha256": "1961cbf16c1e6f603efc2509d003f2bdefcf9b719dd997d23b3a11911fc76472",
+   "size": 1193558,
    "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
@@ -1135,7 +1135,7 @@
    "category": "communaute",
    "type": "opkg",
    "summary": "Installe en une fois : XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher, SubsSupport",
-   "description": "Installe en une fois les plugins les plus utilisés de la sélection vérifiée : XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher, SubsSupport.\nTout vient du feed officiel OpenATV, rien n'est téléchargé d'ailleurs. Les plugins déjà installés sont gardés.",
+   "description": "Les 6 plugins les plus utilisés de la sélection vérifiée, en une fois.\nTout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés.",
    "packages": [
     "enigma2-plugin-extensions-xstreamity",
     "enigma2-plugin-extensions-bouquetmakerxtream",

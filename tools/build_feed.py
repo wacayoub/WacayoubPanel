@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.4.1",
+    "Version": "2.4.2",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -364,9 +364,8 @@ def main():
                 items.insert(len(items) - len(picks), {
                     "id": "c-pack-essentiel", "name": "Pack essentiel (%d plugins)" % len(pack), "category": "communaute",
                     "type": "opkg", "summary": "Installe en une fois : " + ", ".join(titles[x] for x in pack),
-                    "description": "Installe en une fois les plugins les plus utilisés de la sélection vérifiée : %s.\n"
-                                   "Tout vient du feed officiel OpenATV, rien n'est téléchargé d'ailleurs. "
-                                   "Les plugins déjà installés sont gardés." % ", ".join(titles[x] for x in pack),
+                    "description": "Les %d plugins les plus utilisés de la sélection vérifiée, en une fois.\n"
+                                   "Tout vient du feed officiel OpenATV ; les plugins déjà installés sont gardés." % len(pack),
                     "packages": pack, "remove": pack, "reviewed": today_pack(picks)})
     index = {
         "name": "Wacayoub Panel",

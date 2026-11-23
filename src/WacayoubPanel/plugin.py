@@ -36,7 +36,7 @@ from .details import WacayoubDetails
 from . import sysinfo as S
 from . import docteur as D
 
-VERSION = "2.4.1"
+VERSION = "2.4.2"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -732,6 +732,8 @@ class WacayoubPanel(Screen):
             parts[0] += u"\nLe feed propose maintenant %s, plus récent que la version vérifiée." % F.short_version(self.feed.packages[names[0]]["version"], 30)
         size = sum(int(self.feed.packages[p].get("size", 0) or 0) for p in names)
         vers = ", ".join("%s %s" % (p.replace("enigma2-plugin-", ""), F.short_version(self.feed.packages[p]["version"], 30)) for p in names)
+        if len(names) > 2:  # pack: the list would not fit
+            vers = u"%d paquets" % len(names)
         parts.append(u"Paquets : %s  ·  téléchargement %s" % (vers, S.human(size)))
         self["desc"].setText("\n".join(parts))
 
