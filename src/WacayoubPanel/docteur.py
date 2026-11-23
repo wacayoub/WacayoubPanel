@@ -17,8 +17,10 @@ import time
 
 try:
     from . import feed as F
+    from . import garde as G
 except ImportError:  # run directly for tests
     import feed as F
+    import garde as G
 
 LOG_GLOBS = ("/home/root/logs/*crash*.log", "/media/hdd/*crash*.log", "/media/usb/*crash*.log", "/media/hdd/logs/*crash*.log")
 ARCHIVE = "/home/root/logs/wacayoub-archive"
@@ -314,6 +316,7 @@ def analyse(index=None, own_packages=None):
     for g in groups.values():
         findings.append(_diagnose(g, rules, installed, available, own_packages, times, plugins))
     findings += _quarantined()
+    findings += G.findings()
     order = {"red": 0, "amber": 1, "blue": 2, "green": 3}
     findings.sort(key=lambda f: (order.get(f["level"], 4), -f["count"]))
     return findings

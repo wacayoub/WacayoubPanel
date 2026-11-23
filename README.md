@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.2_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.3_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -50,6 +50,23 @@ ROUGE sur l'accueil, une alerte « plantage », ou la première ligne de **Répa
 
 Un plantage plus ancien que la dernière mise à jour du plugin est marqué « sans doute corrigé ». Les règles en ligne ne peuvent
 choisir qu'entre ces réparations (liste fixe) et sont vérifiées par `tools/build_feed.py`.
+
+### Garde (v2.4.3)
+
+Fixo et l'accueil surveillent aussi ce qu'un malware ou un installateur tiers change :
+
+- **Sources de paquets** : chaque ligne `src` de `/etc/opkg/*.conf` doit pointer vers OpenATV (feeds2.mynonpublic.com)
+  ou oe-alliance. Une autre source donne une alerte rouge ; VERT propose de la désactiver (la ligne est mise en commentaire)
+  ou de la garder.
+- **Fichiers système** : scripts de démarrage (`/etc/init.d`, `/etc/rc*.d`, `/etc/profile.d`), tâches planifiées (cron),
+  comptes et mots de passe, clés SSH, `inetd.conf`, `hosts`, `ld.so.preload`… sont comparés à une photo prise la première fois
+  (`/home/root/wacayoub-garde.json`). Un changement fait par opkg pendant l'installation d'un paquet est accepté tout seul ;
+  tout autre changement reste en rouge jusqu'à ce que tu l'acceptes (VERT), BLEU montre le fichier.
+  `/home/root/wacayoub-garde-extra.txt` (un chemin par ligne) ajoute des fichiers à surveiller sur ce récepteur.
+- **Blocages** : `garde-gel.sh`, lancé au démarrage de l'interface, repère Enigma2 figé dans un pilote (rapport du noyau
+  « blocked for more than 120 seconds », ou Enigma2 bloqué 4 minutes sans réponse de l'interface web). Il écrit un rapport
+  `/home/root/logs/wacayoub-gel-*.log` et redémarre le récepteur. Le fichier `/home/root/wacayoub-gel-off` coupe le
+  redémarrage automatique (rapport seulement). Au retour, l'accueil et Fixo affichent le blocage.
 
 ## Catégories (v2)
 

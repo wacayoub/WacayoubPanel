@@ -35,8 +35,9 @@ from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
 from . import docteur as D
+from . import garde as G
 
-VERSION = "2.4.2"
+VERSION = "2.4.3"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -1208,6 +1209,7 @@ def local_checks():
     cam = S.softcam()
     if cam.endswith(u"(arrêté)"):
         out.append(("amber", u"Softcam %s arrêté  ·  OK pour Softcam Fix" % cam.split()[0], "run:softcamfix"))
+    out += G.alerts()
     return out
 
 
@@ -1620,7 +1622,7 @@ class WacayoubDoctor(Screen):
                 row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile, flags=PIX_FLAGS))
             row.append(MultiContentEntryText(pos=(s(94), s(6)), size=(s(780), s(40)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
                                              text=f["title"], color=C_TEXT, color_sel=0xFFFFFF))
-            meta = [x for x in ((u"%d plantage(s)" % f["count"]) if f["count"] else "", f.get("date", ""), f.get("plugin") or "") if x]
+            meta = [x for x in ((u"%d %s(s)" % (f["count"], u"blocage" if f["id"] == "gel" else u"plantage")) if f["count"] else "", f.get("date", ""), f.get("plugin") or "") if x]
             row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(780), s(30)), font=1, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
                                              text=u"  ·  ".join(meta), color=C_DIM, color_sel=0xDBEAFE))
             row.append(MultiContentEntryText(pos=(s(880), s(8)), size=(s(400), s(64)), font=1, flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER,
@@ -1667,6 +1669,8 @@ class WacayoubDoctor(Screen):
         f = self._cur()
         if not f or self.busy:
             return
+        if f["fix"]["type"] in ("accept", "source"):
+            return self._garde_fix(f)
         if f["fix"]["type"] == "archive":
             body = self._archive_body(f["logs"])
             q = u"%s\n\nArchiver %d rapport(s) ? (déplacés dans %s)" % (f["title"], len(f["logs"]), D.ARCHIVE)
@@ -1683,6 +1687,28 @@ class WacayoubDoctor(Screen):
                 cmd = F.write_run_script(body, "doctor.sh")
                 self.session.openWithCallback(lambda *a: self._done(f), Console, title=u"Fixo : %s" % f["fix_label"], cmdlist=cmd)
         self.session.openWithCallback(go, MessageBox, q, MessageBox.TYPE_YESNO)
+
+    def _garde_fix(self, f):
+        fx = f["fix"]
+        if fx["type"] == "accept":
+            choices = [(u"Oui, c'est moi : accepter ce changement", "accept"), (u"Non, laisser l'alerte", None)]
+        else:
+            choices = [(u"Désactiver cette source (conseillé)", "off"), (u"La garder : je lui fais confiance", "keep"), (u"Annuler", None)]
+
+        def go(c):
+            if not c or not c[1] or getattr(self, "closed", True):
+                return
+            try:
+                if c[1] == "accept":
+                    G.accept(fx["paths"])
+                elif c[1] == "off":
+                    G.source_off(fx["conf"], fx["url"])
+                else:
+                    G.keep_source(fx["url"])
+            except Exception as e:
+                self.session.open(MessageBox, u"Impossible : %s" % e, MessageBox.TYPE_ERROR, timeout=8)
+            self.start()
+        self.session.openWithCallback(go, ChoiceBox, title=f["title"], list=choices)
 
     def _done(self, f):
         if getattr(self, "closed", True):
@@ -1718,6 +1744,10 @@ class WacayoubDoctor(Screen):
 
     def keyShow(self):
         f = self._cur()
+        if f and f.get("garde") and f.get("show"):
+            p = D.sh(f["show"])
+            body = "ls -l %s 2>&1; echo; head -c 4000 %s 2>/dev/null | head -60 | cut -c1-160\n" % (p, p)
+            return self.session.open(Console, title=f["title"][:60], cmdlist=F.write_run_script(body, "doctor-show.sh"))
         if not f or not f.get("logs"):
             return
         path = f["logs"][0]
@@ -1730,10 +1760,24 @@ def main(session, **kwargs):
     session.open(WacayoubHome)
 
 
+def start_garde(reason, **kwargs):
+    """Starts garde-gel.sh (freeze watchdog) once per boot; it keeps itself to one copy."""
+    if reason != 0:
+        return
+    try:
+        import subprocess
+        with open(os.devnull, "wb") as null:
+            subprocess.Popen(["/bin/sh", os.path.join(PLUGIN_DIR, "garde-gel.sh")], stdin=null, stdout=null, stderr=null,
+                             close_fds=True, start_new_session=True)
+    except Exception as e:
+        print("[WacayoubPanel] garde-gel: %s" % e)
+
+
 def Plugins(**kwargs):
     return [
         PluginDescriptor(name="Wacayoub Panel", description="Installer et mettre à jour mes plugins, skins et scripts",
                          where=PluginDescriptor.WHERE_PLUGINMENU, icon="plugin.png", fnc=main),
         PluginDescriptor(name="Wacayoub Panel", description="Installer et mettre à jour mes plugins, skins et scripts",
                          where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=main),
+        PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=start_garde),
     ]

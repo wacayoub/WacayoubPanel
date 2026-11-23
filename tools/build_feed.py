@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.4.2",
+    "Version": "2.4.3",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -272,7 +272,7 @@ def build_panel():
     src = os.path.join(ROOT, "src", "WacayoubPanel")
     import shutil
     for fn in sorted(os.listdir(src)):
-        if fn.endswith((".py", ".png")):
+        if fn.endswith((".py", ".png", ".sh")):
             shutil.copy2(os.path.join(src, fn), dest)
     if os.path.isdir(os.path.join(src, "img")):
         shutil.copytree(os.path.join(src, "img"), os.path.join(dest, "img"))
