@@ -49,8 +49,8 @@
   "title": "IMDb",
   "summary": "Fiches films IMDb depuis l'EPG",
   "page": "https://github.com/oe-alliance/enigma2-plugins",
-  "reviewed_version": "V1.2-git367+aab57940+aab5794f1e-r0",
-  "reviewed_sha256": "3442ce80afe1c9c3a54b61b515b208c5f2b52cc9e5f323965bb433fdc34ee1b6",
+  "reviewed_version": "V1.3-git369+f0df8e70+f0df8e7f8e-r0",
+  "reviewed_sha256": "932c88025ad546fe7978ff132ea1c44f73262cef3aefb3d04e2af2b1abd6f0b4",
   "reviewed": "2026-11-23"
  },
  {
@@ -67,8 +67,8 @@
   "title": "File Commander",
   "summary": "Gestionnaire de fichiers",
   "page": "https://github.com/openatv/enigma2",
-  "reviewed_version": "8.0.1+git36321+d31cb9a0+d31cb9aad3-r1",
-  "reviewed_sha256": "341fa35dbe2e3d396e846ba45aef2c179fd4bd0e27733934731f6794dfb66b62",
+  "reviewed_version": "8.0.1+git36322+b4ac3bd0+b4ac3bd50a-r1",
+  "reviewed_sha256": "d321d2aaa56cb9410128123945bc12c1119ac532e1fae48409ace831c28715bc",
   "reviewed": "2026-11-23"
  },
  {
@@ -76,8 +76,8 @@
   "title": "AutoTimer",
   "summary": "Enregistrements automatiques par mots-clés",
   "page": "https://github.com/oe-alliance/enigma2-plugins",
-  "reviewed_version": "V1.0-git1138+8b7e54f0+8b7e54fd69-r0",
-  "reviewed_sha256": "4acaf2529209fb5c89506e8951a08a5262c1d60f0eaba554a7166f9ad6f7844c",
+  "reviewed_version": "V1.0-git1140+077bc9d0+077bc9d4db-r0",
+  "reviewed_sha256": "4db115f749401ad919346c8616e8341d9e3426cf7c453b5a2ad11aa4418b4dcd",
   "reviewed": "2026-11-23"
  },
  {
@@ -141,6 +141,105 @@
   "page": "https://github.com/stein17",
   "reviewed_version": "1.0+git1513+3ca5d510+3ca5d51a06-r0",
   "reviewed_sha256": "ad371713fe6529f6132c63dbeed688a25b062576540b902c66bbbfca4a59ee61",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-estalker",
+  "title": "EStalker",
+  "summary": "Lecteur IPTV Stalker / MAG (KiddaC)",
+  "page": "https://github.com/kiddac/E-Stalker",
+  "reviewed_version": "1.55-20261024-git72+f5bc2040+f5bc204b9e-r0",
+  "reviewed_sha256": "227bee577b52d7a467e9d166af2e2c08e00cb5a37ab34a3ca9f52e97e5be6f46",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-jediepgxtream",
+  "title": "JediEPGXtream",
+  "summary": "EPG pour les listes Xtream (KiddaC)",
+  "page": "https://github.com/kiddac/Jedi_EPG_Xtream",
+  "reviewed_version": "2.13-20240805-git25+7cf0d7d0+7cf0d7db6c-r3",
+  "reviewed_sha256": "95f5d203b9dbfa49a1b45f35ca3aa27bc3021ee68e8d58b3f17d1d4d4e84d18d",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-xcplugin-forever",
+  "title": "XCplugin Forever",
+  "summary": "Lecteur IPTV Xtream (Lululla)",
+  "page": "https://github.com/Belfagor2005/xc_plugin_forever",
+  "reviewed_version": "2.2",
+  "reviewed_sha256": "cfb27eaa95a9de3b25b0b64d1d4d43306cf6e3921cb7901b5dc90cceaf310954",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-internet-speedtest",
+  "title": "Internet Speedtest",
+  "summary": "Mesure du débit Internet",
+  "page": "https://www.opena.tv",
+  "reviewed_version": "1.8",
+  "reviewed_sha256": "ad6627e0c649c157c934ccd19f6c89c137fa72fd4bf52e6ca36570b11e90a828",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-weatherplugin",
+  "title": "WeatherPlugin",
+  "summary": "Météo MSN",
+  "page": "https://github.com/oe-alliance/enigma2-plugins",
+  "reviewed_version": "V1.0-git131+cb2a2ea0+cb2a2eafd4-r0",
+  "reviewed_sha256": "c4544da2f951d9e3bcfe6761466974ca2a1347eeef4db0355fd7dd28e5bc81a9",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-worldcam",
+  "title": "WorldCam",
+  "summary": "Webcams du monde entier (Lululla)",
+  "page": "https://github.com/Belfagor2005/WorldCam",
+  "reviewed_version": "V7.4-git567+0a0532f0+0a0532fd24-r0",
+  "reviewed_sha256": "575deb1dd18861d747db8a79c052ffd57a268ac3d77f1ef1e5a7ec3fef296529",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-apsattv",
+  "title": "ApSatTV",
+  "summary": "Chaînes et listes ApSatTV (Lululla)",
+  "page": "https://github.com/Belfagor2005",
+  "reviewed_version": "1.5",
+  "reviewed_sha256": "40f5b89f24535385d3a2843a97096a2fe515977be9772d21770bdc6fd705db2d",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-mmpicons",
+  "title": "mmPicons",
+  "summary": "Picons et skins (Lululla & MMark)",
+  "page": "https://github.com/Belfagor2005",
+  "reviewed_version": "1.6",
+  "reviewed_sha256": "f8b2eb8b35c83b896ec098c7d70b793c10694cd44b3bdf29da1a8dd748209f60",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-extensions-horoscope",
+  "title": "Horoscope",
+  "summary": "Horoscope du jour (Lululla)",
+  "page": "https://github.com/Belfagor2005",
+  "reviewed_version": "1.2",
+  "reviewed_sha256": "2970b9630a99219c33cbb7e4a0768c60118a3c5da2c604b7873da0c262af850e",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-skins-aglare-fhd",
+  "title": "AGlare FHD",
+  "summary": "Skin Full HD AGlare (Lululla)",
+  "page": "https://github.com/Belfagor2005",
+  "reviewed_version": "8.6",
+  "reviewed_sha256": "ff2c47f82099196a3b8d4f460da8d25bbd122926cbb5e48b39652e9f604a6062",
+  "reviewed": "2026-11-23"
+ },
+ {
+  "package": "enigma2-plugin-skins-maxy-fhd",
+  "title": "Maxy FHD",
+  "summary": "Skin Full HD Maxy",
+  "page": "https://www.opena.tv",
+  "reviewed_version": "1.2",
+  "reviewed_sha256": "d3de75e675bda15fa737a5eb671d793cd9e745c04fca1a285d03898a0f37ae81",
   "reviewed": "2026-11-23"
  }
 ]

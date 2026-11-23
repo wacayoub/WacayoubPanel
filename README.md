@@ -143,7 +143,7 @@ Plugins communautaires connus, installés depuis le **feed officiel OpenATV** (v
 Chaque paquet est revu par `tools/verify_community.py` : téléchargement, sha256 = liste du feed, recherche de commandes à risque
 (téléchargement envoyé à un shell, base64 exécuté, telnet/ssh, mots de passe, crontab, pare-feu, code obfusqué) et refus du code fermé (compilé).
 Résultat détaillé : [feed/COMMUNITY-REVIEW.md](feed/COMMUNITY-REVIEW.md). Refusés : AJPanel (change le mot de passe root, code obfusqué)
-et WireGuard VPN (code compilé, impossible à vérifier).
+WireGuard VPN (code compilé, impossible à vérifier) et E2iPlayer (code compilé contenant des adresses avec mot de passe).
 
 **Pack essentiel** : installe en une fois XStreamity, BouquetMakerXtream, xtraEvent, SetPicon, BootlogoSwitcher et SubsSupport,
 tous depuis le feed officiel OpenATV. Les installateurs « wget … | sh » de sites tiers ne sont jamais utilisés.

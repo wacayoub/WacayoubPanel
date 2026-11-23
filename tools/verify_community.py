@@ -50,6 +50,19 @@ PICKS = [
     ("enigma2-plugin-extensions-xtraevent", "xtraEvent", "Affiches et infos des programmes (kitte888)", "https://www.opena.tv"),
     ("enigma2-plugin-extensions-setpicon", "SetPicon", "Attribuer et gérer les picons", "https://github.com/oe-alliance/enigma2-plugins"),
     ("enigma2-plugin-extensions-bootlogoswitcher", "BootlogoSwitcher", "Choisir le logo de démarrage", "https://github.com/stein17"),
+    ("enigma2-plugin-extensions-e2iplayer", "E2iPlayer", "Vidéos et replays de nombreux sites", "https://github.com/oe-mirrors/e2iplayer"),
+    ("enigma2-plugin-extensions-estalker", "EStalker", "Lecteur IPTV Stalker / MAG (KiddaC)", "https://github.com/kiddac/E-Stalker"),
+    ("enigma2-plugin-extensions-jediepgxtream", "JediEPGXtream", "EPG pour les listes Xtream (KiddaC)", "https://github.com/kiddac/Jedi_EPG_Xtream"),
+    ("enigma2-plugin-extensions-xcplugin-forever", "XCplugin Forever", "Lecteur IPTV Xtream (Lululla)", "https://github.com/Belfagor2005/xc_plugin_forever"),
+    ("enigma2-plugin-extensions-internet-speedtest", "Internet Speedtest", "Mesure du débit Internet", "https://www.opena.tv"),
+    ("enigma2-plugin-extensions-weatherplugin", "WeatherPlugin", "Météo MSN", "https://github.com/oe-alliance/enigma2-plugins"),
+    ("enigma2-plugin-extensions-worldcam", "WorldCam", "Webcams du monde entier (Lululla)", "https://github.com/Belfagor2005/WorldCam"),
+    ("enigma2-plugin-extensions-apsattv", "ApSatTV", "Chaînes et listes ApSatTV (Lululla)", "https://github.com/Belfagor2005"),
+    ("enigma2-plugin-extensions-mmpicons", "mmPicons", "Picons et skins (Lululla & MMark)", "https://github.com/Belfagor2005"),
+    ("enigma2-plugin-extensions-chocholousek-picons", "Chocholousek Picons", "Téléchargement de picons satellite", "https://github.com/s3n0/e2plugins"),
+    ("enigma2-plugin-extensions-horoscope", "Horoscope", "Horoscope du jour (Lululla)", "https://github.com/Belfagor2005"),
+    ("enigma2-plugin-skins-aglare-fhd", "AGlare FHD", "Skin Full HD AGlare (Lululla)", "https://github.com/Belfagor2005"),
+    ("enigma2-plugin-skins-maxy-fhd", "Maxy FHD", "Skin Full HD Maxy", "https://www.opena.tv"),
 ]
 
 RISKY = [
