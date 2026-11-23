@@ -573,6 +573,32 @@ def remove_commands(names):
 
 RUN_SCRIPT = DL_DIR + "/run.sh"
 
+# Every job script starts with this: 'opkg install / remove / upgrade' keep their exit code but only
+# short lines reach the Console ("[3] Mise à jour : xxx"). opkg's download progress used to flood the
+# Console and freeze Enigma2 for several minutes. The full output goes to /tmp/wacayoubpanel/opkg.log.
+QUIET_OPKG = r"""opkg() {
+	case "$1" in install|remove|upgrade) ;; *) command opkg "$@"; return $? ;; esac
+	{ command opkg "$@"; echo $? > /tmp/wacayoubpanel/opkg.rc; } 2>&1 | tr '\r' '\n' | awk -v lf=/tmp/wacayoubpanel/opkg.log '
+		/^[ \t]*$/ || /^ *[0-9]+%/ { next }
+		{ print >> lf }
+		$1 == "Upgrading" || $1 == "Downgrading" { n++; print "  [" n "] Mise a jour : " $2; fflush(); next }
+		$1 == "Installing" { n++; print "  [" n "] Installation : " $2; fflush(); next }
+		$1 == "Removing" { print "  Suppression : " $2; fflush(); next }
+		/^(Collected errors|ERROR|Error|error|Not downloading|Cannot|Package .* not)/ || /^ \* / { print; fflush() }
+	'
+	return $(cat /tmp/wacayoubpanel/opkg.rc 2>/dev/null || echo 1)
+}
+mkdir -p /tmp/wacayoubpanel; : > /tmp/wacayoubpanel/opkg.log
+"""
+
+# 'Tout mettre à jour' never takes these: a channel list package replaces the user's channels,
+# picon packages are 60-80 MB each (update them on their own in Picons).
+UPDATE_ALL_SKIP = ("enigma2-plugin-settings-", "enigma2-plugin-picons-")
+
+
+def update_all_skipped(name):
+    return name.startswith(UPDATE_ALL_SKIP)
+
 
 def write_run_script(body, name="run.sh"):
     """Write the job to a file; the Console then shows only 'sh run.sh' and its output."""
@@ -580,5 +606,5 @@ def write_run_script(body, name="run.sh"):
         os.makedirs(DL_DIR)
     path = os.path.join(DL_DIR, name)
     with open(path, "w", encoding="utf-8") as fh:
-        fh.write("#!/bin/sh\n" + body)
+        fh.write("#!/bin/sh\n" + QUIET_OPKG + body)
     return ["sh " + path]

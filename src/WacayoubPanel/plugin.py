@@ -14,7 +14,7 @@ from Components.MultiContent import MultiContentEntryPixmapAlphaBlend, MultiCont
 from Components.Pixmap import Pixmap
 from Plugins.Plugin import PluginDescriptor
 from Screens.ChoiceBox import ChoiceBox
-from Screens.Console import Console
+from Screens.Console import Console as _SkinConsole
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Screens.Standby import TryQuitMainloop
@@ -37,7 +37,7 @@ from . import sysinfo as S
 from . import docteur as D
 from . import garde as G
 
-VERSION = "2.5.0"
+VERSION = "2.5.1"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -48,6 +48,35 @@ SC = _W / 1920.0
 
 def s(v):
     return int(round(v * SC))
+
+
+class Console(_SkinConsole):
+    """The image's Console with the panel's own readable look: some skins draw it transparent over the
+    picture with dark text, so the install / update output could not be read."""
+
+    def __init__(self, session, *args, **kwargs):
+        _SkinConsole.__init__(self, session, *args, **kwargs)
+        self.skinName = ["WacayoubConsole"]
+        self.skin = console_skin()
+
+
+def console_skin():
+    d = {"W": s(1920), "H": s(1080), "img": IMG}
+    for k, v in {"lx": 48, "ly": 38, "lw": 64, "tx": 132, "ty": 34, "tw": 1700, "th": 60, "tf": 40,
+                 "x": 48, "y": 130, "w": 1824, "h": 840, "f": 26, "fy": 996, "fd": 26, "fty": 988, "fth": 42, "ff": 25,
+                 "k1": 62, "k2": 392, "k3": 742}.items():
+        d[k] = s(v)
+    for i in range(1, 4):
+        d["l%d" % i] = d["k%d" % i] + s(38)
+    d["kw"] = s(300)
+    return """
+    <screen name="WacayoubConsole" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14">
+      <ePixmap position="%(lx)d,%(ly)d" size="%(lw)d,%(lw)d" pixmap="%(img)s/logo.png" alphatest="blend" scale="1" />
+      <widget source="Title" render="Label" position="%(tx)d,%(ty)d" size="%(tw)d,%(th)d" font="Regular;%(tf)d" foregroundColor="#00F1F5F9" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="text" position="%(x)d,%(y)d" size="%(w)d,%(h)d" font="Regular;%(f)d" foregroundColor="#00E2E8F0" backgroundColor="#00101826" transparent="0" />
+      <widget name="key_red" position="%(l1)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+      <widget name="key_yellow" position="%(l3)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+    </screen>""" % d
 
 
 C_TEXT = 0xF1F5F9
@@ -1041,21 +1070,43 @@ class WacayoubPanel(Screen):
     def keyUpdateAll(self):
         if not self.feed:
             return
-        own, opkg = [], []
+        own, opkg, skipped = [], [], []
         for it in self.feed.items:
             if it.get("type") == "script":
                 continue
             target = opkg if it.get("type") == "opkg" else own
             for p in self.feed.outdated(it, self.installed):
-                if p not in own and p not in opkg:
+                if F.update_all_skipped(p):
+                    if p not in skipped:
+                        skipped.append(p)
+                elif p not in own and p not in opkg:
                     target.append(p)
+        core_note = u""
+        if opkg and "enigma2" not in opkg:
+            # OpenATV plugins are built for the feed's enigma2: updating them on an older core breaks them
+            # (ServiceApp: undefined symbol, PositionerSetup: cannot import name), so the core comes along.
+            try:
+                newest = D.feed_versions().get("enigma2")
+                cur = self.installed.get("enigma2")
+                if newest and cur and F.compare_versions(cur, newest) < 0:
+                    opkg.insert(0, "enigma2")
+                    core_note = u"\n+ cœur enigma2 (obligatoire pour ces plugins OpenATV)."
+            except Exception as e:
+                print("[WacayoubPanel] core check: %s" % e)
         names = own + opkg
+        lists = [p for p in skipped if p.startswith("enigma2-plugin-settings-")]
+        picons = [p for p in skipped if p not in lists]
+        note = core_note
+        if picons:
+            note += u"\nPas inclus : %d paquet(s) de picons (gros, à mettre à jour à part dans Picons)." % len(picons)
+        if lists:
+            note += u"\nPas inclus : %d liste(s) de chaînes (elle remplacerait tes chaînes)." % len(lists)
         if not names:
-            self.session.open(MessageBox, "Tout est à jour.", MessageBox.TYPE_INFO, timeout=4)
+            self.session.open(MessageBox, u"Tout est à jour." + note, MessageBox.TYPE_INFO, timeout=6)
             return
-        shown = names[:14] + ([u"… et %d autre(s)" % (len(names) - 14)] if len(names) > 14 else [])
+        shown = names[:7] + ([u"… et %d autre(s)" % (len(names) - 7)] if len(names) > 7 else [])
         body = (F.install_commands(self.feed, own) if own else "") + (F.opkg_install_commands(opkg) if opkg else "")
-        self._confirm_run("Mettre à jour %d paquet(s) ?\n%s" % (len(names), "\n".join(shown)), body, "Mise à jour")
+        self._confirm_run(u"Mettre à jour %d paquet(s) ?\n%s%s" % (len(names), "\n".join(shown), note), body, "Mise à jour")
 
     # ------------------------------------------------------------ actions
     def _install(self, it, reinstall=False):
@@ -1166,7 +1217,7 @@ def count_updates(model, archs):
     names = set()
     for it in feed.items:
         if it.get("type") != "script":
-            names |= set(feed.outdated(it, installed))
+            names |= set(p for p in feed.outdated(it, installed) if not F.update_all_skipped(p))
     return len(names)
 
 

@@ -6,7 +6,7 @@ par catégorie, depuis la télécommande — dans l'esprit d'Emil's panel / AJPa
 ## Installation sur le récepteur
 
 ```sh
-wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.0_all.ipk
+wget -O /tmp/wp.ipk https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.5.1_all.ipk
 opkg install /tmp/wp.ipk && init 4; sleep 2; init 3
 ```
 
@@ -106,6 +106,17 @@ nouveau bouquet, séparateur, renommer une chaîne, TV / Radio.
 Rapide : un bouquet n'est lu qu'à son ouverture (965 bouquets en 1,4 s sur l'Octagon), picons jusqu'à 400 chaînes par bouquet.
 Rien n'est écrit avant VERT ; chaque enregistrement garde l'ancienne version dans `/home/root/wacayoub-chaines`
 (5 dernières) et **MENU → Annuler le dernier enregistrement** la remet. La liste des chaînes d'Enigma2 est rechargée aussitôt.
+
+## Mises à jour rapides (v2.5.1)
+
+- La sortie d'opkg n'arrive plus en entier dans la console : seulement « [3] Mise a jour : paquet » (journal complet dans
+  `/tmp/wacayoubpanel/opkg.log`). Avant, la barre de progression des gros téléchargements noyait Enigma2, qui restait figé
+  plusieurs minutes. 21 paquets : 33 s au lieu de plus de 13 min bloquées.
+- **Tout mettre à jour** ne prend plus les listes de chaînes (`enigma2-plugin-settings-*`, elles remplaceraient tes chaînes)
+  ni les picons (60-80 Mo chacun, à mettre à jour à part dans Picons).
+- Si des plugins OpenATV sont mis à jour et que le cœur `enigma2` du récepteur est plus ancien que le feed, il est mis à jour
+  avec eux (sinon ServiceApp, PositionerSetup… ne se chargent plus).
+- La console du panel a son propre écran, lisible sur tous les skins (texte clair sur fond opaque).
 
 ## Partage LAN (v2.5)
 
