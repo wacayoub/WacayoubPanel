@@ -45,6 +45,7 @@ G = {
     "layers": '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 .83.18a2 2 0 0 0 .83-.18l8.58-3.9a1 1 0 0 0 0-1.831zM16 17h6m-3-3v6M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 .825.178M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l2.116-.962"/>',
     "checkbig": '<path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11l3 3L22 4"/>',
     "check": '<path d="M20 6L9 17l-5-5"/>',
+    "stethoscope": '<path d="M11 2v2M5 2v2M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/>',
     "thermo": '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
     "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     "chip": '<rect width="20" height="12" x="2" y="6" rx="2"/><path d="M6 10v4m4-4v4m4-4v4m4-4v4"/>',
@@ -86,6 +87,7 @@ TILES = {
     "multiboot": ("layers", "#1E3A8A", "#6366F1"),
     "feeds": ("rss", "#C2410C", "#FBBF24"),
     "recv": ("tv", "#0369A1", "#22D3EE"),
+    "doctor": ("stethoscope", "#0E7490", "#22C55E"),
     "fix": ("wrench", "#B45309", "#FBBF24"),
     "dns": ("globe", "#1D4ED8", "#60A5FA"),
     "deps": ("box", "#B45309", "#F59E0B"),
@@ -273,7 +275,7 @@ def home_background(w=1920, h=1080):
     lay.alpha_composite(logo(66), (48, 36))
     d.text((132, 30), "Wacayoub Panel", font=ft, fill=(241, 245, 249, 255))
     x = 60
-    for col, lab in (("#EF4444", "Réparer"), ("#22C55E", "Bilan santé"), ("#F59E0B", "Actualiser"), ("#3B82F6", "Mises à jour")):
+    for col, lab in (("#EF4444", "Docteur"), ("#22C55E", "Bilan santé"), ("#F59E0B", "Actualiser"), ("#3B82F6", "Mises à jour")):
         lay.alpha_composite(key_dot(col), (x, 1010))
         d.text((x + 38, 1023), lab, font=fk, fill=(226, 232, 240, 255), anchor="lm")
         x += 330

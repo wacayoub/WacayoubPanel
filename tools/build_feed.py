@@ -32,7 +32,7 @@ EXTERNAL = {
 
 PANEL = {
     "Package": "enigma2-plugin-extensions-wacayoubpanel",
-    "Version": "2.3.0",
+    "Version": "2.4.0",
     "Description": "Wacayoub Panel: install, update and remove wacayoub's plugins, skins and scripts",
     "Section": "extra",
     "Priority": "optional",
@@ -315,6 +315,18 @@ def main():
         for p in it["packages"]:
             if p not in packages:
                 raise SystemExit("missing package for %s: %s" % (it["id"], p))
+    # Docteur Enigma2: online fix rules (regexes + a whitelisted fix word), read by docteur.py
+    import re
+    rules = json.load(open(os.path.join(ROOT, "feed", "doctor-rules.json"), encoding="utf-8"))
+    script_ids = {i["id"] for i in ITEMS if i["type"] == "script"}
+    for r in rules:
+        re.compile(r["match"])
+        if r.get("where"):
+            re.compile(r["where"])
+        fx = r["fix"]
+        ok = fx in ("update", "reinstall", "disable", "none") or fx.startswith("update_or_") or             (fx.startswith("script:") and fx[7:] in script_ids) or             (fx.startswith("install:") and all(re.match(r"^[a-z0-9][a-z0-9.+-]*$", x) for x in fx[8:].split()))
+        if not ok:
+            raise SystemExit("bad doctor rule fix: %s" % r)
     # curated community picks reviewed by tools/verify_community.py (installed from the OpenATV feed)
     categories, items = list(CATEGORIES), [dict(i) for i in ITEMS]
     for it in items:
@@ -353,6 +365,7 @@ def main():
         "categories": categories,
         "packages": packages,
         "items": items,
+        "doctor_rules": rules,
     }
     out = os.path.join(ROOT, "feed", "index.json")
     with open(out, "w", encoding="utf-8", newline="\n") as fh:

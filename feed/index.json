@@ -187,13 +187,13 @@
    "provides": []
   },
   "enigma2-plugin-extensions-wacayoubpanel": {
-   "version": "2.3.0",
+   "version": "2.4.0",
    "arch": "all",
-   "file": "enigma2-plugin-extensions-wacayoubpanel_2.3.0_all.ipk",
-   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.3.0_all.ipk",
-   "sha256": "e1da69c35d1f03ecb555e8ed594daa8b7042ccd07274f236cc50548ca5fea833",
-   "size": 1167678,
-   "installed_size": 1298,
+   "file": "enigma2-plugin-extensions-wacayoubpanel_2.4.0_all.ipk",
+   "url": "https://github.com/wacayoub/WacayoubPanel/releases/download/packages/enigma2-plugin-extensions-wacayoubpanel_2.4.0_all.ipk",
+   "sha256": "df223711f60e1cf0317193e5d509d1e91478b858057de5279137c08c348fd862",
+   "size": 1194166,
+   "installed_size": 1351,
    "depends": "enigma2, python3-core, python3-json",
    "provides": []
   },
@@ -1323,6 +1323,41 @@
    "reviewed_sha256": "ddd85ffeffdf74a2824d8395edd403aa2116747f4dff7db5a459f74990bb7379",
    "reviewed": "2026-11-22",
    "page": "https://www.opena.tv"
+  }
+ ],
+ "doctor_rules": [
+  {
+   "id": "epgimport-xml",
+   "match": "ParseError|ExpatError",
+   "where": "EPGImport",
+   "level": "amber",
+   "title": "Source EPG abîmée (EPGImport)",
+   "explain": "EPGImport a téléchargé un fichier EPG incomplet. Choisissez une autre source dans EPGImport, ou utilisez EPG Manager.",
+   "fix": "update_or_none"
+  },
+  {
+   "id": "openssl-twisted",
+   "match": "OpenSSL\\.SSL\\.Error|SSL routines|tlsv1 alert",
+   "level": "amber",
+   "title": "Erreur de connexion sécurisée",
+   "explain": "Le serveur a refusé la connexion HTTPS. Une heure fausse en est souvent la cause.",
+   "fix": "script:t-heure"
+  },
+  {
+   "id": "softcam-missing",
+   "match": "No such file or directory: '/usr/softcams|softcam\\.\\w+: not found",
+   "level": "amber",
+   "title": "Softcam introuvable",
+   "explain": "Le softcam choisi n'est plus installé. Softcam Fix remet le lien et relance le softcam.",
+   "fix": "script:softcamfix"
+  },
+  {
+   "id": "picon-path",
+   "match": "No such file or directory: '/(media/\\w+|usr/share/enigma2)/picon",
+   "level": "amber",
+   "title": "Dossier des picons absent",
+   "explain": "Le skin cherche les picons dans un dossier qui n'existe plus (disque débranché ?). Préparer le disque recrée les dossiers.",
+   "fix": "script:t-disque-dossiers"
   }
  ]
 }

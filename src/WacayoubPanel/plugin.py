@@ -34,8 +34,9 @@ from . import extfeeds as X
 from . import images as IM
 from .details import WacayoubDetails
 from . import sysinfo as S
+from . import docteur as D
 
-VERSION = "2.3.0"
+VERSION = "2.4.0"
 PANEL_PKG = "enigma2-plugin-extensions-wacayoubpanel"
 PLUGIN_DIR = os.path.dirname(os.path.abspath(__file__))
 IMG = os.path.join(PLUGIN_DIR, "img")
@@ -56,6 +57,7 @@ TYPE_LABEL = {"plugin": "Plugin", "skin": "Skin", "script": "Script", "panel": "
 SEARCH = "search"
 FEEDSRC = "feedsrc"
 RECV = "recv"  # 'Mon récepteur' info rows (nothing to install)
+DOCTOR = "doctor"  # row that opens the Docteur Enigma2 screen
 TOOL_CATS = ('communaute', 'scripts', 'fix', 'dns', 'deps', 'disk')  # categories of the index shown as they are
 # where an item comes from, shown on every row (lists are merged across sources)
 SOURCE_COLOR = {"Wacayoub": 0x60A5FA, "Universel": 0xE2E8F0, u"Installé": 0x4ADE80, "OpenATV": 0x34D399, "OpenPLi": 0xFB923C, "OpenViX": 0x4ADE80,
@@ -79,8 +81,8 @@ def source_of(it, common=None):
         return it.get("src", "Wacayoub")
     if t == FEEDSRC:
         return it.get("src", "")
-    if t == RECV:
-        return ""
+    if t in (RECV, DOCTOR):
+        return "Wacayoub" if t == DOCTOR else ""
     if t in ("opkg", "ext") and common and it.get("packages") and it["packages"][0] in common:
         return "Universel"  # same tool in several images: no image name
     if t == "opkg":
@@ -118,6 +120,8 @@ def item_tile(it):
         return pix("t-feeds.png")
     if it.get("type") == RECV:
         return pix("t-r-%s.png" % it.get("tile")) or pix("t-recv.png")
+    if it.get("type") == DOCTOR:
+        return pix("t-doctor.png")
     g = F.group_of(it)
     if g and it.get("type") in ("opkg", "ext") and pix("t-%s.png" % g):
         return pix("t-%s.png" % g)
@@ -450,6 +454,8 @@ class WacayoubPanel(Screen):
             return F.ST_OK, "Ouvrir"
         if t == RECV:
             return F.ST_OK, ""
+        if t == DOCTOR:
+            return F.ST_OK, u"Ouvrir"
         if t == FEEDSRC:
             return F.ST_OK, (u"Filtre actif" if self.src_filter == it.get("src") else u"Afficher")
         if t == "image":
@@ -534,6 +540,13 @@ class WacayoubPanel(Screen):
             return self._feed_sources()
         if cat_id == RECV:
             return self._recv_rows()
+        if cat_id == "fix":
+            doc = {"id": "doctor", "type": DOCTOR, "category": "fix", "name": u"Docteur Enigma2",
+                   "summary": u"Analyse les plantages et propose la réparation (feeds et règles en ligne)",
+                   "description": u"Docteur Enigma2 : lit les rapports de plantage, trouve le plugin et l'erreur, cherche une version "
+                                  u"corrigée sur Internet et propose la réparation (installer, mettre à jour, réinstaller, désactiver).\nOK : ouvrir",
+                   "packages": []}
+            return [doc] + (self.feed.items_in(cat_id) if self.feed else [])
         if cat_id.startswith("img-"):
             for _d, items in self.image_groups:
                 if items[0]["category"] == cat_id:
@@ -607,7 +620,7 @@ class WacayoubPanel(Screen):
             n_upd = 0
             if self.feed and c["id"] not in (SEARCH, LAUNCH, RECV, "feeds") and not c["id"].startswith("img-"):
                 for it in items:
-                    if self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
+                    if it.get("type") != DOCTOR and self.feed.item_state(it, self.installed, self.archs)[0] == F.ST_UPDATE:
                         n_upd += 1
             right = (u"%d ↑" % n_upd) if n_upd else (u"…" if c["id"] == "img-wait" else str(len(items)))
             self.cat_ids.append(c["id"])
@@ -647,6 +660,8 @@ class WacayoubPanel(Screen):
                 badge = pix("s-open.png")
             elif it.get("type") == RECV:
                 badge, txt = None, ""
+            elif it.get("type") == DOCTOR:
+                badge, txt = pix("s-open.png"), u"Ouvrir"
             else:
                 badge = pix("s-%s.png" % STATE_IMG[st])
             kind = TYPE_LABEL.get(it.get("type"), "")
@@ -690,7 +705,7 @@ class WacayoubPanel(Screen):
         if not it and cat == "img-wait":
             self["desc"].setText("Recherche des images pour %s (OpenATV, OpenPLi, OpenViX, OpenBH, OpenSPA)…" % (self.model_name or self.model))
             return
-        if it and it.get("type") in (LAUNCH, "image", FEEDSRC, RECV):
+        if it and it.get("type") in (LAUNCH, "image", FEEDSRC, RECV, DOCTOR):
             extra = ""
             if it.get("type") == "image":
                 d = IM.image_dir()
@@ -780,6 +795,8 @@ class WacayoubPanel(Screen):
             return self._launch(it)
         if it.get("type") == RECV:
             return
+        if it.get("type") == DOCTOR:
+            return self.session.open(WacayoubDoctor)
         if it.get("type") == FEEDSRC:
             self.src_filter = it["src"]
             self._refresh_all()
@@ -794,7 +811,7 @@ class WacayoubPanel(Screen):
 
     def keyInfo(self):
         it = self._current_item() if self.focus_items else None
-        if it and it.get("type") not in (LAUNCH, FEEDSRC, RECV):
+        if it and it.get("type") not in (LAUNCH, FEEDSRC, RECV, DOCTOR):
             self._open_details(it)
 
     # ------------------------------------------------------------ selection (grouped install)
@@ -952,6 +969,8 @@ class WacayoubPanel(Screen):
         if it and self.focus_items:
             if it.get("type") in (RECV, FEEDSRC):
                 return
+            if it.get("type") == DOCTOR:
+                return self.session.open(WacayoubDoctor)
             if it.get("type") == LAUNCH:
                 return self._launch(it)
             if it.get("type") == "image":
@@ -968,7 +987,7 @@ class WacayoubPanel(Screen):
         if it and self.focus_items:
             if it.get("type") == "image":
                 return self._image_delete(it)
-            if it.get("type") in (LAUNCH, RECV, FEEDSRC):
+            if it.get("type") in (LAUNCH, RECV, FEEDSRC, DOCTOR):
                 return
             self._ask_remove(it)
 
@@ -1173,7 +1192,7 @@ def local_checks():
         out.append(("amber", u"Température %d °C : chaude" % t, "fix"))
     n, plug = recent_crashes()
     if n:
-        out.append(("amber", u"%d plantage(s) récent(s)%s  ·  OK pour voir" % (n, (u" (%s)" % plug) if plug else ""), "fix"))
+        out.append(("amber", u"%d plantage(s) récent(s)%s  ·  OK : Docteur" % (n, (u" (%s)" % plug) if plug else ""), "doctor"))
     free = F.free_bytes("/")
     if 0 <= free < 50 * 1024 * 1024:
         out.append(("red", u"Système presque plein : %s libres" % S.human(free), "fix"))
@@ -1426,6 +1445,8 @@ class WacayoubHome(Screen):
             act = self.alerts[self.col][2] if self.col < len(self.alerts) else None
             if act == "update":
                 return self._open(None, "update")
+            if act == "doctor":
+                return self.session.openWithCallback(self._back, WacayoubDoctor)
             if act and act.startswith("run:"):
                 return self._open("scripts", act)
             if act:
@@ -1434,7 +1455,7 @@ class WacayoubHome(Screen):
         self._open(HOME_TILES[self.row * 4 + self.col][1])
 
     def keyRed(self):
-        self._open("fix")
+        self.session.openWithCallback(self._back, WacayoubDoctor)
 
     def keyGreen(self):
         self._open("fix", "run:t-bilan-sante")
@@ -1451,6 +1472,256 @@ class WacayoubHome(Screen):
     def _back(self, *args):
         if not getattr(self, "closed", True):
             self.refresh()
+
+
+# ---------------------------------------------------------------- Docteur Enigma2 (crash logs -> fixes)
+class WacayoubDoctor(Screen):
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self.skin = self._skin()
+        self.setTitle("Docteur Enigma2")
+        self.closed = False
+        self.feed = None
+        self.findings = []
+        self.busy = False
+        self.console = AsyncConsole()
+        self.later = eTimer()
+        self.later.callback.append(self._analyse)
+        self["title"] = Label(u"Docteur Enigma2")
+        self["status"] = Label("")
+        self["sub"] = Label("")
+        self["summary"] = Label("")
+        self["items"] = _List(80, [("Regular", 28), ("Regular", 22)])
+        self["desc"] = Label("")
+        self["key_red"] = Label(u"Archiver tout")
+        self["key_green"] = Label(u"Réparer")
+        self["key_yellow"] = Label(u"Analyser")
+        self["key_blue"] = Label(u"Voir le rapport")
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
+            "ok": self.keyFix, "green": self.keyFix, "cancel": self.close, "red": self.keyArchiveAll,
+            "yellow": self.start, "blue": self.keyShow,
+            "up": self.keyUp, "down": self.keyDown, "left": self.keyPageUp, "right": self.keyPageDown,
+        }, -1)
+        self.onLayoutFinish.append(self._first)
+        self.onClose.append(self._on_close)
+
+    @staticmethod
+    def _skin():
+        d = {"W": s(1920), "H": s(1080), "img": IMG}
+        for k, v in {"lx": 48, "ly": 38, "lw": 64, "tx": 132, "ty": 30, "tw": 900, "th": 54, "tf": 44, "sty": 86, "sth": 34, "stf": 24,
+                     "subx": 1020, "subw": 852, "subf": 23, "bx": 188, "by": 170, "bw": 160, "mx": 70, "my": 350, "mw": 400, "mh": 430, "mf": 25,
+                     "ix": 520, "iy": 150, "iw": 1340, "ih": 640, "dx": 72, "dy": 832, "dw": 1776, "dh": 124, "df": 24,
+                     "fy": 996, "fd": 26, "fty": 988, "fth": 42, "ff": 25, "k1": 62, "k2": 392, "k3": 742, "k4": 1062}.items():
+            d[k] = s(v)
+        for i in range(1, 5):
+            d["l%d" % i] = d["k%d" % i] + s(38)
+        d["kw"] = s(300)
+        return """
+        <screen name="WacayoubDoctor" position="0,0" size="%(W)d,%(H)d" flags="wfNoBorder" backgroundColor="#00070B14" title="Docteur Enigma2">
+          <ePixmap position="0,0" size="%(W)d,%(H)d" pixmap="%(img)s/bg.jpg" scale="1" zPosition="-2" />
+          <ePixmap position="%(lx)d,%(ly)d" size="%(lw)d,%(lw)d" pixmap="%(img)s/logo.png" alphatest="blend" scale="1" />
+          <ePixmap position="%(bx)d,%(by)d" size="%(bw)d,%(bw)d" pixmap="%(img)s/B-doctor.png" alphatest="blend" scale="1" />
+          <widget name="title" position="%(tx)d,%(ty)d" size="%(tw)d,%(th)d" font="Regular;%(tf)d" foregroundColor="#00F1F5F9" backgroundColor="#00070B14" transparent="1" valign="center" />
+          <widget name="status" position="%(tx)d,%(sty)d" size="%(tw)d,%(sth)d" font="Regular;%(stf)d" foregroundColor="#007DD3FC" backgroundColor="#00070B14" transparent="1" valign="center" />
+          <widget name="sub" position="%(subx)d,%(ty)d" size="%(subw)d,%(th)d" font="Regular;%(subf)d" foregroundColor="#008C9AB0" backgroundColor="#00070B14" transparent="1" halign="right" valign="center" />
+          <widget name="summary" position="%(mx)d,%(my)d" size="%(mw)d,%(mh)d" font="Regular;%(mf)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" halign="center" />
+          <widget name="items" position="%(ix)d,%(iy)d" size="%(iw)d,%(ih)d" backgroundColor="#00070B14" transparent="1" foregroundColor="#00F1F5F9" foregroundColorSelected="#00FFFFFF" selectionPixmap="%(img)s/sel-item.png" scrollbarMode="showOnDemand" scrollbarWidth="4" scrollbarForegroundColor="#003B82F6" enableWrapAround="1" />
+          <widget name="desc" position="%(dx)d,%(dy)d" size="%(dw)d,%(dh)d" font="Regular;%(df)d" foregroundColor="#00CBD5E1" backgroundColor="#00070B14" transparent="1" />
+          <ePixmap position="%(k1)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-red.png" alphatest="blend" scale="1" />
+          <ePixmap position="%(k2)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-green.png" alphatest="blend" scale="1" />
+          <ePixmap position="%(k3)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-yellow.png" alphatest="blend" scale="1" />
+          <ePixmap position="%(k4)d,%(fy)d" size="%(fd)d,%(fd)d" pixmap="%(img)s/k-blue.png" alphatest="blend" scale="1" />
+          <widget name="key_red" position="%(l1)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+          <widget name="key_green" position="%(l2)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+          <widget name="key_yellow" position="%(l3)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+          <widget name="key_blue" position="%(l4)d,%(fty)d" size="%(kw)d,%(fth)d" font="Regular;%(ff)d" foregroundColor="#00E2E8F0" backgroundColor="#00070B14" transparent="1" valign="center" />
+        </screen>""" % d
+
+    def _first(self):
+        self["items"].selectionEnabled(True)
+        model, name = IM.box_model()
+        self["sub"].setText(u"%s  ·  v%s" % (name or model or "?", VERSION))
+        self.start()
+
+    def _on_close(self):
+        self.closed = True
+        self.later.stop()
+        self.console.killAll()
+
+    def start(self):
+        """Internet first: package lists (newer versions) and the panel feed (online rules), then the analysis."""
+        if self.busy:
+            return
+        self.busy = True
+        self["status"].setText(u"Connexion aux feeds (Internet)…")
+        self["summary"].setText(u"Analyse en cours…")
+        tmp = "/tmp/wacayoubpanel-doctor-index.json"
+        self.console.ePopen("opkg update >/dev/null 2>&1; " + F.index_fetch_command(tmp), self._online_done, tmp)
+
+    def _online_done(self, data, retval, tmp):
+        if getattr(self, "closed", True):  # enigma2 clears attributes of closed screens
+            return
+        self.online = False
+        try:
+            if retval != 0:
+                raise IOError("wget %s" % retval)
+            fresh = F.Feed.load(tmp)
+            if not os.path.isdir(F.CACHE_DIR):
+                os.makedirs(F.CACHE_DIR)
+            with open(F.CACHE_FILE, "w", encoding="utf-8") as fh:
+                json.dump(fresh.data, fh, ensure_ascii=False)
+            self.online = True
+        except Exception as e:
+            print("[WacayoubPanel] doctor online: %s" % e)
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        self["status"].setText(u"Analyse des rapports de plantage…")
+        self.later.start(50, True)
+
+    def _analyse(self):
+        if getattr(self, "closed", True):
+            return
+        try:
+            self.feed = F.Feed.load(F.CACHE_FILE)
+        except Exception:
+            self.feed = None
+        data = self.feed.data if self.feed else {}
+        own = dict((k, v.get("version", "")) for k, v in data.get("packages", {}).items())
+        try:
+            self.findings = D.analyse(data, own)
+        except Exception as e:
+            print("[WacayoubPanel] doctor: %s" % e)
+            self.findings = []
+        self.busy = False
+        nlogs = sum(f["count"] for f in self.findings)
+        todo = [f for f in self.findings if f["level"] in ("red", "amber")]
+        rules = len(data.get("doctor_rules", []))
+        self["status"].setText((u"Feeds et règles en ligne à jour (%d règles Internet)" % rules) if self.online
+                               else u"Hors ligne : listes et règles en cache")
+        if not self.findings:
+            self["summary"].setText(u"Aucun plantage enregistré.\n\nEnigma2 va bien.")
+        else:
+            self["summary"].setText(u"%d rapport(s) analysé(s)\n%d problème(s) trouvé(s)\n%d à réparer\n\nVERT : réparer la ligne choisie\n"
+                                    u"Chaque réparation est confirmée avant de s'exécuter." % (nlogs, len(self.findings), len(todo)))
+        self._build()
+
+    def _build(self):
+        rows = []
+        dot = {"red": "k-red.png", "amber": "k-yellow.png", "blue": "k-blue.png", "green": "k-green.png"}
+        col = {"red": 0xF87171, "amber": 0xFBBF24, "blue": 0x60A5FA, "green": 0x4ADE80}
+        for f in self.findings:
+            row = [f]
+            tile = pix("t-i-%s.png" % (f.get("plugin") or "").lower()) or pix("t-doctor.png")
+            if tile:
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(16), s(10)), size=(s(60), s(60)), png=tile, flags=PIX_FLAGS))
+            row.append(MultiContentEntryText(pos=(s(94), s(6)), size=(s(780), s(40)), font=0, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                             text=f["title"], color=C_TEXT, color_sel=0xFFFFFF))
+            meta = [x for x in ((u"%d plantage(s)" % f["count"]) if f["count"] else "", f.get("date", ""), f.get("plugin") or "") if x]
+            row.append(MultiContentEntryText(pos=(s(94), s(44)), size=(s(780), s(30)), font=1, flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+                                             text=u"  ·  ".join(meta), color=C_DIM, color_sel=0xDBEAFE))
+            row.append(MultiContentEntryText(pos=(s(880), s(8)), size=(s(400), s(64)), font=1, flags=RT_HALIGN_RIGHT | RT_VALIGN_CENTER,
+                                             text=f["fix_label"], color=col.get(f["level"], C_DIM), color_sel=0xFFFFFF))
+            if pix(dot.get(f["level"], "k-menu.png")):
+                row.append(MultiContentEntryPixmapAlphaBlend(pos=(s(1290), s(27)), size=(s(26), s(26)), png=pix(dot[f["level"]]), flags=PIX_FLAGS))
+            rows.append(row)
+        self["items"].setList(rows)
+        self._desc()
+
+    def _cur(self):
+        c = self["items"].getCurrent()
+        return c[0] if c else None
+
+    def _desc(self):
+        f = self._cur()
+        if not f:
+            self["desc"].setText(u"Le Docteur lit les rapports de plantage d'Enigma2, cherche la cause et propose une réparation "
+                                 u"(feeds OpenATV et Wacayoub, règles en ligne). JAUNE : analyser à nouveau.")
+            return
+        txt = f.get("explain", "")
+        if f.get("exception"):
+            txt += u"\nErreur : %s%s" % (f["exception"][:150], (u"  (%s)" % f["where"]) if f.get("where") else "")
+        self["desc"].setText(txt)
+
+    def keyUp(self):
+        self["items"].up()
+        self._desc()
+
+    def keyDown(self):
+        self["items"].down()
+        self._desc()
+
+    def keyPageUp(self):
+        self["items"].pageUp()
+        self._desc()
+
+    def keyPageDown(self):
+        self["items"].pageDown()
+        self._desc()
+
+    # ------------------------------------------------------------ actions
+    def keyFix(self):
+        f = self._cur()
+        if not f or self.busy:
+            return
+        if f["fix"]["type"] == "archive":
+            body = self._archive_body(f["logs"])
+            q = u"%s\n\nArchiver %d rapport(s) ? (déplacés dans %s)" % (f["title"], len(f["logs"]), D.ARCHIVE)
+        else:
+            body = D.fix_commands(f, F.Feed(self.feed.data) if self.feed else None)
+            q = u"%s\n\nRéparation : %s\n%s" % (f["title"], f["fix_label"],
+                                                 u"L'interface redémarrera ensuite." if D.needs_restart(f) else u"")
+        if not body:
+            self.session.open(MessageBox, u"Réparation indisponible hors ligne. JAUNE pour réessayer.", MessageBox.TYPE_ERROR, timeout=6)
+            return
+
+        def go(ok):
+            if ok:
+                cmd = F.write_run_script(body, "doctor.sh")
+                self.session.openWithCallback(lambda *a: self._done(f), Console, title=u"Docteur : %s" % f["fix_label"], cmdlist=cmd)
+        self.session.openWithCallback(go, MessageBox, q, MessageBox.TYPE_YESNO)
+
+    def _done(self, f):
+        if getattr(self, "closed", True):
+            return
+        if f["fix"]["type"] != "archive" and D.needs_restart(f):
+            def restart(ok):
+                if ok:
+                    self.session.open(TryQuitMainloop, 3)
+                else:
+                    self.start()
+            self.session.openWithCallback(restart, MessageBox, u"Redémarrer l'interface maintenant pour appliquer la réparation ?",
+                                          MessageBox.TYPE_YESNO)
+            return
+        self.start()
+
+    @staticmethod
+    def _archive_body(paths):
+        q = " ".join(D.sh(p) for p in paths)
+        return ("mkdir -p %s && mv -f %s %s/ && echo '>>> %d rapport(s) archivé(s) dans %s'\n"
+                % (D.sh(D.ARCHIVE), q, D.sh(D.ARCHIVE), len(paths), D.ARCHIVE))
+
+    def keyArchiveAll(self):
+        paths = [p for f in self.findings for p in f.get("logs", [])]
+        if not paths or self.busy:
+            return
+
+        def go(ok):
+            if ok:
+                self.session.openWithCallback(lambda *a: self.start(), Console, title=u"Archiver les rapports",
+                                              cmdlist=F.write_run_script(self._archive_body(paths), "doctor.sh"))
+        self.session.openWithCallback(go, MessageBox, u"Archiver les %d rapports de plantage ?\nIls sont gardés dans %s." % (len(paths), D.ARCHIVE),
+                                      MessageBox.TYPE_YESNO)
+
+    def keyShow(self):
+        f = self._cur()
+        if not f or not f.get("logs"):
+            return
+        path = f["logs"][0]
+        body = ("echo %s; grep -E '^(crashdate|skin|imageversion)=' %s; echo; sed -n '/Traceback/,$p' %s | grep -v '^<' | head -60\n"
+                % (D.sh(os.path.basename(path)), D.sh(path), D.sh(path)))
+        self.session.open(Console, title=u"Rapport de plantage", cmdlist=F.write_run_script(body, "doctor-show.sh"))
 
 
 def main(session, **kwargs):
